@@ -1,0 +1,21 @@
+<div class="tl_listing_container parent_view">
+    <div class="tl_fielpalette_indicator"><?= Image::getHtml('loading.gif', '', 'class="tl_fielpalette_indicator_icon"'); ?></div>
+    <ul class="tl_listing">
+            <li class="tl_fieldpalette_wrapper">
+                <table width="100%" cellspacing="0" width="100%" class="display tl_fieldpalette_wizard<?php if ($this->sortable): ?> tl_fieldpalette_sortable<?php endif; ?>" id="table_fieldpalette_<?= $this->strId; ?>">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>
+                            <?= $this->label ?><?= ($this->mandatory ? '<span class="mandatory">*</span>' : ''); ?>
+                        </th>
+                        <th class="no-sort"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?= implode('', $this->items) ?>
+                    </tbody>
+                </table>
+            </li>
+    </ul>
+</div>

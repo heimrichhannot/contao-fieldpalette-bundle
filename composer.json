@@ -1,0 +1,47 @@
+{
+    "name": "heimrichhannot/contao-fieldpalette-bundle",
+    "description": "FieldPalette is a contao widget like MultiColumnWizard with its own database table.",
+    "keywords": [
+        "contao",
+        "fieldpalette",
+        "fieldgroup"
+    ],
+    "type": "contao-bundle",
+    "homepage": "https://github.com/heimrichhannot/contao-fieldpalette-bundle",
+    "license": "LGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Heimrich & Hannot",
+            "email": "digitales@heimrich-hannot.de",
+            "homepage": "http://www.heimrich-hannot.de",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues"
+    },
+    "require": {
+        "php": "~7.0",
+        "contao/core-bundle": "~4.1",
+        "heimrichhannot/contao-haste_plus": "^1.6.84",
+        "heimrichhannot/datatables": "^1.10",
+        "heimrichhannot/datatables-additional": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "HeimrichHannot\\FieldpaletteBundle\\": "src/"
+        },
+        "classmap": [
+            "src/Resources/contao/"
+        ],
+        "exclude-from-classmap": [
+            "src/Resources/contao/config/",
+            "src/Resources/contao/dca/",
+            "src/Resources/contao/languages/",
+            "src/Resources/contao/templates/"
+        ]
+    },
+    "extra": {
+        "contao-manager-plugin": "HeimrichHannot\\FieldpaletteBundle\\ContaoManager\\Plugin"
+    }
+}

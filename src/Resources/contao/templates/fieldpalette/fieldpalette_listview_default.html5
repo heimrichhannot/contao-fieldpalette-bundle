@@ -1,0 +1,15 @@
+<div class="tl_listing_container parent_view">
+	<div class="tl_fielpalette_indicator"><?= Image::getHtml('loading.gif', '', 'class="tl_fielpalette_indicator_icon"'); ?></div>
+	<ul class="tl_listing">
+		<li class="tl_content_header">
+			<div class="tl_left"><?= $this->labelIcon; ?> <?= $this->label ?><?= ($this->mandatory ? '<span class="mandatory">*</span>' : ''); ?></div>
+			<div class="tl_right"></div>
+			<div style="clear:both;"></div>
+		</li>
+		<?php if (!empty($this->items)): ?>
+			<li class="tl_fieldpalette_wrapper">
+				<ul class="tl_fieldpalette_wizard<?php if($this->sortable): ?> tl_fieldpalette_sortable<?php endif;?>" id="ul_fieldpalette_<?= $this->strId; ?>"><?= implode('', $this->items) ?></ul>
+			</li>
+		<?php endif; ?>
+	</ul>
+</div>
