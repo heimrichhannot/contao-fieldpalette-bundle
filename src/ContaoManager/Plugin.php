@@ -17,7 +17,7 @@ use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Config\ConfigInterface;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
-use HeimrichHannot\FieldPalette\HeimrichHannotContaoFieldpaletteBundle;
+use HeimrichHannot\FieldpaletteBundle\HeimrichHannotContaoFieldpaletteBundle;
 
 class Plugin implements BundlePluginInterface
 {

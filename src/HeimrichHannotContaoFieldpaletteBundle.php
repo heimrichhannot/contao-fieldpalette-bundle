@@ -9,7 +9,7 @@
  */
 
 
-namespace HeimrichHannot\FieldPalette;
+namespace HeimrichHannot\FieldpaletteBundle;
 
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;

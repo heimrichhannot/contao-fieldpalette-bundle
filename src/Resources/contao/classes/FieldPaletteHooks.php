@@ -12,50 +12,14 @@
 namespace HeimrichHannot\FieldPalette;
 
 
+use Contao\Controller;
+
 class FieldPaletteHooks extends \Controller
 {
 
     protected static $arrSkipTables = ['tl_formdata'];
     protected static $intMaximumDepth = 10;
     protected static $intCurrentDepth = 0;
-
-    public function executePostActionsHook($strAction, \DataContainer $dc)
-    {
-        if ($strAction == FieldPalette::$strFieldpaletteRefreshAction) {
-            if (\Input::post('field')) {
-                \Controller::loadDataContainer($dc->table);
-
-                $strName  = \Input::post('field');
-                $arrField = $GLOBALS['TL_DCA'][$dc->table]['fields'][$strName];
-
-                // Die if the field does not exist
-                if (!is_array($arrField)) {
-                    header('HTTP/1.1 400 Bad Request');
-                    die('Bad Request');
-                }
-
-                /** @var \Widget $strClass */
-                $strClass = $GLOBALS['BE_FFL'][$arrField['inputType']];
-
-                // Die if the class is not defined or inputType is not fieldpalette
-                if ($arrField['inputType'] != 'fieldpalette' || !class_exists($strClass)) {
-                    header('HTTP/1.1 400 Bad Request');
-                    die('Bad Request');
-                }
-
-                $arrData = \Widget::getAttributesFromDca($arrField, $strName, $dc->activeRecord->{$strName}, $strName, $dc->table, $dc);
-
-                /** @var \Widget $objWidget */
-                $objWidget                = new $strClass($arrData);
-                $objWidget->currentRecord = $dc->id;
-
-                die(json_encode(['field' => $strName, 'target' => '#ctrl_' . $strName, 'content' => $objWidget->generate()]));
-            }
-
-            header('HTTP/1.1 400 Bad Request');
-            die('Bad Request');
-        }
-    }
 
     public function initializeSystemHook()
     {
@@ -86,16 +50,16 @@ class FieldPaletteHooks extends \Controller
 
     /**
      * Extract table fields sql
-     * @param string $strTable The field palette table name
+     * @param string $table The field palette table name
      */
-    protected function extractTableFields($strTable)
+    protected function extractTableFields($table)
     {
-        $palettes = FieldPalette::extractFieldPaletteFields($strTable, $GLOBALS['TL_DCA'][$strTable]['fields']);
+        $palettes = FieldPalette::extractFieldPaletteFields($table, $GLOBALS['TL_DCA'][$table]['fields']);
 
         foreach ($palettes as $paletteTable => $fields) {
 
             if (!isset($GLOBALS['loadDataContainer'][$paletteTable])) {
-                \Controller::loadDataContainer($paletteTable);
+                Controller::loadDataContainer($paletteTable);
             }
 
             $GLOBALS['TL_DCA'][$paletteTable]['fields'] = array_merge(

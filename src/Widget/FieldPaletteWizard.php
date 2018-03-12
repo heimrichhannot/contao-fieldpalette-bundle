@@ -9,7 +9,7 @@
  * @license http://www.gnu.org/licences/lgpl-3.0.html LGPL
  */
 
-namespace HeimrichHannot\FieldPalette;
+namespace HeimrichHannot\FieldpaletteBundle\Widget;
 
 
 use Contao\DC_Table;
