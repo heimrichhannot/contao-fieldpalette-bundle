@@ -28,6 +28,38 @@ class HookListener
     }
 
     /**
+     * Adjust back end module to allow fieldpalette table access
+     * Note: Do never execute Controller::loadDataContainer() inside this function as no BackendUser is available inside initializeSystem Hook
+     */
+    public function initializeSystemHook()
+    {
+        $table = FieldPalette::getTableFromRequest();
+
+        if (empty($table))
+        {
+            return;
+        }
+
+        foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup)
+        {
+            if (!is_array($arrGroup))
+            {
+                continue;
+            }
+
+            foreach ($arrGroup as $strModule => $arrModule)
+            {
+                if (!is_array($arrModule) && !is_array($arrModule['tables']))
+                {
+                    continue;
+                }
+
+                $GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'][] = $table;
+            }
+        }
+    }
+
+    /**
      * @param string $action
      * @param DataContainer $dc
      */
@@ -116,9 +148,10 @@ class HookListener
      * Modify the tl_fieldpalette dca sql, afterwards all loadDataContainer Hooks has been run
      * This is required, fields within all dca tables needs to be added to the database
      *
-     * @param $dcaSqlExtract
+     * @param array $dcaSqlExtract
      *
-     * @return $array The entire extracted sql data from all tables
+     * @return array The entire extracted sql data from all tables
+     *
      * @throws \Exception
      */
     public function sqlGetFromDcaHook($dcaSqlExtract)

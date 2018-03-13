@@ -477,38 +477,6 @@ class FieldPalette
         return $arrData;
     }
 
-    /**
-     * Adjust back end module to allow fieldpalette table access
-     * Note: Do never execute \Controller::loadDataContainer() inside this function as no BackendUser is available inside initializeSystem Hook
-     */
-    public static function adjustBackendModules()
-    {
-        $table = FieldPalette::getTableFromRequest();
-
-        if (empty($table))
-        {
-            return;
-        }
-
-        foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup)
-        {
-            if (!is_array($arrGroup))
-            {
-                continue;
-            }
-
-            foreach ($arrGroup as $strModule => $arrModule)
-            {
-                if (!is_array($arrModule) && !is_array($arrModule['tables']))
-                {
-                    continue;
-                }
-
-                $GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'][] = $table;
-            }
-        }
-    }
-
     public static function refuseFromBackendModuleByTable($strTable)
     {
         foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup)
