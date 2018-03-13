@@ -12,12 +12,14 @@
 namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
 
+use Contao\Config;
 use Contao\Controller;
 use Contao\Environment;
 use Contao\Input;
 use Contao\Widget;
 use HeimrichHannot\FieldPalette\FieldPalette;
 use Contao\DataContainer;
+use HeimrichHannot\FieldPalette\FieldPaletteDcaExtractor;
 
 class HookListener
 {
@@ -76,17 +78,11 @@ class HookListener
      *
      * @param string $table
      *
+     * @throws \Exception
      */
     public function loadDataContainerHook($table)
     {
-        // dca extractor does not provide any entity context, show all fieldpalette fields within tl_user_group
-        if (version_compare(VERSION, '4.0', '<')) {
-            if ((Input::get('update') == 'database' || Input::get('do') == 'group')) {
-                $this->extractTableFields($table);
-            }
-        }
-
-        if (preg_match('/(contao\/install|install\.php)/', Environment::get('request')) || Input::get('do') == 'group') {
+        if (preg_match('/(contao\/install)/', Environment::get('request')) || Input::get('do') == 'group') {
             $this->extractTableFields($table);
         }
 
@@ -95,16 +91,17 @@ class HookListener
 
     /**
      * Extract table fields sql
-     * @param string $strTable The field palette table name
+     * @param string $tables The field palette table name
+     * @throws \Exception
      */
-    protected function extractTableFields($strTable)
+    protected function extractTableFields($tables)
     {
-        $palettes = FieldPalette::extractFieldPaletteFields($strTable, $GLOBALS['TL_DCA'][$strTable]['fields']);
+        $palettes = FieldPalette::extractFieldPaletteFields($tables, $GLOBALS['TL_DCA'][$tables]['fields']);
 
         foreach ($palettes as $paletteTable => $fields) {
 
             if (!isset($GLOBALS['loadDataContainer'][$paletteTable])) {
-                \Controller::loadDataContainer($paletteTable);
+                Controller::loadDataContainer($paletteTable);
             }
 
             $GLOBALS['TL_DCA'][$paletteTable]['fields'] = array_merge(
@@ -119,26 +116,24 @@ class HookListener
      * Modify the tl_fieldpalette dca sql, afterwards all loadDataContainer Hooks has been run
      * This is required, fields within all dca tables needs to be added to the database
      *
-     * @param $arrDCASqlExtract
+     * @param $dcaSqlExtract
      *
      * @return $array The entire extracted sql data from all tables
+     * @throws \Exception
      */
-    public function sqlGetFromDcaHook($arrDCASqlExtract)
+    public function sqlGetFromDcaHook($dcaSqlExtract)
     {
-        // in contao 4 we have to load the DCA for all table before we extract tl_fieldpalette fields
-        if (version_compare(VERSION, '4.0', '>=')) {
-            foreach ($arrDCASqlExtract as $strTable => $extract) {
-                \Controller::loadDataContainer($strTable);
-            }
+        foreach ($dcaSqlExtract as $table => $sql) {
+            Controller::loadDataContainer($table);
         }
 
-        $objExtract = new FieldPaletteDcaExtractor(\Config::get('fieldpalette_table'));
+        $extract = new FieldPaletteDcaExtractor(Config::get('fieldpalette_table'));
 
-        if ($objExtract->isDbTable()) {
-            $arrDCASqlExtract[\Config::get('fieldpalette_table')] = $objExtract->getDbInstallerArray();
+        if ($extract->isDbTable()) {
+            $dcaSqlExtract[Config::get('fieldpalette_table')] = $extract->getDbInstallerArray();
         }
 
-        return $arrDCASqlExtract;
+        return $dcaSqlExtract;
     }
 
 
