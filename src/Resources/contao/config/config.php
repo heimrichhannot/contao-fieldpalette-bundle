@@ -30,17 +30,15 @@ $GLOBALS['TL_HOOKS']['sqlGetFromDca']['fieldPalette']      = ['huh.fieldpalette.
 /**
  * Models
  */
-$GLOBALS['TL_MODELS']['tl_fieldpalette'] = 'HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel';
+$GLOBALS['TL_MODELS']['tl_fieldpalette'] = HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::class;
 
 
 /**
  * Assets
  */
 
-if (\HeimrichHannot\Haste\Util\Container::isBackend())
+if (\Contao\System::getContainer()->get('huh.utils.container')->isBackend())
 {
-
-
     $GLOBALS['TL_JAVASCRIPT']['datatables-i18n']       = 'assets/datatables-additional/datatables-i18n/datatables-i18n.min.js|static';
     $GLOBALS['TL_JAVASCRIPT']['datatables-core']       = 'assets/datatables/datatables/media/js/jquery.dataTables.min.js|static';
     $GLOBALS['TL_JAVASCRIPT']['datatables-rowReorder'] = 'assets/datatables-additional/datatables-RowReorder/js/dataTables.rowReorder.min.js|static';
