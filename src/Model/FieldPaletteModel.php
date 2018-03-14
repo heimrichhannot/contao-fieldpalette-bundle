@@ -12,6 +12,7 @@ use Contao\Database;
 use Contao\Date;
 use Contao\Model;
 use Contao\Model\Collection;
+use Contao\System;
 
 /**
  * @property int $id
@@ -42,16 +43,21 @@ class FieldPaletteModel extends Model
      *
      * @param string $table Fieldpalette
      *
-     * @return static Current instance
+     * @return FieldPaletteModel $this
      */
-    public static function setTable($table)
+    public function setTable($table)
     {
         static::$strTable = $table;
+        $framework = System::getContainer()->get('contao.framework');
+        /**
+         * @var Database
+         */
+        $database = $framework->getAdapter(Database::class)->getInstance();
 
-        if (!$GLOBALS['TL_DCA'][$table]['config']['fieldpalette'] || !Database::getInstance()->tableExists($table)) {
+        if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$database->tableExists($table)) {
             static::$strTable = 'tl_fieldpalette';
 
-            return new static();
+            return $this;
         }
 
         // support custom fieldpalette entities without having its own model
@@ -59,7 +65,7 @@ class FieldPaletteModel extends Model
             $GLOBALS['TL_MODELS'][$table] = __CLASS__;
         }
 
-        return new static();
+        return $this;
     }
 
     /**
@@ -70,9 +76,9 @@ class FieldPaletteModel extends Model
      * @param array $columns         Additional clauses columns
      * @param array $values          Additional clauses values
      *
-     * @return \Model\Collection|FieldPaletteModel|null A collection of models or null if there are no fieldpalette elements
+     * @return Collection|FieldPaletteModel|null A collection of models or null if there are no fieldpalette elements
      */
-    public static function findPublishedByIds(array $fieldpaletteIds = [], array $options = [], array $columns = [], array $values = null)
+    public function findPublishedByIds(array $fieldpaletteIds = [], array $options = [], array $columns = [], array $values = [])
     {
         $t = static::$strTable;
 
@@ -83,7 +89,7 @@ class FieldPaletteModel extends Model
         $columns[] = "$t.id IN(".implode(',', array_map('intval', $fieldpaletteIds)).')';
 
         if (!BE_USER_LOGGED_IN) {
-            $time = \Date::floorToMinute();
+            $time = Date::floorToMinute();
             $columns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time + 60)."') AND $t.published='1'";
         }
 
@@ -91,7 +97,7 @@ class FieldPaletteModel extends Model
             $options['order'] = "$t.sorting";
         }
 
-        return static::findBy($columns, $values, $options);
+        return $this->dynamicFindBy($columns, $values, $options);
     }
 
     /**
@@ -190,5 +196,19 @@ class FieldPaletteModel extends Model
         $values = array_merge([$intPid, $strParentTable, $strParentField], $values);
 
         return static::findBy($arrColumns, $values, $arrOptions);
+    }
+
+    /**
+     * Helper method to make findBy testable.
+     *
+     * @param mixed $columns
+     * @param mixed $values
+     * @param array $options
+     *
+     * @return Collection|FieldPaletteModel|null
+     */
+    public function dynamicFindBy($columns, $values, array $options = [])
+    {
+        return static::findBy($columns, $values, $options);
     }
 }

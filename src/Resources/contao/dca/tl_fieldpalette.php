@@ -199,8 +199,8 @@ class tl_fieldpalette extends Backend
 
 
         $strFieldPalette = \HeimrichHannot\FieldPalette\FieldPalette::getPaletteFromRequest();
-
-        $objModel        = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::setTable($strTable)->findByPk($insertID);
+        $helper = new FieldPaletteModel();
+        $objModel        = $helper->setTable($strTable)->findByPk($insertID);
 
         // if are within nested fieldpalettes set parent item tstamp
         if ($arrSet['ptable'] == 'tl_fieldpalette') {

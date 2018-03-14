@@ -15,6 +15,7 @@ namespace HeimrichHannot\FieldPalette;
 use Contao\Config;
 use Contao\Controller;
 use Contao\Input;
+use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 
 class FieldPalette
 {
@@ -135,7 +136,8 @@ class FieldPalette
                 // determine root table from parent entity tree, if requested parent table = tl_fieldpalette -> nested fieldpalette
                 if ($strParentTable == $strTable && $intPid = \Input::get('pid'))
                 {
-                    $objParent = FieldPaletteModel::setTable($strParentTable)->findByPk($intPid);
+                    $helper = new FieldPaletteModel();
+                    $objParent = $helper->setTable($strParentTable)->findByPk($intPid);
 
                     if ($objParent !== null)
                     {
@@ -153,7 +155,8 @@ class FieldPalette
             case 'toggle':
                 $id = strlen(\Input::get('id')) ? \Input::get('id') : CURRENT_ID;
 
-                $objModel = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::setTable($strTable)->findByPk($id);
+                $helper = new FieldPaletteModel();
+                $objModel = $helper->setTable($strTable)->findByPk($id);
 
                 if ($objModel === null)
                 {
@@ -351,7 +354,8 @@ class FieldPalette
                 case 'show':
                 case 'delete':
                 case 'toggle':
-                    $objModel = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::setTable($strTable)->findByPk($id);
+                    $helper = new FieldPaletteModel();
+                    $objModel = $helper->setTable($strTable)->findByPk($id);
 
                     if ($objModel === null)
                     {

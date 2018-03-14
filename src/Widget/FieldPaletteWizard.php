@@ -68,8 +68,8 @@ class FieldPaletteWizard extends \Widget
     public function generate()
     {
         $this->reviseTable();
-
-        $this->objModels = FieldPaletteModel::setTable($this->paletteTable)->findByPidAndTableAndField($this->currentRecord, $this->strTable, $this->strName);
+        $helper = new FieldPaletteModel();
+        $this->objModels = $helper->setTable($this->paletteTable)->findByPidAndTableAndField($this->currentRecord, $this->strTable, $this->strName);
 
         $this->arrButtonDefaults = [
             'do' => \Input::get('do'),
