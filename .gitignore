@@ -10,3 +10,6 @@ nbproject/
 .project
 .settings/
 
+# Composer
+vendor
+
