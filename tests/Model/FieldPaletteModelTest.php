@@ -15,14 +15,6 @@ use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 
 class FieldPaletteModelTest extends ContaoTestCase
 {
-    protected function setUp()
-    {
-        parent::setUp();
-        if (!isset($GLOBALS['TL_LANGUAGE'])) {
-            $GLOBALS['TL_LANGUAGE'] = 'de';
-        }
-    }
-
     public function testSetTable()
     {
         $container = $this->mockContainer();
@@ -61,23 +53,112 @@ class FieldPaletteModelTest extends ContaoTestCase
 
         $result = $model->findPublishedByIds([1, 2, 3]);
         $this->assertCount(3, $result);
+        $this->assertCount(2, $result[0]);
+        $this->assertSame($model->getTable().'.id IN('.implode(',', [1, 2, 3]).')', $result[0][0]);
+        $this->assertCount(1, $result[2]);
+
+        $result = $model->findPublishedByIds([1, 2, 3], ['order' => $model->getTable().'.id']);
+        $this->assertCount(1, $result[2]);
+        $this->assertSame($model->getTable().'.id', $result[2]['order']);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
-    public function testFindPublishedByIdsBackend()
+    public function testFindPublishedByPidAndTableAndField()
     {
-        if (!defined(BE_USER_LOGGED_IN)) {
-            define(BE_USER_LOGGED_IN, true);
+        if (!defined('BE_USER_LOGGED_IN')) {
+            define('BE_USER_LOGGED_IN', false);
         }
         /**
          * @var FieldPaletteModel
          */
         $model = $this->getFieldPaletteModelMock();
-        $this->assertNull($model->findPublishedByIds());
-        $result = $model->findPublishedByIds([1, 2, 3]);
+        $result = $model->findPublishedByPidAndTableAndField(2, 'parentTable', 'parentField');
         $this->assertCount(3, $result);
+        $this->assertCount(2, $result[0]);
+        $this->assertCount(3, $result[1]);
+        $this->assertCount(1, $result[2]);
+        $this->assertTrue($this->checkIsStringArray($result[0]));
+
+        $result = $model->findPublishedByPidAndTableAndField(3, 'parentTable', 'parentField', ['order' => 'ABC']);
+        $this->assertCount(1, $result[2]);
+    }
+
+    public function testFindPublishedByPidsAndTableAndField()
+    {
+        if (!defined('BE_USER_LOGGED_IN')) {
+            define('BE_USER_LOGGED_IN', false);
+        }
+        /**
+         * @var FieldPaletteModel
+         */
+        $model = $this->getFieldPaletteModelMock();
+
+        $this->assertNull($model->findPublishedByPidsAndTableAndField([], 'parentTable', 'parentField'));
+
+        $result = $model->findPublishedByPidsAndTableAndField([2, 3], 'parentTable', 'parentField');
+        $this->assertCount(3, $result);
+        $this->assertCount(3, $result[0]);
+        $this->assertCount(2, $result[1]);
+        $this->assertCount(1, $result[2]);
+        $this->assertTrue($this->checkIsStringArray($result[0]));
+
+        $result = $model->findPublishedByPidsAndTableAndField([2, 3], 'parentTable', 'parentField', ['order' => 'ABC']);
+        $this->assertCount(1, $result[2]);
+    }
+
+    public function testFindByPidAndTableAndField()
+    {
+        if (!defined('BE_USER_LOGGED_IN')) {
+            define('BE_USER_LOGGED_IN', false);
+        }
+        /**
+         * @var FieldPaletteModel
+         */
+        $model = $this->getFieldPaletteModelMock();
+
+        $result = $model->findByPidAndTableAndField(2, 'parentTable', 'parentField');
+        $this->assertCount(3, $result);
+        $this->assertCount(1, $result[0]);
+        $this->assertCount(3, $result[1]);
+        $this->assertCount(1, $result[2]);
+        $this->assertTrue($this->checkIsStringArray($result[0]));
+        $this->assertTrue($this->checkIsStringArray($result[2]));
+
+        $result = $model->findByPidAndTableAndField(3, 'parentTable', 'parentField', ['order' => 'ABC']);
+        $this->assertCount(1, $result[2]);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testFindPublishedByBackend()
+    {
+        if (!defined('BE_USER_LOGGED_IN')) {
+            define('BE_USER_LOGGED_IN', true);
+        }
+        /**
+         * @var FieldPaletteModel
+         */
+        $model = $this->getFieldPaletteModelMock();
+        $result = $model->findPublishedBy(['column1', 'column2', 'column3']);
+        $this->assertCount(3, $result);
+        $this->assertCount(3, $result[0]);
+        $this->assertCount(0, $result[1]);
+        $this->assertCount(0, $result[2]);
+        $this->assertTrue($this->checkIsStringArray($result[0]));
+    }
+
+    public function checkIsStringArray($array)
+    {
+        if (!empty($array)) {
+            foreach ($array as $entry) {
+                if (!is_string($entry)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public function getDatabaseMock()

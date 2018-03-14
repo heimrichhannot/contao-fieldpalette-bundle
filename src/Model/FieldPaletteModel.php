@@ -88,16 +88,11 @@ class FieldPaletteModel extends Model
 
         $columns[] = "$t.id IN(".implode(',', array_map('intval', $fieldpaletteIds)).')';
 
-        if (!BE_USER_LOGGED_IN) {
-            $time = Date::floorToMinute();
-            $columns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time + 60)."') AND $t.published='1'";
-        }
-
         if (!isset($options['order'])) {
             $options['order'] = "$t.sorting";
         }
 
-        return $this->dynamicFindBy($columns, $values, $options);
+        return $this->findPublishedBy($columns, $values, $options);
     }
 
     /**
@@ -112,90 +107,98 @@ class FieldPaletteModel extends Model
      *
      * @return Collection|FieldPaletteModel|null A collection of models or null if there are no fieldpalette elements
      */
-    public static function findPublishedByPidAndTableAndField(int $pid, string $parentTable, string $parentField, array $options = [], array $columns = [], array $values = [])
+    public function findPublishedByPidAndTableAndField(int $pid, string $parentTable, string $parentField, array $options = [], array $columns = [], array $values = [])
     {
         $t = static::$strTable;
 
         $columns[] = "$t.pid=? AND $t.ptable=? AND $t.pfield=?";
         $values = array_merge($values, [$pid, $parentTable, $parentField]);
 
-        if (!BE_USER_LOGGED_IN) {
-            $time = Date::floorToMinute();
-            $columns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time + 60)."') AND $t.published='1'";
-        }
-
         if (!isset($options['order'])) {
             $options['order'] = "$t.sorting";
         }
 
-        return static::findBy($columns, $values, $options);
+        return $this->findPublishedBy($columns, $values, $options);
     }
 
     /**
-     * Find all published fieldpalette elements by their parent ID and parent table.
+     * Find published fieldpalette elements by their parent IDs and parent table.
      *
-     * @param array  $arrPids        The parent ids
-     * @param string $strParentTable The parent table name
-     * @param string $strParentField The parent field name
-     * @param array  $arrOptions     An optional options array
-     * @param array  $columns        Additional clauses columns
-     * @param array  $values         Additional clauses values
+     * @param array  $pids        The parent ids
+     * @param string $parentTable The parent table name
+     * @param string $parentField The parent field name
+     * @param array  $options     An optional options array
+     * @param array  $columns     Additional clauses columns
+     * @param array  $values      Additional clauses values
      *
-     * @return \Model\Collection|FieldPaletteModel|null A collection of models or null if there are no fieldpalette elements
+     * @return Collection|FieldPaletteModel|null A collection of models or null if there are no fieldpalette elements
      */
-    public static function findPublishedByPidsAndTableAndField($arrPids, $strParentTable, $strParentField, array $arrOptions = [], array $columns = [], array $values = [])
+    public function findPublishedByPidsAndTableAndField(array $pids, string $parentTable,
+        string $parentField, array $options = [], array $columns = [], array $values = [])
     {
-        if (!is_array($arrPids) || empty($arrPids)) {
+        if (empty($pids)) {
             return null;
         }
 
         $t = static::$strTable;
 
-        $arrColumns = ["$t.pid IN(".implode(',', array_map('intval', $arrPids)).')'];
+        $columns[] = "$t.pid IN(".implode(',', array_map('intval', $pids)).')';
 
-        $arrColumns[] = "$t.ptable=? AND $t.pfield=?";
+        $columns[] = "$t.ptable=? AND $t.pfield=?";
+        $values = array_merge($values, [$parentTable, $parentField]);
 
-        if (!BE_USER_LOGGED_IN) {
-            $time = \Date::floorToMinute();
-            $arrColumns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time + 60)."') AND $t.published='1'";
+        if (!isset($options['order'])) {
+            $options['order'] = "FIELD($t.pid, ".implode(',', array_map('intval', $pids))."), $t.sorting";
         }
 
-        if (!isset($arrOptions['order'])) {
-            $arrOptions['order'] = "FIELD($t.pid, ".implode(',', array_map('intval', $arrPids))."), $t.sorting";
-        }
-
-        $arrColumns = array_merge($arrColumns, $columns);
-        $values = array_merge([$strParentTable, $strParentField], $values);
-
-        return static::findBy($arrColumns, $values, $arrOptions);
+        return $this->findPublishedBy($columns, $values, $options);
     }
 
     /**
      * Find all fieldpalette elements by their parent ID and parent table.
      *
-     * @param int    $intPid         The article ID
-     * @param string $strParentTable The parent table name
-     * @param string $strParentField The parent field name
-     * @param array  $arrOptions     An optional options array
-     * @param array  $columns        Additional clauses columns
-     * @param array  $values         Additional clauses values
+     * @param int    $pid         The article ID
+     * @param string $parentTable The parent table name
+     * @param string $parentField The parent field name
+     * @param array  $options     An optional options array
+     * @param array  $columns     Additional clauses columns
+     * @param array  $values      Additional clauses values
      *
-     * @return \Model\Collection|FieldPaletteModel|null A collection of models or null if there are no fieldpalette elements
+     * @return Collection|FieldPaletteModel|null A collection of models or null if there are no fieldpalette elements
      */
-    public static function findByPidAndTableAndField($intPid, $strParentTable, $strParentField, array $arrOptions = [], array $columns = [], array $values = [])
+    public function findByPidAndTableAndField(int $pid, string $parentTable, string $parentField,
+        array $options = [], array $columns = [], array $values = [])
     {
         $t = static::$strTable;
 
-        $arrColumns = ["$t.pid=? AND $t.ptable=? AND $t.pfield=?"];
+        $querys = ["$t.pid=? AND $t.ptable=? AND $t.pfield=?"];
 
-        if (!isset($arrOptions['order'])) {
-            $arrOptions['order'] = "$t.sorting";
+        if (!isset($options['order'])) {
+            $options['order'] = "$t.sorting";
         }
 
-        $arrColumns = array_merge($arrColumns, $columns);
-        $values = array_merge([$intPid, $strParentTable, $strParentField], $values);
+        $querys = array_merge($querys, $columns);
+        $values = array_merge([$pid, $parentTable, $parentField], $values);
 
-        return static::findBy($arrColumns, $values, $arrOptions);
+        return $this->dynamicFindBy($querys, $values, $options);
+    }
+
+    /**
+     * @param array $columns
+     * @param array $values
+     * @param array $options
+     *
+     * @return Collection|FieldPaletteModel|null
+     */
+    public function findPublishedBy(array $columns = [], array $values = [], array $options = [])
+    {
+        $t = static::$strTable;
+        if (!BE_USER_LOGGED_IN) {
+            $time = Date::floorToMinute();
+            $columns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time + 60)."') AND $t.published='1'";
+        }
+
+        return $this->dynamicFindBy($columns, $values, $options);
     }
 
     /**
@@ -206,6 +209,8 @@ class FieldPaletteModel extends Model
      * @param array $options
      *
      * @return Collection|FieldPaletteModel|null
+     *
+     * @codeCoverageIgnore
      */
     public function dynamicFindBy($columns, $values, array $options = [])
     {
