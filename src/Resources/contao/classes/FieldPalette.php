@@ -153,7 +153,7 @@ class FieldPalette
             case 'toggle':
                 $id = strlen(\Input::get('id')) ? \Input::get('id') : CURRENT_ID;
 
-                $objModel = \HeimrichHannot\FieldPalette\FieldPaletteModel::setTable($strTable)->findByPk($id);
+                $objModel = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::setTable($strTable)->findByPk($id);
 
                 if ($objModel === null)
                 {
@@ -351,7 +351,7 @@ class FieldPalette
                 case 'show':
                 case 'delete':
                 case 'toggle':
-                    $objModel = \HeimrichHannot\FieldPalette\FieldPaletteModel::setTable($strTable)->findByPk($id);
+                    $objModel = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::setTable($strTable)->findByPk($id);
 
                     if ($objModel === null)
                     {
@@ -390,7 +390,7 @@ class FieldPalette
 
         if ($objModel->ptable == \Config::get('fieldpalette_table'))
         {
-            $objModel = \HeimrichHannot\FieldPalette\FieldPaletteModel::findByPk($objModel->pid);
+            $objModel = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($objModel->pid);
 
             if ($objModel === null)
             {

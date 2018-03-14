@@ -1,31 +1,28 @@
 <?php
-/**
- * Contao Open Source CMS
+
+/*
+ * Copyright (c) 2018 Heimrich & Hannot GmbH
  *
- * Copyright (c) 2016 Heimrich & Hannot GmbH
- *
- * @package fieldpalette
- * @author  Rico Kaltofen <r.kaltofen@heimrich-hannot.de>
- * @license http://www.gnu.org/licences/lgpl-3.0.html LGPL
+ * @license LGPL-3.0-or-later
  */
 
 namespace HeimrichHannot\FieldpaletteBundle\Widget;
 
-
 use Contao\DC_Table;
+use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\Haste\Util\FormSubmission;
 
 class FieldPaletteWizard extends \Widget
 {
     /**
-     * Submit user input
+     * Submit user input.
      *
-     * @var boolean
+     * @var bool
      */
     protected $blnSubmitInput = true;
 
     /**
-     * Template
+     * Template.
      *
      * @var string
      */
@@ -40,7 +37,8 @@ class FieldPaletteWizard extends \Widget
     protected $viewMode = 0;
 
     /**
-     * Palette table (tl_fieldpalette or custom table)
+     * Palette table (tl_fieldpalette or custom table).
+     *
      * @var mixed|null
      */
     protected $paletteTable;
@@ -54,17 +52,16 @@ class FieldPaletteWizard extends \Widget
 
         $this->import('Database');
 
-        $this->arrDca       = \HeimrichHannot\FieldPalette\FieldPalette::getDca($this->strTable, $this->strTable, $this->strName);
-        $this->viewMode     = $this->arrDca['list']['viewMode'] ?: 0;
+        $this->arrDca = \HeimrichHannot\FieldPalette\FieldPalette::getDca($this->strTable, $this->strTable, $this->strName);
+        $this->viewMode = $this->arrDca['list']['viewMode'] ?: 0;
         $this->paletteTable = $this->arrDca['config']['table'] ?: \Config::get('fieldpalette_table');
 
         // load custom table labels
         \Controller::loadLanguageFile($this->paletteTable);
     }
 
-
     /**
-     * Generate the widget and return it as string
+     * Generate the widget and return it as string.
      *
      * @return string
      */
@@ -75,30 +72,30 @@ class FieldPaletteWizard extends \Widget
         $this->objModels = FieldPaletteModel::setTable($this->paletteTable)->findByPidAndTableAndField($this->currentRecord, $this->strTable, $this->strName);
 
         $this->arrButtonDefaults = [
-            'do'              => \Input::get('do'),
-            'ptable'          => $this->strTable,
-            'table'           => $this->paletteTable,
-            'pid'             => $this->currentRecord,
-            'fieldpalette'    => $this->strName,
+            'do' => \Input::get('do'),
+            'ptable' => $this->strTable,
+            'table' => $this->paletteTable,
+            'pid' => $this->currentRecord,
+            'fieldpalette' => $this->strName,
             'fieldpaletteKey' => FieldPalette::$strPaletteRequestKey,
-            'popup'           => true,
-            'syncId'          => 'ctrl_' . $this->strId,
-            'pfield'          => $this->strId,
+            'popup' => true,
+            'syncId' => 'ctrl_'.$this->strId,
+            'pfield' => $this->strId,
         ];
 
         $objT = new \FrontendTemplate($this->getViewTemplate('fieldpalette_wizard'));
 
-        $objT->buttons  = $this->generateGlobalButtons();
+        $objT->buttons = $this->generateGlobalButtons();
         $objT->listView = $this->generateListView();
-        $objT->strId    = $this->strId;
+        $objT->strId = $this->strId;
 
         $varValue = [];
 
-        if ($this->objModels !== null) {
+        if (null !== $this->objModels) {
             $varValue = $this->objModels->fetchEach('id');
         }
 
-        $objT->value   = $varValue;
+        $objT->value = $varValue;
         $objT->strName = $this->strName;
 
         return $objT->parse();
@@ -118,27 +115,27 @@ class FieldPaletteWizard extends \Widget
                 break;
         }
 
-        return $strPrefix . '_' . $strSuffix;
+        return $strPrefix.'_'.$strSuffix;
     }
 
     protected function generateListView()
     {
-        $objT            = new \FrontendTemplate($this->getViewTemplate('fieldpalette_listview'));
-        $objT->label     = $this->strLabel;
-        $objT->strId     = $this->strId;
-        $objT->empty     = $GLOBALS['TL_LANG']['tl_fieldpalette']['emptyList'];
-        $objT->sortable  = !$this->arrDca['config']['notSortable'];
+        $objT = new \FrontendTemplate($this->getViewTemplate('fieldpalette_listview'));
+        $objT->label = $this->strLabel;
+        $objT->strId = $this->strId;
+        $objT->empty = $GLOBALS['TL_LANG']['tl_fieldpalette']['emptyList'];
+        $objT->sortable = !$this->arrDca['config']['notSortable'];
         $objT->labelIcon = '<img src="system/modules/fieldpalette/assets/img/fieldpalette.png" width="16" height="16" alt="">';
         $objT->mandatory = $this->mandatory;
 
         $arrItems = [];
-        $i        = 0;
+        $i = 0;
 
-        if ($this->objModels !== null) {
+        if (null !== $this->objModels) {
             while ($this->objModels->next()) {
                 $objModel = $this->objModels->current();
 
-                if ($objModel->tstamp == 0) {
+                if (0 === $objModel->tstamp) {
                     continue;
                 }
 
@@ -154,10 +151,10 @@ class FieldPaletteWizard extends \Widget
     protected function generateItemLabel($objRow, $folderAttribute)
     {
         $blnProtected = false;
-        $showFields   = $this->arrDca['list']['label']['fields'];
+        $showFields = $this->arrDca['list']['label']['fields'];
 
-        $dc               = new DC_Table($this->paletteTable);
-        $dc->id           = $objRow->id;
+        $dc = new DC_Table($this->paletteTable);
+        $dc->id = $objRow->id;
         $dc->activeRecord = $objRow;
 
         foreach ($showFields as $k => $v) {
@@ -185,12 +182,12 @@ class FieldPaletteWizard extends \Widget
                 strip_tags($label)
             )
         ) {
-            $label = trim(\StringUtil::substrHtml($label, $this->arrDca['list']['label']['maxCharacters'])) . ' …';
+            $label = trim(\StringUtil::substrHtml($label, $this->arrDca['list']['label']['maxCharacters'])).' …';
         }
 
         // Call the label_callback ($row, $label, $this)
         if (is_array($this->arrDca['list']['label']['label_callback'])) {
-            $strClass  = $this->arrDca['list']['label']['label_callback'][0];
+            $strClass = $this->arrDca['list']['label']['label_callback'][0];
             $strMethod = $this->arrDca['list']['label']['label_callback'][1];
 
             $this->import($strClass);
@@ -198,22 +195,21 @@ class FieldPaletteWizard extends \Widget
             return $this->{$strClass}->{$strMethod}($objRow->row(), $label, $this, $folderAttribute, false, $blnProtected);
         } elseif (is_callable($this->arrDca['list']['label']['label_callback'])) {
             return $this->arrDca['list']['label']['label_callback']($objRow->row(), $label, $this, $folderAttribute, false, $blnProtected);
-        } else {
-            return $label;
         }
 
         return $label;
 
+        return $label;
     }
 
     /**
-     * Compile buttons from the table configuration array and return them as HTML
+     * Compile buttons from the table configuration array and return them as HTML.
      *
-     * @param array $arrRow
+     * @param array  $arrRow
      * @param string $strTable
-     * @param array $arrRootIds
-     * @param boolean $blnCircularReference
-     * @param array $arrChildRecordIds
+     * @param array  $arrRootIds
+     * @param bool   $blnCircularReference
+     * @param array  $arrChildRecordIds
      * @param string $strPrevious
      * @param string $strNext
      *
@@ -233,17 +229,17 @@ class FieldPaletteWizard extends \Widget
 
         $return = '';
 
-        $dc               = new DC_Table($this->paletteTable);
-        $dc->id           = $this->currentRecord;
+        $dc = new DC_Table($this->paletteTable);
+        $dc->id = $this->currentRecord;
         $dc->activeRecord = $objRow;
 
         foreach ($this->arrDca['list']['operations'] as $k => $v) {
-            $v  = is_array($v) ? $v : [$v];
+            $v = is_array($v) ? $v : [$v];
             $id = specialchars(rawurldecode($objRow->id));
 
-            $label      = $v['label'][0] ?: $k;
-            $title      = sprintf($v['label'][1] ?: $k, $id);
-            $attributes = ($v['attributes'] != '') ? ltrim(sprintf($v['attributes'], $id, $id)) : '';
+            $label = $v['label'][0] ?: $k;
+            $title = sprintf($v['label'][1] ?: $k, $id);
+            $attributes = ('' !== $v['attributes']) ? ltrim(sprintf($v['attributes'], $id, $id)) : '';
 
             $objButton = FieldPaletteButton::getInstance();
             $objButton->addOptions($this->arrButtonDefaults);
@@ -299,62 +295,61 @@ class FieldPaletteWizard extends \Widget
             }
 
             // Generate all buttons except "move up" and "move down" buttons
-            if ($k != 'move' && $v != 'move') {
+            if ('move' !== $k && 'move' !== $v) {
                 $return .= $objButton->generate();
                 continue;
             }
 
             $arrDirections = ['up', 'down'];
-            $arrRootIds    = is_array($arrRootIds) ? $arrRootIds : [$arrRootIds];
+            $arrRootIds = is_array($arrRootIds) ? $arrRootIds : [$arrRootIds];
 
             foreach ($arrDirections as $dir) {
                 $label = $GLOBALS['TL_LANG'][\Config::get('fieldpalette_table')][$dir][0] ?: $dir;
                 $title = $GLOBALS['TL_LANG'][\Config::get('fieldpalette_table')][$dir][1] ?: $dir;
 
-                $label = \Image::getHtml($dir . '.gif', $label);
-                $href  = $v['href'] ?: '&amp;act=move';
+                $label = \Image::getHtml($dir.'.gif', $label);
+                $href = $v['href'] ?: '&amp;act=move';
 
-                if ($dir == 'up') {
+                if ('up' === $dir) {
                     $return .= ((is_numeric($strPrevious)
-                            && (!in_array($objRow->id, $arrRootIds)
+                            && (!in_array($objRow->id, $arrRootIds, true)
                                 || empty($this->arrDca['list']['sorting']['root'])))
-                            ? '<a href="' . $this->addToUrl(
-                                $href . '&amp;id=' . $objRow->id
-                            ) . '&amp;sid=' . intval($strPrevious) . '" title="' . specialchars($title) . '"' . $attributes . '>' . $label . '</a> '
+                            ? '<a href="'.$this->addToUrl(
+                                $href.'&amp;id='.$objRow->id
+                            ).'&amp;sid='.(int) $strPrevious.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
                             : \Image::getHtml(
                                 'up_.gif'
-                            )) . ' ';
+                            )).' ';
                     continue;
                 }
 
                 $return .= ((is_numeric($strNext)
-                        && (!in_array($objRow->id, $arrRootIds)
+                        && (!in_array($objRow->id, $arrRootIds, true)
                             || empty($this->arrDca['list']['sorting']['root'])))
-                        ? '<a href="' . $this->addToUrl(
-                            $href . '&amp;id=' . $objRow->id
-                        ) . '&amp;sid=' . intval($strNext) . '" title="' . specialchars($title) . '"' . $attributes . '>' . $label . '</a> '
+                        ? '<a href="'.$this->addToUrl(
+                            $href.'&amp;id='.$objRow->id
+                        ).'&amp;sid='.(int) $strNext.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
                         : \Image::getHtml(
                             'down_.gif'
-                        )) . ' ';
+                        )).' ';
             }
-
         }
 
         // Sort elements
         if (!$this->arrDca['config']['notSortable']) {
-            $href = version_compare(VERSION, '4.0', '<') ? 'contao/main.php' : 'contao';;
-            $href .= '?do=' . \Input::get('do');
-            $href .= '&amp;table=' . $this->paletteTable;
-            $href .= '&amp;id=' . $objRow->id;
-            $href .= '&amp;' . FieldPalette::$strParentTableRequestKey . '=' . $this->strTable;
-            $href .= '&amp;' . FieldPalette::$strPaletteRequestKey . '=' . $this->strName;
-            $href .= '&amp;rt=' . \RequestToken::get();
+            $href = version_compare(VERSION, '4.0', '<') ? 'contao/main.php' : 'contao';
+            $href .= '?do='.\Input::get('do');
+            $href .= '&amp;table='.$this->paletteTable;
+            $href .= '&amp;id='.$objRow->id;
+            $href .= '&amp;'.FieldPalette::$strParentTableRequestKey.'='.$this->strTable;
+            $href .= '&amp;'.FieldPalette::$strPaletteRequestKey.'='.$this->strName;
+            $href .= '&amp;rt='.\RequestToken::get();
 
-            $return .= ' ' . \Image::getHtml(
+            $return .= ' '.\Image::getHtml(
                     'drag.gif',
                     '',
-                    'class="drag-handle" title="' . sprintf($GLOBALS['TL_LANG'][$this->strTable]['cut'][1], $objRow->id) . '" data-href="' . $href
-                    . '" data-id="' . $objRow->id . '" data-pid="' . $objRow->pid . '"'
+                    'class="drag-handle" title="'.sprintf($GLOBALS['TL_LANG'][$this->strTable]['cut'][1], $objRow->id).'" data-href="'.$href
+                    .'" data-id="'.$objRow->id.'" data-pid="'.$objRow->pid.'"'
                 );
         }
 
@@ -367,10 +362,10 @@ class FieldPaletteWizard extends \Widget
         $objT->setData($objRow->row());
 
         $objT->folderAttribute = '';
-        $objT->label           = $this->generateItemLabel($objRow, $objT->folderAttribute);
-        $objT->buttons         = $this->generateButtons($objRow);
-        $objT->strId           = sprintf('%s_%s_%s', $objRow->ptable, $objRow->pfield, $objRow->id);
-        $objT->rowIndex        = $rowIndex;
+        $objT->label = $this->generateItemLabel($objRow, $objT->folderAttribute);
+        $objT->buttons = $this->generateButtons($objRow);
+        $objT->strId = sprintf('%s_%s_%s', $objRow->ptable, $objRow->pfield, $objRow->id);
+        $objT->rowIndex = $rowIndex;
 
         return $objT->parse();
     }
@@ -394,7 +389,7 @@ class FieldPaletteWizard extends \Widget
     }
 
     /**
-     * Delete all incomplete and unrelated records
+     * Delete all incomplete and unrelated records.
      */
     protected function reviseTable()
     {
@@ -416,7 +411,7 @@ class FieldPaletteWizard extends \Widget
                     $status = $callback($this->strTable, $new_records[$this->strTable], $ptable, $ctable);
                 }
 
-                if ($status === true) {
+                if (true === $status) {
                     $reload = true;
                 }
             }
@@ -425,13 +420,13 @@ class FieldPaletteWizard extends \Widget
         // Delete all new but incomplete fieldpalette records (tstamp=0)
         if (!empty($new_records[$this->paletteTable]) && is_array($new_records[$this->paletteTable])) {
             $objStmt = $this->Database->prepare(
-                "DELETE FROM " . $this->paletteTable . " WHERE id IN(" . implode(
+                'DELETE FROM '.$this->paletteTable.' WHERE id IN('.implode(
                     ',',
                     array_map(
                         'intval',
                         $new_records[$this->paletteTable]
                     )
-                ) . ") AND tstamp=0 AND (? IS NULL OR id != ?)"
+                ).') AND tstamp=0 AND (? IS NULL OR id != ?)'
             )->execute($this->activeRecord->id, $this->activeRecord->id);
 
             if ($objStmt->affectedRows > 0) {
@@ -440,18 +435,18 @@ class FieldPaletteWizard extends \Widget
         }
 
         // Delete all fieldpalette records whose child record isn't existing
-        if ($ptable != '') {
+        if ('' !== $ptable) {
             if ($this->arrDca['config']['dynamicPtable']) {
                 $objStmt = $this->Database->execute(
-                    "DELETE FROM " . $this->paletteTable . " WHERE ptable='" . $ptable . "' AND NOT EXISTS (SELECT * FROM (SELECT * FROM "
-                    . $ptable . ") AS fpp WHERE " . $this->paletteTable . ".pid = fpp.id)"
+                    'DELETE FROM '.$this->paletteTable." WHERE ptable='".$ptable."' AND NOT EXISTS (SELECT * FROM (SELECT * FROM "
+                    .$ptable.') AS fpp WHERE '.$this->paletteTable.'.pid = fpp.id)'
                 );
             } else {
                 $objStmt = $this->Database->execute(
-                    "DELETE FROM " . $this->paletteTable . " WHERE NOT EXISTS " . "(SELECT * FROM (SELECT * FROM " . $ptable . ") AS fpp WHERE "
-                    . \Config::get(
+                    'DELETE FROM '.$this->paletteTable.' WHERE NOT EXISTS '.'(SELECT * FROM (SELECT * FROM '.$ptable.') AS fpp WHERE '
+                    .\Config::get(
                         'fieldpalette_table'
-                    ) . ".pid = fpp.id)"
+                    ).'.pid = fpp.id)'
                 );
             }
 
@@ -463,7 +458,7 @@ class FieldPaletteWizard extends \Widget
         // Delete all records of the child table that are not related to the current table
         if (!empty($ctable) && is_array($ctable)) {
             foreach ($ctable as $v) {
-                if ($v != '') {
+                if ('' !== $v) {
                     // Load the DCA configuration so we can check for "dynamicPtable"
                     if (!isset($GLOBALS['loadDataContainer'][$v])) {
                         \Controller::loadDataContainer($v);
@@ -471,13 +466,13 @@ class FieldPaletteWizard extends \Widget
 
                     if ($GLOBALS['TL_DCA'][$v]['config']['dynamicPtable']) {
                         $objStmt = $this->Database->execute(
-                            "DELETE FROM $v WHERE ptable='" . $this->paletteTable . "' AND NOT EXISTS (SELECT * FROM " . "(SELECT * FROM "
-                            . $this->paletteTable . ") AS fp WHERE $v.pid = fp.id)"
+                            "DELETE FROM $v WHERE ptable='".$this->paletteTable."' AND NOT EXISTS (SELECT * FROM ".'(SELECT * FROM '
+                            .$this->paletteTable.") AS fp WHERE $v.pid = fp.id)"
                         );
                     } else {
                         $objStmt = $this->Database->execute(
-                            "DELETE FROM $v WHERE NOT EXISTS (SELECT * FROM (SELECT * FROM " . $this->paletteTable
-                            . ") AS fp WHERE $v.pid = fp.id)"
+                            "DELETE FROM $v WHERE NOT EXISTS (SELECT * FROM (SELECT * FROM ".$this->paletteTable
+                            .") AS fp WHERE $v.pid = fp.id)"
                         );
                     }
 
@@ -497,7 +492,4 @@ class FieldPaletteWizard extends \Widget
             \Controller::reload();
         }
     }
-
 }
-
-

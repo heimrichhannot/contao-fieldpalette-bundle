@@ -30,7 +30,7 @@ $GLOBALS['TL_HOOKS']['sqlGetFromDca']['fieldPalette']      = ['huh.fieldpalette.
 /**
  * Models
  */
-$GLOBALS['TL_MODELS']['tl_fieldpalette'] = 'HeimrichHannot\FieldPalette\FieldPaletteModel';
+$GLOBALS['TL_MODELS']['tl_fieldpalette'] = 'HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel';
 
 
 /**

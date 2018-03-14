@@ -1,16 +1,12 @@
 <?php
-/**
- * Contao Open Source CMS
- *
+
+/*
  * Copyright (c) 2018 Heimrich & Hannot GmbH
  *
- * @author  Thomas Körner <t.koerner@heimrich-hannot.de>
- * @license http://www.gnu.org/licences/lgpl-3.0.html LGPL
+ * @license LGPL-3.0-or-later
  */
 
-
 namespace HeimrichHannot\FieldpaletteBundle\DependencyInjection;
-
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -19,7 +15,6 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class HeimrichHannotContaoFieldpaletteExtension extends Extension
 {
-
     /**
      * Loads a specific configuration.
      *

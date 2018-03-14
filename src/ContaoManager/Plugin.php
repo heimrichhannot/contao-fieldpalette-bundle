@@ -1,16 +1,12 @@
 <?php
-/**
- * Contao Open Source CMS
- *
+
+/*
  * Copyright (c) 2018 Heimrich & Hannot GmbH
  *
- * @author  Thomas Körner <t.koerner@heimrich-hannot.de>
- * @license http://www.gnu.org/licences/lgpl-3.0.html LGPL
+ * @license LGPL-3.0-or-later
  */
 
-
 namespace HeimrichHannot\FieldpaletteBundle\ContaoManager;
-
 
 use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
@@ -21,7 +17,6 @@ use HeimrichHannot\FieldpaletteBundle\HeimrichHannotContaoFieldpaletteBundle;
 
 class Plugin implements BundlePluginInterface
 {
-
     /**
      * Gets a list of autoload configurations for this bundle.
      *
@@ -33,8 +28,8 @@ class Plugin implements BundlePluginInterface
     {
         return [
             BundleConfig::create(HeimrichHannotContaoFieldpaletteBundle::class)->setLoadAfter([
-                ContaoCoreBundle::class
-            ])
+                ContaoCoreBundle::class,
+            ]),
         ];
     }
 }

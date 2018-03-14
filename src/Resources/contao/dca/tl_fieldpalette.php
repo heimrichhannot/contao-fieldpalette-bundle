@@ -200,11 +200,11 @@ class tl_fieldpalette extends Backend
 
         $strFieldPalette = \HeimrichHannot\FieldPalette\FieldPalette::getPaletteFromRequest();
 
-        $objModel        = \HeimrichHannot\FieldPalette\FieldPaletteModel::setTable($strTable)->findByPk($insertID);
+        $objModel        = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::setTable($strTable)->findByPk($insertID);
 
         // if are within nested fieldpalettes set parent item tstamp
         if ($arrSet['ptable'] == 'tl_fieldpalette') {
-            $objParent = \HeimrichHannot\FieldPalette\FieldPaletteModel::findByPk($objModel->pid);
+            $objParent = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($objModel->pid);
 
             if ($objParent !== null) {
                 $objParent->tstamp = time();
@@ -316,7 +316,7 @@ class tl_fieldpalette extends Backend
 
     public function updateParentFieldOnSubmit(DataContainer $dc)
     {
-        $objCurrentRecord = \HeimrichHannot\FieldPalette\FieldPaletteModel::findByPk($dc->id);
+        $objCurrentRecord = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($dc->id);
 
         if ($objCurrentRecord === null) {
             return false;
@@ -327,7 +327,7 @@ class tl_fieldpalette extends Backend
 
     public function updateParentFieldOnCut(DataContainer $dc)
     {
-        $objCurrentRecord = \HeimrichHannot\FieldPalette\FieldPaletteModel::findByPk($dc->id);
+        $objCurrentRecord = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($dc->id);
 
         if ($objCurrentRecord === null) {
             return false;
@@ -338,7 +338,7 @@ class tl_fieldpalette extends Backend
 
     public function updateParentFieldOnDelete(DataContainer $dc, $undoID)
     {
-        $objCurrentRecord = \HeimrichHannot\FieldPalette\FieldPaletteModel::findByPk($dc->id);
+        $objCurrentRecord = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($dc->id);
 
         if ($objCurrentRecord === null) {
             return false;
@@ -369,7 +369,7 @@ class tl_fieldpalette extends Backend
             return false;
         }
 
-        $objItems = \HeimrichHannot\FieldPalette\FieldPaletteModel::findByPidAndTableAndField(
+        $objItems = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPidAndTableAndField(
             $objCurrentRecord->pid,
             $objCurrentRecord->ptable,
             $objCurrentRecord->pfield

@@ -1,5 +1,10 @@
 # Contao FieldPalette bundle
 
+[![](https://img.shields.io/packagist/v/heimrichhannot/contao-fieldpalette-bundle.svg)](https://packagist.org/packages/heimrichhannot/contao-fieldpalette-bundle)
+[![](https://img.shields.io/packagist/dt/heimrichhannot/contao-fieldpalette-bundle.svg)](https://packagist.org/packages/heimrichhannot/contao-fieldpalette-bundle)
+[![](https://img.shields.io/travis/heimrichhannot/contao-fieldpalette-bundle/master.svg)](https://travis-ci.org/heimrichhannot/contao-fieldpalette-bundle/)
+[![](https://img.shields.io/coveralls/heimrichhannot/contao-fieldpalette-bundle/master.svg)](https://coveralls.io/github/heimrichhannot/contao-fieldpalette-bundle)
+
 FieldPalette is a contao widget similar to [MultiColumnWizard] (https://github.com/menatwork/MultiColumnWizard).
 Unlike MultiColumnWizard, fields are stored flatly into 'tl_fieldpalette' table and synced with its parent field.
 

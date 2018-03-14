@@ -1,20 +1,15 @@
 <?php
-/**
- * Contao Open Source CMS
- *
+
+/*
  * Copyright (c) 2018 Heimrich & Hannot GmbH
  *
- * @author  Thomas Körner <t.koerner@heimrich-hannot.de>
- * @license http://www.gnu.org/licences/lgpl-3.0.html LGPL
+ * @license LGPL-3.0-or-later
  */
 
-
 namespace HeimrichHannot\FieldpaletteBundle;
-
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class HeimrichHannotContaoFieldpaletteBundle extends Bundle
 {
-
 }
