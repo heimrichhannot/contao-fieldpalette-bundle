@@ -1,5 +1,0 @@
-<tr id="<?= $this->strId; ?>">
-	<td><?= $this->rowIndex; ?></td>
-	<td class="tl_td_content_left" <?= $this->folderAttribute; ?>><?= $this->label; ?></td>
-	<td class="tl_td_content_right"><?= $this->buttons; ?></td>
-</tr>

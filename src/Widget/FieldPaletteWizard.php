@@ -10,15 +10,17 @@ namespace HeimrichHannot\FieldpaletteBundle\Widget;
 
 use Contao\Config;
 use Contao\Controller;
+use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\DC_Table;
-use Contao\FrontendTemplate;
+use Contao\Image;
 use Contao\Input;
 use Contao\Model\Collection;
+use Contao\StringUtil;
 use Contao\System;
 use Contao\Widget;
 use HeimrichHannot\FieldPalette\FieldPalette;
+use HeimrichHannot\FieldPalette\FieldPaletteButton;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\Haste\Util\FormSubmission;
 
 class FieldPaletteWizard extends Widget
 {
@@ -54,9 +56,17 @@ class FieldPaletteWizard extends Widget
      */
     protected $paletteTable;
     /**
-     * @var \Contao\CoreBundle\Framework\ContaoFramework|object
+     * @var ContaoFramework|object
      */
     protected $framework;
+    /**
+     * @var object|\Twig\Environment
+     */
+    protected $twig;
+    /**
+     * @var \HeimrichHannot\UtilsBundle\Form\FormUtil|object
+     */
+    protected $formUtil;
 
     public function __construct($attributes = null)
     {
@@ -75,6 +85,8 @@ class FieldPaletteWizard extends Widget
         Controller::loadLanguageFile($this->paletteTable);
 
         $this->framework = System::getContainer()->get('contao.framework');
+        $this->twig = System::getContainer()->get('twig');
+        $this->formUtil = System::getContainer()->get('huh.utils.form');
     }
 
     /**
@@ -85,11 +97,9 @@ class FieldPaletteWizard extends Widget
     public function generate()
     {
         $this->reviseTable();
-        /**
-         * @var FieldPaletteModel
-         */
-        $model = $this->framework->getAdapter(FieldPaletteModel::class);
-        $this->models = $model->setTable($this->paletteTable)->findByPidAndTableAndField($this->currentRecord, $this->strTable, $this->strName);
+
+        $this->models = $this->getModelInstance($this->paletteTable)
+            ->findByPidAndTableAndField($this->currentRecord, $this->strTable, $this->strName);
 
         $this->buttonDefaults = [
             'do' => Input::get('do'),
@@ -103,112 +113,154 @@ class FieldPaletteWizard extends Widget
             'pfield' => $this->strId,
         ];
 
-        $template = new FrontendTemplate($this->getViewTemplate('fieldpalette_wizard'));
-
-        $template->buttons = $this->generateGlobalButtons();
-        $template->listView = $this->generateListView();
-        $template->strId = $this->strId;
-
-        $value = [];
+        $values = [];
 
         if ($this->models) {
-            $value = $this->models->fetchEach('id');
+            $values = $this->models->fetchEach('id');
         }
 
-        $template->value = $value;
-        $template->strName = $this->strName;
-
-        return $template->parse();
+        return $this->twig->render($this->getViewTemplate('wizard'), [
+            'id' => $this->strId,
+            'buttons' => $this->generateGlobalButtons(),
+            'listview' => $this->generateListView(),
+            'values' => $values,
+            'name' => $this->strName,
+        ]);
     }
 
-    protected function getViewTemplate(string $prefix)
+    /**
+     * Returns a new FieldPaletteModel instance.
+     *
+     * @param string $table
+     *
+     * @return FieldPaletteModel
+     *
+     * @codeCoverageIgnore
+     */
+    public function getModelInstance(string $table = '')
+    {
+        $model = new FieldPaletteModel();
+        if (!empty($table)) {
+            $model->setTable($table);
+        }
+
+        return $model;
+    }
+
+    /**
+     * Create a new DC_Table instance.
+     *
+     * @param string $table
+     * @param array  $module
+     *
+     * @return DC_Table
+     *
+     * @codeCoverageIgnore
+     */
+    public function getDcTableInstance(string $table, array $module = [])
+    {
+        return new DC_Table($table, $module);
+    }
+
+    protected function getViewTemplate(string $type)
     {
         switch ($this->viewMode) {
             default:
             case 0:
-                $suffix = 'table';
+                $mode = 'table';
                 break;
             case 1:
-                $suffix = 'default';
+                $mode = 'default';
                 break;
         }
 
-        return $prefix.'_'.$suffix;
+        return '@HeimrichHannotContaoFieldpalette/'.$type.'/fieldpalette_'.$type.'_'.$mode.'.html.twig';
     }
 
     protected function generateListView()
     {
-        $template = new FrontendTemplate($this->getViewTemplate('fieldpalette_listview'));
-        $template->label = $this->strLabel;
-        $template->strId = $this->strId;
-        $template->empty = $GLOBALS['TL_LANG']['tl_fieldpalette']['emptyList'];
-        $template->sortable = !$this->dca['config']['notSortable'];
-        $template->labelIcon = 'bundles/heimrichhannotcontaofieldpalette/img/fieldpalette.png';
-        $template->mandatory = $this->mandatory;
-
         $items = [];
         $i = 0;
 
-        if (null !== $this->models) {
+        if ($this->models) {
             while ($this->models->next()) {
                 $current = $this->models->current();
 
                 if (0 === $current->tstamp) {
                     continue;
                 }
-
                 $items[] = $this->generateListItem($current, ++$i);
             }
         }
 
-        $template->items = $items;
-
-        return $template->parse();
+        return $this->twig->render($this->getViewTemplate('list'), [
+            'id' => $this->strId,
+            'image' => $this->framework->getAdapter(Image::class)->getHtml('loading.gif', '', 'class="tl_fielpalette_indicator_icon"'),
+            'labelIcon' => 'bundles/heimrichhannotcontaofieldpalette/img/fieldpalette.png',
+            'label' => $this->strLabel,
+            'mandatory' => $this->mandatory,
+            'items' => $items,
+            'sortable' => !$this->dca['config']['notSortable'],
+        ]);
     }
 
-    protected function generateListItem($objRow, $rowIndex)
+    /**
+     * @param FieldPaletteModel $model
+     * @param int               $index
+     *
+     * @return string
+     */
+    protected function generateListItem($model, $index)
     {
-        $template = new FrontendTemplate($this->getViewTemplate('fieldpalette_item'));
-        $template->setData($objRow->row());
-
-        $template->folderAttribute = '';
-        $template->label = $this->generateItemLabel($objRow, $template->folderAttribute);
-        $template->buttons = $this->generateButtons($objRow);
-        $template->strId = sprintf('%s_%s_%s', $objRow->ptable, $objRow->pfield, $objRow->id);
-        $template->rowIndex = $rowIndex;
-
-        $twig = System::getContainer()->get('twig');
-
-        return $template->parse();
+        return $this->twig->render($this->getViewTemplate('item'), [
+            'id' => sprintf('%s_%s_%s', $model->ptable, $model->pfield, $model->id),
+            'index' => $index,
+            'attribute' => '',
+            'buttons' => $this->generateButtons($model),
+            'label' => $this->generateItemLabel($model, ''),
+        ]);
     }
 
-    protected function generateItemLabel($objRow, $folderAttribute)
+    /**
+     * @param FieldPaletteModel $model
+     * @param string            $folderAttribute
+     *
+     * @return string
+     */
+    protected function generateItemLabel($model, $folderAttribute)
     {
-        $blnProtected = false;
+        /**
+         * @var System
+         */
+        $system = $this->framework->getAdapter(System::class);
+
+        $protected = false;
         $showFields = $this->dca['list']['label']['fields'];
 
-        $dc = new DC_Table($this->paletteTable);
-        $dc->id = $objRow->id;
-        $dc->activeRecord = $objRow;
+        $dc = $this->getDcTableInstance($this->paletteTable);
+        $dc->id = $model->id;
+        $dc->activeRecord = $model;
 
         foreach ($showFields as $k => $v) {
-            $varValue = $objRow->{$v};
+            $value = $model->{$v};
 
             // Call load_callback
             if (is_array($this->dca['fields'][$v]['load_callback'])) {
                 foreach ($this->dca['fields'][$v]['load_callback'] as $callback) {
                     if (is_array($callback)) {
-                        $varValue = \System::importStatic($callback[0])->{$callback[1]}($varValue, $dc);
+                        $value = $system::importStatic($callback[0])->{$callback[1]}($value, $dc);
                     } elseif (is_callable($callback)) {
-                        $varValue = $callback($varValue, $dc);
+                        $value = $callback($value, $dc);
                     }
                 }
             }
-
-            $args[$k] = FormSubmission::prepareSpecialValueForPrint($varValue, $this->dca['fields'][$v], $this->strTable, $dc);
+            $args[$k] = $this->formUtil->prepareSpecialValueForOutput($v, $value, $dc);
         }
 
-        $label = vsprintf(((strlen($this->dca['list']['label']['format'])) ? $this->dca['list']['label']['format'] : '%s'), $args);
+        $label = vsprintf(
+            ((strlen($this->dca['list']['label']['format'])) ? $this->dca['list']['label']['format'] : '%s'),
+            $args
+        );
 
         // Shorten the label if it is too long
         if ($this->dca['list']['label']['maxCharacters'] > 0
@@ -216,7 +268,7 @@ class FieldPaletteWizard extends Widget
                 strip_tags($label)
             )
         ) {
-            $label = trim(\StringUtil::substrHtml($label, $this->dca['list']['label']['maxCharacters'])).' …';
+            $label = trim(StringUtil::substrHtml($label, $this->dca['list']['label']['maxCharacters'])).' …';
         }
 
         // Call the label_callback ($row, $label, $this)
@@ -226,12 +278,10 @@ class FieldPaletteWizard extends Widget
 
             $this->import($strClass);
 
-            return $this->{$strClass}->{$strMethod}($objRow->row(), $label, $this, $folderAttribute, false, $blnProtected);
+            return $this->{$strClass}->{$strMethod}($model->row(), $label, $this, $folderAttribute, false, $protected);
         } elseif (is_callable($this->dca['list']['label']['label_callback'])) {
-            return $this->dca['list']['label']['label_callback']($objRow->row(), $label, $this, $folderAttribute, false, $blnProtected);
+            return $this->dca['list']['label']['label_callback']($model->row(), $label, $this, $folderAttribute, false, $protected);
         }
-
-        return $label;
 
         return $label;
     }

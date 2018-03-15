@@ -39,6 +39,19 @@ $GLOBALS['TL_MODELS']['tl_fieldpalette'] = HeimrichHannot\FieldpaletteBundle\Mod
 
 if (\Contao\System::getContainer()->get('huh.utils.container')->isBackend())
 {
+    if (!isset($GLOBALS['TL_JAVASCRIPT']['jquery'])) {
+        $GLOBALS['TL_JAVASCRIPT'] = array_merge(
+            ['jquery' => 'assets/jquery/js/jquery.min.js'],
+            $GLOBALS['TL_JAVASCRIPT']
+        );
+    }
+    else {
+        unset($GLOBALS['TL_JAVASCRIPT']['jquery']);
+        $GLOBALS['TL_JAVASCRIPT'] = array_merge(
+            ['jquery' => 'assets/jquery/js/jquery.min.js'],
+            $GLOBALS['TL_JAVASCRIPT']
+        );
+    }
     $GLOBALS['TL_JAVASCRIPT']['datatables-i18n']       = 'assets/datatables-additional/datatables-i18n/datatables-i18n.min.js|static';
     $GLOBALS['TL_JAVASCRIPT']['datatables-core']       = 'assets/datatables/datatables/media/js/jquery.dataTables.min.js|static';
     $GLOBALS['TL_JAVASCRIPT']['datatables-rowReorder'] = 'assets/datatables-additional/datatables-RowReorder/js/dataTables.rowReorder.min.js|static';

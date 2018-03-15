@@ -28,7 +28,7 @@ $GLOBALS['TL_DCA']['tl_fieldpalette'] = [
             ],
         ],
         'oncreate_callback' => [
-            ['tl_fieldpalette', 'setTable'],
+            ['huh.fieldpalette.listener.callback', 'setTable'],
         ],
         'onsubmit_callback' => [
             ['tl_fieldpalette', 'updateParentFieldOnSubmit'],
@@ -187,34 +187,6 @@ class tl_fieldpalette extends Backend
 
             \Session::getInstance()->setData($session);
         }
-    }
-
-    public function setTable($strTable, $insertID, $arrSet, DataContainer $dc)
-    {
-        \Controller::loadDataContainer($strTable);
-
-        if (!$GLOBALS['TL_DCA'][$strTable]['config']['fieldpalette']) {
-            return;
-        }
-
-
-        $strFieldPalette = \HeimrichHannot\FieldPalette\FieldPalette::getPaletteFromRequest();
-        $helper = new FieldPaletteModel();
-        $objModel        = $helper->setTable($strTable)->findByPk($insertID);
-
-        // if are within nested fieldpalettes set parent item tstamp
-        if ($arrSet['ptable'] == 'tl_fieldpalette') {
-            $objParent = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($objModel->pid);
-
-            if ($objParent !== null) {
-                $objParent->tstamp = time();
-                $objParent->save();
-            }
-        }
-
-        // set fieldpalette field
-        $objModel->pfield = $strFieldPalette;
-        $objModel->save();
     }
 
     /**

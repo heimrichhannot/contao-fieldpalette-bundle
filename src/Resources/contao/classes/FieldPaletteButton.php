@@ -12,7 +12,7 @@
 namespace HeimrichHannot\FieldPalette;
 
 
-use Haste\Haste;
+use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 
 class FieldPaletteButton
 {

@@ -1,3 +1,5 @@
 services:
   huh.fieldpalette.listener.hook:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\HookListener
+  huh.fieldpalette.listener.callback:
+    class: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener

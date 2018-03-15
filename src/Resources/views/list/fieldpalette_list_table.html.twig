@@ -1,0 +1,23 @@
+<div class="tl_listing_container parent_view">
+    <div class="tl_fielpalette_indicator">{{ image }}</div>
+    <ul class="tl_listing">
+            <li class="tl_fieldpalette_wrapper">
+                <table width="100%" cellspacing="0" width="100%" class="display tl_fieldpalette_wizard{% if sortable == true %} tl_fieldpalette_sortable{% endif %}" id="table_fieldpalette_{{ id }}">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>
+                            {{ label }} {% if mandatory == true %}<span class="mandatory">*</span>{% endif %}
+                        </th>
+                        <th class="no-sort"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in items %}
+                        {{ item|raw }}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </li>
+    </ul>
+</div>

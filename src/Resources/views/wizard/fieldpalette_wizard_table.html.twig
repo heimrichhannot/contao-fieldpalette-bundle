@@ -1,0 +1,14 @@
+<div id="ctrl_{{ id }}" class="fielpalette-wizard">
+
+	<div class="tl_buttons">
+		{{ buttons|raw }}
+	</div>
+
+    {% block listView %}
+        {{ listview|raw }}
+    {% endblock %}
+
+    {% for value in values %}
+		<input type="hidden" name="{{ name }}{% if values|length > 1 %}[]{% endif %}" value="{{ value|escape }}">
+    {% endfor %}
+</div>
