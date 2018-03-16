@@ -20,7 +20,7 @@ class FieldPaletteButton
 	/**
 	 * Current object instance (do not remove)
 	 *
-	 * @var object
+	 * @var FieldPaletteButton|object
 	 */
 	protected static $objInstance;
 
@@ -203,7 +203,7 @@ class FieldPaletteButton
 
 	protected function init()
 	{
-        	$this->arrOptions['base'] = version_compare(VERSION, '4.0', '<') ? 'contao/main.php' : 'contao';
+        	$this->arrOptions['base'] = 'contao';
 	}
 
 	/**

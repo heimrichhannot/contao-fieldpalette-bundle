@@ -3,3 +3,6 @@ services:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\HookListener
   huh.fieldpalette.listener.callback:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
+
+  huh.fieldpalette.registry:
+    class: HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry

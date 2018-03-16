@@ -317,7 +317,7 @@ class FieldPalette
                 is_array($arrData['fieldpalette']['fields']) ? $arrData['fieldpalette']['fields'] : [],
                 is_array($GLOBALS['TL_DCA'][$strTable]['fields']) ? $GLOBALS['TL_DCA'][$strTable]['fields'] : []);
 
-            FieldPaletteRegistry::set($strRootTable, $strField, $dc);
+            System::getContainer()->get('huh.fieldpalette.registry')->set($strRootTable, $strField, $dc);
 
             // set active ptable
             if (static::isActive($strRootTable, $strParentTable, $strTable, $strField))
@@ -334,7 +334,7 @@ class FieldPalette
 
     public static function isActive($strRootTable, $strParentTable, $strTable, $strField)
     {
-        $arrRegistry = FieldPaletteRegistry::get($strRootTable);
+        $arrRegistry = System::getContainer()->get('huh.fieldpalette.registry')->get($strRootTable);
 
         if (!isset($arrRegistry[$strField]))
         {

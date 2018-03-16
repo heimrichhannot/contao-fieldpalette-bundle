@@ -22,6 +22,7 @@ use Contao\Widget;
 use HeimrichHannot\FieldPalette\FieldPalette;
 use HeimrichHannot\FieldPalette\FieldPaletteButton;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
+use Patchwork\Utf8;
 
 class FieldPaletteWizard extends Widget
 {
@@ -267,7 +268,7 @@ class FieldPaletteWizard extends Widget
      *
      * @return string
      */
-    protected function generateListItem($model, $index)
+    protected function generateListItem(FieldPaletteModel $model, $index)
     {
         return System::getContainer()->get('twig')->render($this->getViewTemplate('item'), [
             'id' => sprintf('%s_%s_%s', $model->ptable, $model->pfield, $model->id),
@@ -326,7 +327,7 @@ class FieldPaletteWizard extends Widget
         // Shorten the label if it is too long
         if (isset($this->dca['list']['label']['maxCharacters'])
             && $this->dca['list']['label']['maxCharacters'] > 0
-            && $this->dca['list']['label']['maxCharacters'] < utf8_strlen(
+            && $this->dca['list']['label']['maxCharacters'] < Utf8::strlen(
                 strip_tags($label)
             )
         ) {
@@ -335,15 +336,14 @@ class FieldPaletteWizard extends Widget
 
         // Call the label_callback ($row, $label, $this)
         if (isset($this->dca['list']['label']['label_callback'])) {
-            if (is_array($this->dca['list']['label']['label_callback'])) {
-                $strClass = $this->dca['list']['label']['label_callback'][0];
-                $strMethod = $this->dca['list']['label']['label_callback'][1];
+            $callback = &$this->dca['list']['label']['label_callback'];
+            if (is_array($callback)) {
+                $strClass = $callback[0];
+                $strMethod = $callback[1];
 
-                $this->import($strClass);
-
-                return $this->{$strClass}->{$strMethod}($model->row(), $label, $this, $folderAttribute, false, $protected);
-            } elseif (is_callable($this->dca['list']['label']['label_callback'])) {
-                return $this->dca['list']['label']['label_callback']($model->row(), $label, $this, $folderAttribute, false, $protected);
+                $label = $system->importStatic($strClass)->{$strMethod}($model->row(), $label, $this, $folderAttribute, false, $protected);
+            } elseif (is_callable($callback)) {
+                $label = $callback($model->row(), $label, $this, $folderAttribute, false, $protected);
             }
         }
 
@@ -353,23 +353,22 @@ class FieldPaletteWizard extends Widget
     /**
      * Compile buttons from the table configuration array and return them as HTML.
      *
-     * @param array  $arrRow
-     * @param string $strTable
-     * @param array  $arrRootIds
-     * @param bool   $blnCircularReference
-     * @param array  $arrChildRecordIds
-     * @param string $strPrevious
-     * @param string $strNext
+     * @param FieldPaletteModel $rowModel
+     * @param array             $rootIds
+     * @param bool              $circularReference
+     * @param array|null        $childRecordIds
+     * @param string|null       $previous
+     * @param string|null       $next
      *
      * @return string
      */
     protected function generateButtons(
-        $objRow,
-        $arrRootIds = [],
-        $blnCircularReference = false,
-        $arrChildRecordIds = null,
-        $strPrevious = null,
-        $strNext = null
+        FieldPaletteModel $rowModel,
+        array $rootIds = [],
+        bool $circularReference = false,
+        $childRecordIds = null,
+        $previous = null,
+        $next = null
     ) {
         if (empty($this->dca['list']['operations'])) {
             return '';
@@ -377,13 +376,13 @@ class FieldPaletteWizard extends Widget
 
         $return = '';
 
-        $dc = new DC_Table($this->paletteTable);
+        $dc = $this->getDcTableInstance($this->paletteTable);
         $dc->id = $this->currentRecord;
-        $dc->activeRecord = $objRow;
+        $dc->activeRecord = $rowModel;
 
         foreach ($this->dca['list']['operations'] as $k => $v) {
             $v = is_array($v) ? $v : [$v];
-            $id = specialchars(rawurldecode($objRow->id));
+            $id = specialchars(rawurldecode($rowModel->id));
 
             $label = $v['label'][0] ?: $k;
             $title = sprintf($v['label'][1] ?: $k, $id);
@@ -392,12 +391,12 @@ class FieldPaletteWizard extends Widget
             $objButton = FieldPaletteButton::getInstance();
             $objButton->addOptions($this->buttonDefaults);
             $objButton->setType($k);
-            $objButton->setId($objRow->id);
+            $objButton->setId($rowModel->id);
             $objButton->setModalTitle(
                 sprintf(
                     $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'],
                     $GLOBALS['TL_LANG'][$this->strTable][$this->strName][0] ?: $this->strName,
-                    sprintf($title, $objRow->id)
+                    sprintf($title, $rowModel->id)
                 )
             );
             $objButton->setAttributes([$attributes]);
@@ -408,35 +407,35 @@ class FieldPaletteWizard extends Widget
             if (is_array($v['button_callback'])) {
                 $this->import($v['button_callback'][0]);
                 $return .= $this->{$v['button_callback'][0]}->{$v['button_callback'][1]}(
-                    $objRow->row(),
+                    $rowModel->row(),
                     $objButton->getHref(),
                     $label,
                     $title,
                     $v['icon'],
                     $attributes,
                     $this->paletteTable,
-                    $arrRootIds,
-                    $arrChildRecordIds,
-                    $blnCircularReference,
-                    $strPrevious,
-                    $strNext,
+                    $rootIds,
+                    $childRecordIds,
+                    $circularReference,
+                    $previous,
+                    $next,
                     $dc
                 );
                 continue;
             } elseif (is_callable($v['button_callback'])) {
                 $return .= $v['button_callback'](
-                    $objRow->row(),
+                    $rowModel->row(),
                     $objButton->getHref(),
                     $label,
                     $title,
                     $v['icon'],
                     $attributes,
                     $this->paletteTable,
-                    $arrRootIds,
-                    $arrChildRecordIds,
-                    $blnCircularReference,
-                    $strPrevious,
-                    $strNext,
+                    $rootIds,
+                    $childRecordIds,
+                    $circularReference,
+                    $previous,
+                    $next,
                     $dc
                 );
                 continue;
@@ -449,7 +448,7 @@ class FieldPaletteWizard extends Widget
             }
 
             $arrDirections = ['up', 'down'];
-            $arrRootIds = is_array($arrRootIds) ? $arrRootIds : [$arrRootIds];
+            $rootIds = is_array($rootIds) ? $rootIds : [$rootIds];
 
             foreach ($arrDirections as $dir) {
                 $label = $GLOBALS['TL_LANG'][\Config::get('fieldpalette_table')][$dir][0] ?: $dir;
@@ -459,24 +458,24 @@ class FieldPaletteWizard extends Widget
                 $href = $v['href'] ?: '&amp;act=move';
 
                 if ('up' === $dir) {
-                    $return .= ((is_numeric($strPrevious)
-                            && (!in_array($objRow->id, $arrRootIds, true)
+                    $return .= ((is_numeric($previous)
+                            && (!in_array($rowModel->id, $rootIds, true)
                                 || empty($this->dca['list']['sorting']['root'])))
                             ? '<a href="'.$this->addToUrl(
-                                $href.'&amp;id='.$objRow->id
-                            ).'&amp;sid='.(int) $strPrevious.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
+                                $href.'&amp;id='.$rowModel->id
+                            ).'&amp;sid='.(int) $previous.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
                             : \Image::getHtml(
                                 'up_.gif'
                             )).' ';
                     continue;
                 }
 
-                $return .= ((is_numeric($strNext)
-                        && (!in_array($objRow->id, $arrRootIds, true)
+                $return .= ((is_numeric($next)
+                        && (!in_array($rowModel->id, $rootIds, true)
                             || empty($this->dca['list']['sorting']['root'])))
                         ? '<a href="'.$this->addToUrl(
-                            $href.'&amp;id='.$objRow->id
-                        ).'&amp;sid='.(int) $strNext.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
+                            $href.'&amp;id='.$rowModel->id
+                        ).'&amp;sid='.(int) $next.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
                         : \Image::getHtml(
                             'down_.gif'
                         )).' ';
@@ -488,7 +487,7 @@ class FieldPaletteWizard extends Widget
             $href = version_compare(VERSION, '4.0', '<') ? 'contao/main.php' : 'contao';
             $href .= '?do='.\Input::get('do');
             $href .= '&amp;table='.$this->paletteTable;
-            $href .= '&amp;id='.$objRow->id;
+            $href .= '&amp;id='.$rowModel->id;
             $href .= '&amp;'.FieldPalette::$strParentTableRequestKey.'='.$this->strTable;
             $href .= '&amp;'.FieldPalette::$strPaletteRequestKey.'='.$this->strName;
             $href .= '&amp;rt='.\RequestToken::get();
@@ -496,8 +495,8 @@ class FieldPaletteWizard extends Widget
             $return .= ' '.\Image::getHtml(
                     'drag.gif',
                     '',
-                    'class="drag-handle" title="'.sprintf($GLOBALS['TL_LANG'][$this->strTable]['cut'][1], $objRow->id).'" data-href="'.$href
-                    .'" data-id="'.$objRow->id.'" data-pid="'.$objRow->pid.'"'
+                    'class="drag-handle" title="'.sprintf($GLOBALS['TL_LANG'][$this->strTable]['cut'][1], $rowModel->id).'" data-href="'.$href
+                    .'" data-id="'.$rowModel->id.'" data-pid="'.$rowModel->pid.'"'
                 );
         }
 

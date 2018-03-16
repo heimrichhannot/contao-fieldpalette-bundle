@@ -13,6 +13,7 @@ use Contao\Image;
 use Contao\Model\Collection;
 use Contao\System;
 use Contao\TestCase\ContaoTestCase;
+use HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard;
 use HeimrichHannot\UtilsBundle\Form\FormUtil;
@@ -43,9 +44,9 @@ class FieldPaletteWizartTest extends ContaoTestCase
     {
         $dc = $this->createMock(DC_Table::class);
         /**
-         * @var FieldPaletteWizard
+         * @var FieldPaletteWizard|\PHPUnit_Framework_MockObject_MockObject
          */
-        $widget = $this->getMockBuilder(FieldPaletteWizard::class)->disableOriginalConstructor()->setMethods(array_merge(['getModelInstance', 'getDcTableInstance'], $methods))->getMock();
+        $widget = $this->getMockBuilder(FieldPaletteWizard::class)->disableOriginalConstructor()->setMethods(array_merge(['getModelInstance', 'getDcTableInstance', 'import'], $methods))->getMock();
         $widget->method('getModelInstance')->willReturn($this->getFieldPaletteModelMock($value));
         $widget->method('getDcTableInstance')->willReturn($dc);
         $widget->setPaletteTable('tl_news');
@@ -207,6 +208,149 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
         $this->assertTrue(is_string($result));
         $this->assertSame('Hallo', $result);
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'label' => [
+                    'fields' => ['title', 'ptable', 'pfield'],
+                ],
+            ],
+            'fields' => [
+                'title' => [
+                    'load_callback' => [[CallbackListener::class, 'callbackMethod']],
+                ],
+            ],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
+        $this->assertTrue(is_string($result));
+        $this->assertSame('Hallo', $result);
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'label' => [
+                    'fields' => ['title', 'ptable', 'pfield'],
+                ],
+            ],
+            'fields' => [
+                'title' => [
+                    'load_callback' => [function ($value, $dca) {
+                        return $value.'A';
+                    }],
+                ],
+            ],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
+        $this->assertTrue(is_string($result));
+        $this->assertSame('HalloA', $result);
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'label' => [
+                    'fields' => ['title', 'ptable', 'pfield'],
+                    'format' => '%s %s',
+                ],
+            ],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
+        $this->assertTrue(is_string($result));
+        $this->assertSame('Hallo tl_news', $result);
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'label' => [
+                    'fields' => ['title', 'ptable', 'pfield'],
+                    'maxCharacters' => 2,
+                ],
+            ],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
+        $this->assertTrue(is_string($result));
+        $this->assertSame('Ha …', $result);
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'label' => [
+                    'fields' => ['title', 'ptable', 'pfield'],
+                    'maxCharacters' => 30,
+                    'label_callback' => [CallbackListener::class, 'labelCallback'],
+                ],
+            ],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
+        $this->assertTrue(is_string($result));
+        $this->assertSame('Hallo', $result);
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'label' => [
+                    'fields' => ['title', 'ptable', 'pfield'],
+                    'label_callback' => function ($row, $label) {
+                        return str_replace('allo', 'olla', $label);
+                    },
+                ],
+            ],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
+        $this->assertTrue(is_string($result));
+        $this->assertSame('Holla', $result);
+    }
+
+    public function testGenerateButtons()
+    {
+        $reflectionClass = new \ReflectionClass(FieldPaletteWizard::class);
+        $testMethod = $reflectionClass->getMethod('generateButtons');
+        $testMethod->setAccessible(true);
+
+        $reflectionPropertyDca = $reflectionClass->getProperty('dca');
+        $reflectionPropertyDca->setAccessible(true);
+
+        $widget = $this->getFieldPaletteWizardMock([
+            'getViewTemplate',
+            'generateButtons',
+            'generateItemLabel',
+        ]);
+
+        $itemModel = $this->mockClassWithProperties(FieldPaletteModel::class, [
+            'ptable' => 'tl_news',
+            'pfield' => 'title',
+            'title' => 'Hallo',
+            'id' => 5,
+        ]);
+
+        $operations = [
+            'edit' => [
+                    'label' => [0 => 'Element bearbeiten', 1 => 'Element ID %s bearbeiten'],
+                    'href' => 'act=edit',
+                    'icon' => 'edit.gif',
+                ],
+            'delete' => [
+                    'label' => [0 => 'Element löschen', 1 => 'Element ID %s löschen'],
+                    'href' => 'act=delete',
+                    'icon' => 'delete.gif',
+                    'attributes' => 'onclick="if(!confirm(\'Soll der Eintrag ID %s wirklich gelöscht werden?\'))return false;FieldPaletteBackend.deleteFieldPaletteEntry(this,%s);return false;"',
+                ],
+            'toggle' => [
+                    'label' => [0 => 'Element veröffentlichen/unveröffentlichen', 1 => 'Element ID %s veröffentlichen/unveröffentlichen'],
+                    'icon' => 'visible.gif',
+                    'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
+                    'button_callback' => [0 => 'tl_fieldpalette', 1 => 'toggleIcon'],
+                ],
+            'show' => [
+                    'label' => [0 => 'Element anzeigen', 1 => 'Details des Elements ID %s anzeigen'],
+                    'href' => 'act=show',
+                    'icon' => 'show.gif',
+                ],
+        ];
+
+        $reflectionPropertyDca->setValue($widget, []);
+        $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+
+//        $reflectionPropertyDca->setValue($widget, [
+//            'list' => [
+//                'operations' => $operations
+//            ]
+//        ]);
+//        $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
     }
 
     protected function getCollectionMock($value)
@@ -237,8 +381,12 @@ class FieldPaletteWizartTest extends ContaoTestCase
 
         $systemAdapter = $this->mockAdapter(['importStatic']);
         $systemAdapter->method('importStatic')->willReturnCallback(function ($className) {
-            $class = $this->createMock($className);
+            $class = $this->getMockBuilder('AReallyNonExistingClass')->setMethods([
+                'callbackMethod',
+                'labelCallback',
+            ])->getMock();
             $class->method('callbackMethod')->willReturnArgument(0);
+            $class->method('labelCallback')->willReturnArgument(1);
 
             return $class;
         });
