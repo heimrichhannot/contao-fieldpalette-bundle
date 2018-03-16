@@ -15,6 +15,7 @@ namespace HeimrichHannot\FieldPalette;
 use Contao\Config;
 use Contao\Controller;
 use Contao\Input;
+use Contao\System;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 
 class FieldPalette
@@ -394,7 +395,7 @@ class FieldPalette
 
         if ($objModel->ptable == \Config::get('fieldpalette_table'))
         {
-            $objModel = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($objModel->pid);
+            $objModel = Sys::findByPk($objModel->pid);
 
             if ($objModel === null)
             {
@@ -549,7 +550,7 @@ class FieldPalette
             {
                 if (isset($arrData['fieldpalette']['fields']) && !$arrData['eval']['doNotCopy'])
                 {
-                    $objFieldPaletteRecords = FieldPaletteModel::findByPidAndTableAndField($intPid, $strTable, $strField);
+                    $objFieldPaletteRecords = System::getContainer()->get('contao.framework')->getAdapter(FieldPaletteModel::class)->findByPidAndTableAndField($intPid, $strTable, $strField);
 
                     if ($objFieldPaletteRecords === null)
                     {
@@ -600,7 +601,7 @@ class FieldPalette
             {
                 if ($strTable == \Config::get('fieldpalette_table'))
                 {
-                    $objFieldPaletteRecords = FieldPaletteModel::findByPidAndTableAndField($intPid, $strTable, $strField);
+                    $objFieldPaletteRecords = System::getContainer()->get('contao.framework')->getAdapter(FieldPaletteModel::class)->findByPidAndTableAndField($intPid, $strTable, $strField);
 
                     if ($objFieldPaletteRecords === null)
                     {

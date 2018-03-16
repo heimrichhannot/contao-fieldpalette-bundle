@@ -180,7 +180,7 @@ class FieldPaletteModel extends Model
         $querys = array_merge($querys, $columns);
         $values = array_merge([$pid, $parentTable, $parentField], $values);
 
-        return $this->dynamicFindBy($querys, $values, $options);
+        return System::getContainer()->get('contao.framework')->getAdapter(self::class)->findBy($querys, $values, $options);
     }
 
     /**

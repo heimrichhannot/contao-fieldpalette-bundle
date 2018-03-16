@@ -12,6 +12,7 @@ use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\DC_Table;
+use Contao\Environment;
 use Contao\Image;
 use Contao\Input;
 use Contao\Model\Collection;
@@ -60,14 +61,17 @@ class FieldPaletteWizard extends Widget
      */
     protected $framework;
     /**
-     * @var object|\Twig\Environment
-     */
-    protected $twig;
-    /**
      * @var \HeimrichHannot\UtilsBundle\Form\FormUtil|object
      */
     protected $formUtil;
 
+    /**
+     * FieldPaletteWizard constructor.
+     *
+     * @param null $attributes
+     *
+     * @codeCoverageIgnore
+     */
     public function __construct($attributes = null)
     {
         parent::__construct($attributes);
@@ -85,7 +89,6 @@ class FieldPaletteWizard extends Widget
         Controller::loadLanguageFile($this->paletteTable);
 
         $this->framework = System::getContainer()->get('contao.framework');
-        $this->twig = System::getContainer()->get('twig');
         $this->formUtil = System::getContainer()->get('huh.utils.form');
     }
 
@@ -119,7 +122,7 @@ class FieldPaletteWizard extends Widget
             $values = $this->models->fetchEach('id');
         }
 
-        return $this->twig->render($this->getViewTemplate('wizard'), [
+        return System::getContainer()->get('twig')->render($this->getViewTemplate('wizard'), [
             'id' => $this->strId,
             'buttons' => $this->generateGlobalButtons(),
             'listview' => $this->generateListView(),
@@ -162,6 +165,59 @@ class FieldPaletteWizard extends Widget
         return new DC_Table($table, $module);
     }
 
+    /**
+     * @return mixed|null
+     */
+    public function getPaletteTable(): mixed
+    {
+        return $this->paletteTable;
+    }
+
+    /**
+     * @param mixed|null $paletteTable
+     */
+    public function setPaletteTable($paletteTable)
+    {
+        $this->paletteTable = $paletteTable;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStrName(): string
+    {
+        return $this->strName;
+    }
+
+    /**
+     * @param string $strName
+     */
+    public function setStrName(string $strName)
+    {
+        $this->strName = $strName;
+    }
+
+    /**
+     * @return int
+     */
+    public function getViewMode(): int
+    {
+        return $this->viewMode;
+    }
+
+    /**
+     * @param int $viewMode
+     */
+    public function setViewMode(int $viewMode)
+    {
+        $this->viewMode = $viewMode;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return string
+     */
     protected function getViewTemplate(string $type)
     {
         switch ($this->viewMode) {
@@ -181,26 +237,27 @@ class FieldPaletteWizard extends Widget
     {
         $items = [];
         $i = 0;
-
         if ($this->models) {
-            while ($this->models->next()) {
-                $current = $this->models->current();
-
+            foreach ($this->models as $current) {
                 if (0 === $current->tstamp) {
                     continue;
                 }
                 $items[] = $this->generateListItem($current, ++$i);
             }
         }
+        $sortable = true;
+        if (isset($this->dca['config']['notSortable']) && is_bool($this->dca['config']['notSortable'])) {
+            $sortable = !$this->dca['config']['notSortable'];
+        }
 
-        return $this->twig->render($this->getViewTemplate('list'), [
+        return System::getContainer()->get('twig')->render($this->getViewTemplate('list'), [
             'id' => $this->strId,
             'image' => $this->framework->getAdapter(Image::class)->getHtml('loading.gif', '', 'class="tl_fielpalette_indicator_icon"'),
             'labelIcon' => 'bundles/heimrichhannotcontaofieldpalette/img/fieldpalette.png',
             'label' => $this->strLabel,
             'mandatory' => $this->mandatory,
             'items' => $items,
-            'sortable' => !$this->dca['config']['notSortable'],
+            'sortable' => $sortable,
         ]);
     }
 
@@ -212,7 +269,7 @@ class FieldPaletteWizard extends Widget
      */
     protected function generateListItem($model, $index)
     {
-        return $this->twig->render($this->getViewTemplate('item'), [
+        return System::getContainer()->get('twig')->render($this->getViewTemplate('item'), [
             'id' => sprintf('%s_%s_%s', $model->ptable, $model->pfield, $model->id),
             'index' => $index,
             'attribute' => '',
@@ -235,6 +292,10 @@ class FieldPaletteWizard extends Widget
         $system = $this->framework->getAdapter(System::class);
 
         $protected = false;
+
+        if (!isset($this->dca['list']['label']['fields'])) {
+            return $model->id;
+        }
         $showFields = $this->dca['list']['label']['fields'];
 
         $dc = $this->getDcTableInstance($this->paletteTable);
@@ -245,10 +306,10 @@ class FieldPaletteWizard extends Widget
             $value = $model->{$v};
 
             // Call load_callback
-            if (is_array($this->dca['fields'][$v]['load_callback'])) {
+            if (isset($this->dca['fields'][$v]['load_callback'])) {
                 foreach ($this->dca['fields'][$v]['load_callback'] as $callback) {
                     if (is_array($callback)) {
-                        $value = $system::importStatic($callback[0])->{$callback[1]}($value, $dc);
+                        $value = $system->importStatic($callback[0])->{$callback[1]}($value, $dc);
                     } elseif (is_callable($callback)) {
                         $value = $callback($value, $dc);
                     }
@@ -258,12 +319,13 @@ class FieldPaletteWizard extends Widget
         }
 
         $label = vsprintf(
-            ((strlen($this->dca['list']['label']['format'])) ? $this->dca['list']['label']['format'] : '%s'),
+            ((isset($this->dca['list']['label']['format'])) ? $this->dca['list']['label']['format'] : '%s'),
             $args
         );
 
         // Shorten the label if it is too long
-        if ($this->dca['list']['label']['maxCharacters'] > 0
+        if (isset($this->dca['list']['label']['maxCharacters'])
+            && $this->dca['list']['label']['maxCharacters'] > 0
             && $this->dca['list']['label']['maxCharacters'] < utf8_strlen(
                 strip_tags($label)
             )
@@ -272,15 +334,17 @@ class FieldPaletteWizard extends Widget
         }
 
         // Call the label_callback ($row, $label, $this)
-        if (is_array($this->dca['list']['label']['label_callback'])) {
-            $strClass = $this->dca['list']['label']['label_callback'][0];
-            $strMethod = $this->dca['list']['label']['label_callback'][1];
+        if (isset($this->dca['list']['label']['label_callback'])) {
+            if (is_array($this->dca['list']['label']['label_callback'])) {
+                $strClass = $this->dca['list']['label']['label_callback'][0];
+                $strMethod = $this->dca['list']['label']['label_callback'][1];
 
-            $this->import($strClass);
+                $this->import($strClass);
 
-            return $this->{$strClass}->{$strMethod}($model->row(), $label, $this, $folderAttribute, false, $protected);
-        } elseif (is_callable($this->dca['list']['label']['label_callback'])) {
-            return $this->dca['list']['label']['label_callback']($model->row(), $label, $this, $folderAttribute, false, $protected);
+                return $this->{$strClass}->{$strMethod}($model->row(), $label, $this, $folderAttribute, false, $protected);
+            } elseif (is_callable($this->dca['list']['label']['label_callback'])) {
+                return $this->dca['list']['label']['label_callback']($model->row(), $label, $this, $folderAttribute, false, $protected);
+            }
         }
 
         return $label;
@@ -463,6 +527,19 @@ class FieldPaletteWizard extends Widget
      */
     protected function reviseTable()
     {
+        /**
+         * @var Controller
+         */
+        $controller = $this->framework->getAdapter(Controller::class);
+        /**
+         * @var Environment
+         */
+        $environment = $this->framework->getAdapter(Environment::class);
+        /**
+         * @var Config
+         */
+        $config = $this->framework->getAdapter(Config::class);
+
         $reload = false;
         $ptable = $this->dca['config']['ptable'];
         $ctable = $this->dca['config']['ctable'];
@@ -514,7 +591,7 @@ class FieldPaletteWizard extends Widget
             } else {
                 $objStmt = $this->Database->execute(
                     'DELETE FROM '.$this->paletteTable.' WHERE NOT EXISTS '.'(SELECT * FROM (SELECT * FROM '.$ptable.') AS fpp WHERE '
-                    .\Config::get(
+                    .$config::get(
                         'fieldpalette_table'
                     ).'.pid = fpp.id)'
                 );
@@ -531,7 +608,7 @@ class FieldPaletteWizard extends Widget
                 if ('' !== $v) {
                     // Load the DCA configuration so we can check for "dynamicPtable"
                     if (!isset($GLOBALS['loadDataContainer'][$v])) {
-                        \Controller::loadDataContainer($v);
+                        $controller->loadDataContainer($v);
                     }
 
                     if ($GLOBALS['TL_DCA'][$v]['config']['dynamicPtable']) {
@@ -555,11 +632,11 @@ class FieldPaletteWizard extends Widget
 
         // Reload the page
         if ($reload) {
-            if (\Environment::get('isAjaxRequest')) {
+            if ($environment->get('isAjaxRequest')) {
                 return;
             }
 
-            \Controller::reload();
+            $controller->reload();
         }
     }
 }

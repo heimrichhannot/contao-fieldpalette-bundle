@@ -9,6 +9,8 @@
  * @license http://www.gnu.org/licences/lgpl-3.0.html LGPL
  */
 
+use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
+
 $GLOBALS['TL_DCA']['tl_fieldpalette'] = [
     'config'      => [
         'dataContainer'     => 'Table',
@@ -288,7 +290,7 @@ class tl_fieldpalette extends Backend
 
     public function updateParentFieldOnSubmit(DataContainer $dc)
     {
-        $objCurrentRecord = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($dc->id);
+        $objCurrentRecord = System::getContainer()->get('contao.framework')->getAdapter(FieldPaletteModel::class)->findByPk($dc->id);
 
         if ($objCurrentRecord === null) {
             return false;
@@ -299,7 +301,7 @@ class tl_fieldpalette extends Backend
 
     public function updateParentFieldOnCut(DataContainer $dc)
     {
-        $objCurrentRecord = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($dc->id);
+        $objCurrentRecord = System::getContainer()->get('contao.framework')->getAdapter(FieldPaletteModel::class)->findByPk($dc->id);
 
         if ($objCurrentRecord === null) {
             return false;
@@ -310,7 +312,7 @@ class tl_fieldpalette extends Backend
 
     public function updateParentFieldOnDelete(DataContainer $dc, $undoID)
     {
-        $objCurrentRecord = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPk($dc->id);
+        $objCurrentRecord = System::getContainer()->get('contao.framework')->getAdapter(FieldPaletteModel::class)->findByPk($dc->id);
 
         if ($objCurrentRecord === null) {
             return false;
@@ -341,7 +343,7 @@ class tl_fieldpalette extends Backend
             return false;
         }
 
-        $objItems = \HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel::findByPidAndTableAndField(
+        $objItems = System::getContainer()->get('contao.framework')->getAdapter(FieldPaletteModel::class)->findByPidAndTableAndField(
             $objCurrentRecord->pid,
             $objCurrentRecord->ptable,
             $objCurrentRecord->pfield

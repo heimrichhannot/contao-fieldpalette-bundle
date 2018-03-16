@@ -15,17 +15,27 @@ use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 
 class FieldPaletteModelTest extends ContaoTestCase
 {
-    public function testSetTable()
+    protected function setUp()
     {
+        parent::setUp();
+
         $container = $this->mockContainer();
+
+        $modelAdapter = $this->mockAdapter(['findBy']);
+        $modelAdapter->method('findBy')->willReturnCallback(function ($col = [], $val = [], $opt = []) {
+            return [$col, $val, $opt];
+        });
 
         $container->set('contao.framework', $this->mockContaoFramework([
             Database::class => $this->getDatabaseMock(),
-            FieldPaletteModel::class => $this->getFieldPaletteModelMock(),
+            FieldPaletteModel::class => $modelAdapter,
         ]));
         $container->setParameter('contao.resources_paths', [__DIR__.'/../vendor/contao/core-bundle/src/Resources/contao']);
         System::setContainer($container);
+    }
 
+    public function testSetTable()
+    {
         /**
          * @var FieldPaletteModel
          */
@@ -194,6 +204,9 @@ class FieldPaletteModelTest extends ContaoTestCase
         ])->disableOriginalConstructor()
             ->getMock();
         $mock->method('dynamicFindBy')->willReturnCallback(function ($col = [], $val = [], $opt = []) {
+            return [$col, $val, $opt];
+        });
+        $mock->method('findBy')->willReturnCallback(function ($col = [], $val = [], $opt = []) {
             return [$col, $val, $opt];
         });
 

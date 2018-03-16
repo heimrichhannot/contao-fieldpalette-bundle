@@ -33,11 +33,6 @@ if (false === ($loader = $include(__DIR__.'/../vendor/autoload.php'))
     exit(1);
 }
 
-if ((false !== ($contao3 = $include(__DIR__.'/../../../../../system/initialize.php'))
-    || false !== ($contao3 = $include(__DIR__.'/../../../initialize.php')))) {
-    // contao 3
-}
-
 // Handle classes in the global namespace
 $legacyLoader = function ($class) {
     if (class_exists($class, false) || interface_exists($class, false) || trait_exists($class, false)) {

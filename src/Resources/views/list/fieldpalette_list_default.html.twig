@@ -1,5 +1,5 @@
 <div class="tl_listing_container parent_view">
-	<div class="tl_fielpalette_indicator">{{ image }}</div>
+	<div class="tl_fielpalette_indicator">{{ image|raw }}</div>
 	<ul class="tl_listing">
 		<li class="tl_content_header">
 			<div class="tl_left"><img src="{{ labelIcon }}" width="16" height="16" alt=""> {{ label }} {% if mandatory == true %}<span class="mandatory">*</span>{% endif %}</div>
