@@ -10,17 +10,35 @@ namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
 use Contao\Config;
 use Contao\Controller;
+use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\DataContainer;
 use Contao\Environment;
 use Contao\Input;
 use Contao\Widget;
 use HeimrichHannot\FieldPalette\FieldPalette;
-use HeimrichHannot\FieldPalette\FieldPaletteDcaExtractor;
+use HeimrichHannot\FieldpaletteBundle\Helper\DcaExtractor;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class HookListener
 {
-    public function __construct()
+    /**
+     * @var DcaExtractor
+     */
+    private $dcaExtractor;
+    /**
+     * @var ContainerInterface
+     */
+    private $container;
+    /**
+     * @var ContaoFramework
+     */
+    private $framework;
+
+    public function __construct(DcaExtractor $dcaExtractor, ContainerInterface $container, ContaoFramework $framework)
     {
+        $this->dcaExtractor = $dcaExtractor;
+        $this->container = $container;
+        $this->framework = $framework;
     }
 
     /**
@@ -57,10 +75,10 @@ class HookListener
     public function executePostActionsHook($action, DataContainer $dc)
     {
         if ($action === FieldPalette::$strFieldpaletteRefreshAction) {
-            if (Input::post('field')) {
-                Controller::loadDataContainer($dc->table);
+            if ($this->framework->getAdapter(Input::class)->post('field')) {
+                $this->framework->getAdapter(Controller::class)->loadDataContainer($dc->table);
 
-                $name = Input::post('field');
+                $name = $this->framework->getAdapter(Input::class)->post('field');
                 $field = $GLOBALS['TL_DCA'][$dc->table]['fields'][$name];
 
                 // Die if the field does not exist
@@ -78,7 +96,7 @@ class HookListener
                     die('Bad Request');
                 }
 
-                $attributes = Widget::getAttributesFromDca($field, $name, $dc->activeRecord->{$name}, $name, $dc->table, $dc);
+                $attributes = $this->framework->getAdapter(Widget::class)->getAttributesFromDca($field, $name, $dc->activeRecord->{$name}, $name, $dc->table, $dc);
 
                 /** @var Widget $widget */
                 $widget = new $class($attributes);
@@ -124,7 +142,7 @@ class HookListener
             Controller::loadDataContainer($table);
         }
 
-        $extract = new FieldPaletteDcaExtractor(Config::get('fieldpalette_table'));
+        $extract = $this->dcaExtractor->getExtract($this->container->getParameter('huh.fieldpalette.table'));
 
         if ($extract->isDbTable()) {
             $dcaSqlExtract[Config::get('fieldpalette_table')] = $extract->getDbInstallerArray();

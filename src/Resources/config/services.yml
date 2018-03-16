@@ -1,8 +1,18 @@
+parameters:
+  huh.fieldpalette.table: tl_fieldpalette
+
 services:
   huh.fieldpalette.listener.hook:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\HookListener
+    arguments:
+      - '@huh.fieldpalette.helper.dcaextractor'
+      - '@service_container'
+      - '@contao.framework'
   huh.fieldpalette.listener.callback:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
 
   huh.fieldpalette.registry:
     class: HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry
+  huh.fieldpalette.helper.dcaextractor:
+    class: HeimrichHannot\FieldpaletteBundle\Helper\DcaExtractor
+    arguments: ['@service_container']
