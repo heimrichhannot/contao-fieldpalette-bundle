@@ -10,13 +10,18 @@ namespace HeimrichHannot\FieldpaletteBundle\Test\Widget;
 
 use Contao\DC_Table;
 use Contao\Image;
+use Contao\Input;
 use Contao\Model\Collection;
 use Contao\System;
 use Contao\TestCase\ContaoTestCase;
+use HeimrichHannot\FieldpaletteBundle\Element\ButtonElement;
 use HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard;
 use HeimrichHannot\UtilsBundle\Form\FormUtil;
+use HeimrichHannot\UtilsBundle\Request\RoutingUtil;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
 class FieldPaletteWizartTest extends ContaoTestCase
 {
@@ -26,8 +31,21 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $container = $this->mockContainer();
         $twig = $this->getMockBuilder('Twig\Environment')->disableOriginalConstructor()->getMock();
         $twig->method('render')->willReturnArgument(1);
+        $formUtilMock = $this->createMock(FormUtil::class);
+        $formUtilMock->method('prepareSpecialValueForOutput')->withAnyParameters()->willReturnArgument(1);
+        $buttonElementMock = $this->getMockBuilder(ButtonElement::class)->disableOriginalConstructor()->getMock();
+        $tokenManager = $this->createMock(CsrfTokenManager::class);
+        $tokenManager->method('getToken')->with('dummy_token')->willReturn(new CsrfToken('dummy_token', 'abcd'));
+        $routingUtilMock = $this->createMock(RoutingUtil::class);
+        $routingUtilMock->method('generateBackendRoute')->willReturn('contao?action=test');
+
         $container->set('twig', $twig);
         $container->set('contao.framework', $this->getFramework());
+        $container->set('huh.utils.form', $formUtilMock);
+        $container->set('huh.utils.routing', $routingUtilMock);
+        $container->set('huh.fieldpalette.element.button', $buttonElementMock);
+        $container->setParameter('contao.csrf_token_name', 'dummy_token');
+        $container->set('security.csrf.token_manager', $tokenManager);
         System::setContainer($container);
 
         if (!\interface_exists('\listable')) {
@@ -115,8 +133,6 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $testMethod = $reflectionClass->getMethod('generateListView');
         $testMethod->setAccessible(true);
 
-        $reflectionPropertyFramework = $reflectionClass->getProperty('framework');
-        $reflectionPropertyFramework->setAccessible(true);
         $reflectionPropertyDca = $reflectionClass->getProperty('dca');
         $reflectionPropertyDca->setAccessible(true);
         $reflectionPropertyModels = $reflectionClass->getProperty('models');
@@ -126,7 +142,7 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $widget->method('generateListItem')->willReturnCallback(function ($model, $i) {
             return 'Item_'.$i;
         });
-        $reflectionPropertyFramework->setValue($widget, System::getContainer()->get('contao.framework'));
+
         $result = $testMethod->invokeArgs($widget, []);
         $this->assertCount(0, $result['items']);
         $this->assertTrue($result['sortable']);
@@ -170,10 +186,6 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $testMethod = $reflectionClass->getMethod('generateItemLabel');
         $testMethod->setAccessible(true);
 
-        $reflectionPropertyForm = $reflectionClass->getProperty('formUtil');
-        $reflectionPropertyForm->setAccessible(true);
-        $reflectionPropertyFramework = $reflectionClass->getProperty('framework');
-        $reflectionPropertyFramework->setAccessible(true);
         $reflectionPropertyDca = $reflectionClass->getProperty('dca');
         $reflectionPropertyDca->setAccessible(true);
 
@@ -182,11 +194,6 @@ class FieldPaletteWizartTest extends ContaoTestCase
             'generateButtons',
             'generateItemLabel',
         ]);
-
-        $formUtilMock = $this->createMock(FormUtil::class);
-        $formUtilMock->method('prepareSpecialValueForOutput')->withAnyParameters()->willReturnArgument(1);
-        $reflectionPropertyForm->setValue($widget, $formUtilMock);
-        $reflectionPropertyFramework->setValue($widget, System::getContainer()->get('contao.framework'));
 
         $itemModel = $this->mockClassWithProperties(FieldPaletteModel::class, [
             'ptable' => 'tl_news',
@@ -341,16 +348,60 @@ class FieldPaletteWizartTest extends ContaoTestCase
                     'icon' => 'show.gif',
                 ],
         ];
+        $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'] = '%s : %s';
+        $GLOBALS['TL_LANG']['tl_fieldpalette']['paletteField'][0] = 'Testfeld';
+        $GLOBALS['TL_LANG']['tl_fieldpalette']['cut'][1] = 'Beitrag ID %s verschieben';
+
+        $widget->setPaletteTable('tl_news');
+        $widget->setStrName('paletteField');
 
         $reflectionPropertyDca->setValue($widget, []);
         $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+
+        $reflectionPropertyDca->setValue($widget, '');
+        $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => ['operations' => []],
+        ]);
+        $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => ['operations' => ''],
+        ]);
+        $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => ['operations' => null],
+        ]);
+        $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'operations' => [
+                    'edit' => [
+                        'label' => [0 => 'Element bearbeiten', 1 => 'Element ID %s bearbeiten'],
+                        'href' => 'act=edit',
+                        'icon' => 'edit.gif',
+                    ],
+                    'delete' => [
+                        'label' => [0 => 'Element löschen', 1 => 'Element ID %s löschen'],
+                        'href' => 'act=delete',
+                        'icon' => 'delete.gif',
+                        'attributes' => 'onclick="if(!confirm(\'Soll der Eintrag ID %s wirklich gelöscht werden?\'))return false;FieldPaletteBackend.deleteFieldPaletteEntry(this,%s);return false;"',
+                    ],
+                ],
+            ],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel]);
+        $this->assertTrue(is_string($result));
+//        $this->assertNotFalse(strpos($result, 'Editieren'));
+//        $this->assertNotFalse(strpos($result, 'delete'));
 
 //        $reflectionPropertyDca->setValue($widget, [
 //            'list' => [
 //                'operations' => $operations
 //            ]
 //        ]);
-//        $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+//        $this->assertTrue(is_string($testMethod->invokeArgs($widget, [$itemModel])));
+//        $this->as('', $testMethod->invokeArgs($widget, [$itemModel]));
     }
 
     protected function getCollectionMock($value)
@@ -377,7 +428,9 @@ class FieldPaletteWizartTest extends ContaoTestCase
     protected function getFramework()
     {
         $imageAdapter = $this->mockAdapter(['getHtml']);
-        $imageAdapter->method('getHtml')->willReturn('<img src="">');
+        $imageAdapter->method('getHtml')->willReturnCallback(function ($src, $alt = '', $attributes = '') {
+            return '<img src="'.$src.'" '.$attributes.'>';
+        });
 
         $systemAdapter = $this->mockAdapter(['importStatic']);
         $systemAdapter->method('importStatic')->willReturnCallback(function ($className) {
@@ -391,9 +444,13 @@ class FieldPaletteWizartTest extends ContaoTestCase
             return $class;
         });
 
+        $inputAdapter = $this->mockAdapter(['get']);
+        $inputAdapter->method('get')->willReturnArgument(0);
+
         return $this->mockContaoFramework([
             Image::class => $imageAdapter,
             System::class => $systemAdapter,
+            Input::class => $inputAdapter,
         ]);
     }
 }

@@ -8,7 +8,6 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
-use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\DataContainer;
@@ -119,7 +118,10 @@ class HookListener
      */
     public function loadDataContainerHook($table)
     {
-        if (preg_match('/(contao\/install)/', Environment::get('request')) || 'group' === Input::get('do')) {
+        $environment = $this->framework->getAdapter(Environment::class);
+        $input = $this->framework->getAdapter(Input::class);
+
+        if (preg_match('/(contao\/install)/', $environment->get('request')) || 'group' === $input->get('do')) {
             $this->extractTableFields($table);
         }
 
@@ -139,13 +141,14 @@ class HookListener
     public function sqlGetFromDcaHook($dcaSqlExtract)
     {
         foreach ($dcaSqlExtract as $table => $sql) {
-            Controller::loadDataContainer($table);
+            $this->framework->getAdapter(Controller::class)->loadDataContainer($table);
         }
 
-        $extract = $this->dcaExtractor->getExtract($this->container->getParameter('huh.fieldpalette.table'));
+        $fieldpaletteTable = $this->container->getParameter('huh.fieldpalette.table');
+        $extract = $this->dcaExtractor->getExtract($fieldpaletteTable);
 
         if ($extract->isDbTable()) {
-            $dcaSqlExtract[Config::get('fieldpalette_table')] = $extract->getDbInstallerArray();
+            $dcaSqlExtract[$fieldpaletteTable] = $extract->getDbInstallerArray();
         }
 
         return $dcaSqlExtract;

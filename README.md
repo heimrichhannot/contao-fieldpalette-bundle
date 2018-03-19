@@ -5,7 +5,7 @@
 [![](https://img.shields.io/travis/heimrichhannot/contao-fieldpalette-bundle/master.svg)](https://travis-ci.org/heimrichhannot/contao-fieldpalette-bundle/)
 [![](https://img.shields.io/coveralls/heimrichhannot/contao-fieldpalette-bundle/master.svg)](https://coveralls.io/github/heimrichhannot/contao-fieldpalette-bundle)
 
-FieldPalette is a contao widget similar to [MultiColumnWizard] (https://github.com/menatwork/MultiColumnWizard).
+FieldPalette is a contao widget similar to [MultiColumnWizard](https://github.com/menatwork/MultiColumnWizard).
 Unlike MultiColumnWizard, fields are stored flatly into 'tl_fieldpalette' table and synced with its parent field.
 
 The fieldpalette configuration is based on Contao's [Data Container Arrays](https://docs.contao.org/books/api/dca/index.html).
@@ -22,7 +22,7 @@ The fieldpalette configuration is based on Contao's [Data Container Arrays](http
 
 This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That example is available within the module [heimrichhannot/contao-plus] (https://packagist.org/packages/heimrichhannot/contao-news_plus).
 
-```
+```php
 #/system/modules/[MyModule]/dca/tl_news.php
 
 $dc = &$GLOBALS['TL_DCA']['tl_news'];

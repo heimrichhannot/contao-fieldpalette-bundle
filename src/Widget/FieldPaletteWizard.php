@@ -8,9 +8,7 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Widget;
 
-use Contao\Config;
 use Contao\Controller;
-use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\DC_Table;
 use Contao\Environment;
 use Contao\Image;
@@ -19,8 +17,8 @@ use Contao\Model\Collection;
 use Contao\StringUtil;
 use Contao\System;
 use Contao\Widget;
-use HeimrichHannot\FieldPalette\FieldPalette;
 use HeimrichHannot\FieldPalette\FieldPaletteButton;
+use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use Patchwork\Utf8;
 
@@ -58,13 +56,9 @@ class FieldPaletteWizard extends Widget
      */
     protected $paletteTable;
     /**
-     * @var ContaoFramework|object
+     * @var \HeimrichHannot\FieldpaletteBundle\Element\ButtonElement|object
      */
-    protected $framework;
-    /**
-     * @var \HeimrichHannot\UtilsBundle\Form\FormUtil|object
-     */
-    protected $formUtil;
+    protected $buttonGenerator;
 
     /**
      * FieldPaletteWizard constructor.
@@ -77,24 +71,30 @@ class FieldPaletteWizard extends Widget
     {
         parent::__construct($attributes);
 
-        Controller::loadLanguageFile(Config::get('fieldpalette_table'));
-        Controller::loadLanguageFile($this->strTable);
+        $container = System::getContainer();
+        $framework = $container->get('contao.framework');
+        $dcaHandler = $container->get('huh.fieldpalette.dca.handler');
+        $controller = $framework->getAdapter(Controller::class);
+
+        $controller->loadLanguageFile($container->getParameter('huh.fieldpalette.table'));
+        $controller->loadLanguageFile($this->strTable);
 
         $this->import('Database');
 
-        $this->dca = FieldPalette::getDca($this->strTable, $this->strTable, $this->strName);
+        $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
         $this->viewMode = $this->dca['list']['viewMode'] ?: 0;
-        $this->paletteTable = $this->dca['config']['table'] ?: Config::get('fieldpalette_table');
+        $this->paletteTable = $this->dca['config']['table'] ?: $container->getParameter('huh.fieldpalette.table');
 
         // load custom table labels
-        Controller::loadLanguageFile($this->paletteTable);
-
-        $this->framework = System::getContainer()->get('contao.framework');
-        $this->formUtil = System::getContainer()->get('huh.utils.form');
+        $controller->loadLanguageFile($this->paletteTable);
     }
 
     /**
      * Generate the widget and return it as string.
+     *
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      *
      * @return string
      */
@@ -111,7 +111,7 @@ class FieldPaletteWizard extends Widget
             'table' => $this->paletteTable,
             'pid' => $this->currentRecord,
             'fieldpalette' => $this->strName,
-            'fieldpaletteKey' => FieldPalette::$strPaletteRequestKey,
+            'fieldpaletteKey' => DcaHandler::PaletteRequestKey,
             'popup' => true,
             'syncId' => 'ctrl_'.$this->strId,
             'pfield' => $this->strId,
@@ -234,8 +234,16 @@ class FieldPaletteWizard extends Widget
         return '@HeimrichHannotContaoFieldpalette/'.$type.'/fieldpalette_'.$type.'_'.$mode.'.html.twig';
     }
 
+    /**
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
+     *
+     * @return string
+     */
     protected function generateListView()
     {
+        $image = System::getContainer()->get('contao.framework')->getAdapter(Image::class);
         $items = [];
         $i = 0;
         if ($this->models) {
@@ -253,7 +261,7 @@ class FieldPaletteWizard extends Widget
 
         return System::getContainer()->get('twig')->render($this->getViewTemplate('list'), [
             'id' => $this->strId,
-            'image' => $this->framework->getAdapter(Image::class)->getHtml('loading.gif', '', 'class="tl_fielpalette_indicator_icon"'),
+            'image' => $image->getHtml('loading.gif', '', 'class="tl_fielpalette_indicator_icon"'),
             'labelIcon' => 'bundles/heimrichhannotcontaofieldpalette/img/fieldpalette.png',
             'label' => $this->strLabel,
             'mandatory' => $this->mandatory,
@@ -265,6 +273,10 @@ class FieldPaletteWizard extends Widget
     /**
      * @param FieldPaletteModel $model
      * @param int               $index
+     *
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      *
      * @return string
      */
@@ -290,7 +302,8 @@ class FieldPaletteWizard extends Widget
         /**
          * @var System
          */
-        $system = $this->framework->getAdapter(System::class);
+        $system = System::getContainer()->get('contao.framework')->getAdapter(System::class);
+        $formUtil = System::getContainer()->get('huh.utils.form');
 
         $protected = false;
 
@@ -316,7 +329,7 @@ class FieldPaletteWizard extends Widget
                     }
                 }
             }
-            $args[$k] = $this->formUtil->prepareSpecialValueForOutput($v, $value, $dc);
+            $args[$k] = $formUtil->prepareSpecialValueForOutput($v, $value, $dc);
         }
 
         $label = vsprintf(
@@ -374,88 +387,105 @@ class FieldPaletteWizard extends Widget
             return '';
         }
 
+        $operations = $this->dca['list']['operations'];
+        if (!is_array($operations)) {
+            return '';
+        }
+
+        $container = System::getContainer();
+        $framework = $container->get('contao.framework');
+        $buttonGenerator = $container->get('huh.fieldpalette.element.button');
+        /**
+         * @var Image
+         */
+        $image = $framework->getAdapter(Image::class);
+
         $return = '';
 
         $dc = $this->getDcTableInstance($this->paletteTable);
         $dc->id = $this->currentRecord;
         $dc->activeRecord = $rowModel;
 
-        foreach ($this->dca['list']['operations'] as $k => $v) {
-            $v = is_array($v) ? $v : [$v];
-            $id = specialchars(rawurldecode($rowModel->id));
+        foreach ($operations as $key => $value) {
+            $value = is_array($value) ? $value : [$value];
+            $id = StringUtil::specialchars(rawurldecode($rowModel->id));
 
-            $label = $v['label'][0] ?: $k;
-            $title = sprintf($v['label'][1] ?: $k, $id);
-            $attributes = ('' !== $v['attributes']) ? ltrim(sprintf($v['attributes'], $id, $id)) : '';
+            $label = $value['label'][0] ?: $key;
+            $title = sprintf($value['label'][1] ?: $key, $id);
 
-            $objButton = FieldPaletteButton::getInstance();
-            $objButton->addOptions($this->buttonDefaults);
-            $objButton->setType($k);
-            $objButton->setId($rowModel->id);
-            $objButton->setModalTitle(
+            $attributes = (isset($value['attributes']) && !empty($value['attributes'])) ? ltrim(sprintf($value['attributes'], $id, $id)) : '';
+
+            $button = $buttonGenerator;
+            $button->addOptions($this->buttonDefaults);
+            $button->setType($key);
+            $button->setId($rowModel->id);
+            $button->setModalTitle(
                 sprintf(
                     $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'],
                     $GLOBALS['TL_LANG'][$this->strTable][$this->strName][0] ?: $this->strName,
                     sprintf($title, $rowModel->id)
                 )
             );
-            $objButton->setAttributes([$attributes]);
-            $objButton->setLabel(\Image::getHtml($v['icon'], $label));
-            $objButton->setTitle(specialchars($title));
+            $button->setAttributes([$attributes]);
+            $button->setLabel($image->getHtml($value['icon'], $label));
+            $button->setTitle(StringUtil::specialchars($title));
 
-            // Call a custom function instead of using the default button
-            if (is_array($v['button_callback'])) {
-                $this->import($v['button_callback'][0]);
-                $return .= $this->{$v['button_callback'][0]}->{$v['button_callback'][1]}(
-                    $rowModel->row(),
-                    $objButton->getHref(),
-                    $label,
-                    $title,
-                    $v['icon'],
-                    $attributes,
-                    $this->paletteTable,
-                    $rootIds,
-                    $childRecordIds,
-                    $circularReference,
-                    $previous,
-                    $next,
-                    $dc
-                );
-                continue;
-            } elseif (is_callable($v['button_callback'])) {
-                $return .= $v['button_callback'](
-                    $rowModel->row(),
-                    $objButton->getHref(),
-                    $label,
-                    $title,
-                    $v['icon'],
-                    $attributes,
-                    $this->paletteTable,
-                    $rootIds,
-                    $childRecordIds,
-                    $circularReference,
-                    $previous,
-                    $next,
-                    $dc
-                );
-                continue;
+            if (isset($value['button_callback'])) {
+                // Call a custom function instead of using the default button
+                if (is_array($value['button_callback'])) {
+                    $this->import($value['button_callback'][0]);
+                    $return .= $this->{$value['button_callback'][0]}->{$value['button_callback'][1]}(
+                        $rowModel->row(),
+                        $button->getHref(),
+                        $label,
+                        $title,
+                        $value['icon'],
+                        $attributes,
+                        $this->paletteTable,
+                        $rootIds,
+                        $childRecordIds,
+                        $circularReference,
+                        $previous,
+                        $next,
+                        $dc
+                    );
+                    continue;
+                } elseif (is_callable($value['button_callback'])) {
+                    $return .= $value['button_callback'](
+                        $rowModel->row(),
+                        $button->getHref(),
+                        $label,
+                        $title,
+                        $value['icon'],
+                        $attributes,
+                        $this->paletteTable,
+                        $rootIds,
+                        $childRecordIds,
+                        $circularReference,
+                        $previous,
+                        $next,
+                        $dc
+                    );
+                    continue;
+                }
             }
 
             // Generate all buttons except "move up" and "move down" buttons
-            if ('move' !== $k && 'move' !== $v) {
-                $return .= $objButton->generate();
+            if ('move' !== $key && 'move' !== $value) {
+                $return .= $button->generate();
                 continue;
             }
 
             $arrDirections = ['up', 'down'];
             $rootIds = is_array($rootIds) ? $rootIds : [$rootIds];
+            $defaultTable = $container->getParameter('huh.fieldpalette.table');
 
             foreach ($arrDirections as $dir) {
-                $label = $GLOBALS['TL_LANG'][\Config::get('fieldpalette_table')][$dir][0] ?: $dir;
-                $title = $GLOBALS['TL_LANG'][\Config::get('fieldpalette_table')][$dir][1] ?: $dir;
+                $label = $GLOBALS['TL_LANG'][$defaultTable][$dir][0] ?: $dir;
+                $title = $GLOBALS['TL_LANG'][$defaultTable][$dir][1] ?: $dir;
 
-                $label = \Image::getHtml($dir.'.gif', $label);
-                $href = $v['href'] ?: '&amp;act=move';
+                $label = $image->getHtml($dir.'.gif', $label);
+                $href = $value['href'] ?: '&amp;act=move';
 
                 if ('up' === $dir) {
                     $return .= ((is_numeric($previous)
@@ -464,7 +494,7 @@ class FieldPaletteWizard extends Widget
                             ? '<a href="'.$this->addToUrl(
                                 $href.'&amp;id='.$rowModel->id
                             ).'&amp;sid='.(int) $previous.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
-                            : \Image::getHtml(
+                            : $image->getHtml(
                                 'up_.gif'
                             )).' ';
                     continue;
@@ -476,26 +506,30 @@ class FieldPaletteWizard extends Widget
                         ? '<a href="'.$this->addToUrl(
                             $href.'&amp;id='.$rowModel->id
                         ).'&amp;sid='.(int) $next.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
-                        : \Image::getHtml(
+                        : $image->getHtml(
                             'down_.gif'
                         )).' ';
             }
         }
 
-        // Sort elements
-        if (!$this->dca['config']['notSortable']) {
-            $href = version_compare(VERSION, '4.0', '<') ? 'contao/main.php' : 'contao';
-            $href .= '?do='.\Input::get('do');
-            $href .= '&amp;table='.$this->paletteTable;
-            $href .= '&amp;id='.$rowModel->id;
-            $href .= '&amp;'.FieldPalette::$strParentTableRequestKey.'='.$this->strTable;
-            $href .= '&amp;'.FieldPalette::$strPaletteRequestKey.'='.$this->strName;
-            $href .= '&amp;rt='.\RequestToken::get();
+        $do = $framework->getAdapter(Input::class)->get('do');
 
-            $return .= ' '.\Image::getHtml(
+        // Sort elements
+        if (!isset($this->dca['config']['notSortable']) || !$this->dca['config']['notSortable']) {
+            $href = $container->get('huh.utils.routing')->generateBackendRoute([
+                'do' => $do,
+                'table' => $this->paletteTable,
+                'id' => $rowModel->id,
+                DcaHandler::ParentTableRequestKey => $this->strTable,
+                DcaHandler::PaletteRequestKey => $this->strName,
+            ], true, false);
+
+            $title = sprintf($GLOBALS['TL_LANG'][$this->strTable]['cut'][1], $rowModel->id);
+            $return .= ' '.$image->getHtml(
                     'drag.gif',
                     '',
-                    'class="drag-handle" title="'.sprintf($GLOBALS['TL_LANG'][$this->strTable]['cut'][1], $rowModel->id).'" data-href="'.$href
+                    'class="drag-handle" title="'.$title.'" data-href="'.$href
+
                     .'" data-id="'.$rowModel->id.'" data-pid="'.$rowModel->pid.'"'
                 );
         }
@@ -526,18 +560,17 @@ class FieldPaletteWizard extends Widget
      */
     protected function reviseTable()
     {
+        $container = System::getContainer();
+        $framework = $container->get('contao.framework');
+        $defaultTable = $container->getParameter('huh.fieldpalette.table');
         /**
          * @var Controller
          */
-        $controller = $this->framework->getAdapter(Controller::class);
+        $controller = $framework->getAdapter(Controller::class);
         /**
          * @var Environment
          */
-        $environment = $this->framework->getAdapter(Environment::class);
-        /**
-         * @var Config
-         */
-        $config = $this->framework->getAdapter(Config::class);
+        $environment = $framework->getAdapter(Environment::class);
 
         $reload = false;
         $ptable = $this->dca['config']['ptable'];
@@ -590,9 +623,7 @@ class FieldPaletteWizard extends Widget
             } else {
                 $objStmt = $this->Database->execute(
                     'DELETE FROM '.$this->paletteTable.' WHERE NOT EXISTS '.'(SELECT * FROM (SELECT * FROM '.$ptable.') AS fpp WHERE '
-                    .$config::get(
-                        'fieldpalette_table'
-                    ).'.pid = fpp.id)'
+                    .$defaultTable.'.pid = fpp.id)'
                 );
             }
 

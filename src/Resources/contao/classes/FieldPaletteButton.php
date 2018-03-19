@@ -113,6 +113,8 @@ class FieldPaletteButton
 				$strAttribues .= implode(' ', $this->arrOptions['attributes']);
 			}
 		}
+		
+		
 
 		$objT->attributes = strlen($strAttribues) > 0 ? ' ' . $strAttribues : '';
 

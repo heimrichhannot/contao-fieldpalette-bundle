@@ -5,14 +5,27 @@ services:
   huh.fieldpalette.listener.hook:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\HookListener
     arguments:
-      - '@huh.fieldpalette.helper.dcaextractor'
+      - '@huh.fieldpalette.dca.extractor'
       - '@service_container'
       - '@contao.framework'
   huh.fieldpalette.listener.callback:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
 
+  huh.fieldpalette.element.button:
+    class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
+    arguments:
+      - '@contao.framework'
+      - '%huh.fieldpalette.table%'
+      - '@twig'
+      - '@huh.utils.url'
+
   huh.fieldpalette.registry:
     class: HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry
-  huh.fieldpalette.helper.dcaextractor:
-    class: HeimrichHannot\FieldpaletteBundle\Helper\DcaExtractor
+  huh.fieldpalette.dca.extractor:
+    class: HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor
     arguments: ['@service_container']
+  huh.fieldpalette.dca.handler:
+    class: HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler
+    arguments:
+      - '%huh.fieldpalette.table%'
+      - '@contao.framework'

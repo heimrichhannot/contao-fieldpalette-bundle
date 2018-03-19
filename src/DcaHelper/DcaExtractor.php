@@ -6,7 +6,7 @@
  * @license LGPL-3.0-or-later
  */
 
-namespace HeimrichHannot\FieldpaletteBundle\Helper;
+namespace HeimrichHannot\FieldpaletteBundle\DcaHelper;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -49,5 +49,7 @@ class DcaExtractor extends \Contao\DcaExtractor
 
         // prevent caching for fieldpalette
         $this->createExtract();
+
+        return $this;
     }
 }
