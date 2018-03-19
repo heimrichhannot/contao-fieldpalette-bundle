@@ -17,7 +17,6 @@ use Contao\Model\Collection;
 use Contao\StringUtil;
 use Contao\System;
 use Contao\Widget;
-use HeimrichHannot\FieldPalette\FieldPaletteButton;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use Patchwork\Utf8;
@@ -164,54 +163,6 @@ class FieldPaletteWizard extends Widget
     public function getDcTableInstance(string $table, array $module = [])
     {
         return new DC_Table($table, $module);
-    }
-
-    /**
-     * @return mixed|null
-     */
-    public function getPaletteTable(): mixed
-    {
-        return $this->paletteTable;
-    }
-
-    /**
-     * @param mixed|null $paletteTable
-     */
-    public function setPaletteTable($paletteTable)
-    {
-        $this->paletteTable = $paletteTable;
-    }
-
-    /**
-     * @return string
-     */
-    public function getStrName(): string
-    {
-        return $this->strName;
-    }
-
-    /**
-     * @param string $strName
-     */
-    public function setStrName(string $strName)
-    {
-        $this->strName = $strName;
-    }
-
-    /**
-     * @return int
-     */
-    public function getViewMode(): int
-    {
-        return $this->viewMode;
-    }
-
-    /**
-     * @param int $viewMode
-     */
-    public function setViewMode(int $viewMode)
-    {
-        $this->viewMode = $viewMode;
     }
 
     /**
@@ -399,6 +350,10 @@ class FieldPaletteWizard extends Widget
          * @var Image
          */
         $image = $framework->getAdapter(Image::class);
+        /**
+         * @var System
+         */
+        $system = $framework->getAdapter(System::class);
 
         $return = '';
 
@@ -433,8 +388,7 @@ class FieldPaletteWizard extends Widget
             if (isset($value['button_callback'])) {
                 // Call a custom function instead of using the default button
                 if (is_array($value['button_callback'])) {
-                    $this->import($value['button_callback'][0]);
-                    $return .= $this->{$value['button_callback'][0]}->{$value['button_callback'][1]}(
+                    $return .= $system->importStatic($value['button_callback'][0])->{$value['button_callback'][1]}(
                         $rowModel->row(),
                         $button->getHref(),
                         $label,
@@ -539,20 +493,21 @@ class FieldPaletteWizard extends Widget
 
     protected function generateGlobalButtons()
     {
-        $objCreateButton = FieldPaletteButton::getInstance();
-        $objCreateButton->addOptions($this->buttonDefaults);
-        $objCreateButton->setType('create');
-        $objCreateButton->setModalTitle(
+        $button = System::getContainer()->get('huh.fieldpalette.element.button');
+
+        $button->addOptions($this->buttonDefaults);
+        $button->setType('create');
+        $button->setModalTitle(
             sprintf(
                 $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'],
-                $GLOBALS['TL_LANG'][$this->strTable][$this->strName][0] ?: $this->strName,
+                !empty($GLOBALS['TL_LANG'][$this->strTable][$this->strName][0]) ? $GLOBALS['TL_LANG'][$this->strTable][$this->strName][0] : $this->strName,
                 $GLOBALS['TL_LANG']['tl_fieldpalette']['new'][1]
             )
         );
-        $objCreateButton->setLabel($GLOBALS['TL_LANG']['tl_fieldpalette']['new'][0]);
-        $objCreateButton->setTitle($GLOBALS['TL_LANG']['tl_fieldpalette']['new'][0]);
+        $button->setLabel($GLOBALS['TL_LANG']['tl_fieldpalette']['new'][0]);
+        $button->setTitle($GLOBALS['TL_LANG']['tl_fieldpalette']['new'][0]);
 
-        return $objCreateButton->generate();
+        return $button->generate();
     }
 
     /**

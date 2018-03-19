@@ -25,7 +25,7 @@ class ButtonElement
     /**
      * @var array
      */
-    protected $options;
+    protected $options = [];
     /**
      * @var ContaoFramework
      */

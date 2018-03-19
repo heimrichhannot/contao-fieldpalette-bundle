@@ -67,8 +67,15 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $widget = $this->getMockBuilder(FieldPaletteWizard::class)->disableOriginalConstructor()->setMethods(array_merge(['getModelInstance', 'getDcTableInstance', 'import'], $methods))->getMock();
         $widget->method('getModelInstance')->willReturn($this->getFieldPaletteModelMock($value));
         $widget->method('getDcTableInstance')->willReturn($dc);
-        $widget->setPaletteTable('tl_news');
-        $widget->setStrName('paletteField');
+
+        $reflectionClass = new \ReflectionClass(FieldPaletteWizard::class);
+        $reflectionProperty = $reflectionClass->getProperty('paletteTable');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($widget, 'tl_news');
+        $reflectionProperty = $reflectionClass->getProperty('strName');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($widget, 'paletteField');
+
         $widget->currentRecord = 7;
         $widget->strTable = 'tl_fieldpalette';
 
@@ -105,8 +112,11 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $method = $reflectionClass->getMethod('getViewTemplate');
         $method->setAccessible(true);
 
+        $reflectionPropertyMode = $reflectionClass->getProperty('viewMode');
+        $reflectionPropertyMode->setAccessible(true);
+
         $widget = $this->getFieldPaletteWizardMock();
-        $widget->setViewMode(0);
+        $reflectionPropertyMode->setValue($widget, 0);
         $this->assertSame(
             '@HeimrichHannotContaoFieldpalette/list/fieldpalette_list_table.html.twig',
             $method->invokeArgs($widget, ['list'])
@@ -116,7 +126,7 @@ class FieldPaletteWizartTest extends ContaoTestCase
             $method->invokeArgs($widget, ['wizard'])
         );
 
-        $widget->setViewMode(1);
+        $reflectionPropertyMode->setValue($widget, 1);
         $this->assertSame(
             '@HeimrichHannotContaoFieldpalette/list/fieldpalette_list_default.html.twig',
             $method->invokeArgs($widget, ['list'])
@@ -310,6 +320,8 @@ class FieldPaletteWizartTest extends ContaoTestCase
 
         $reflectionPropertyDca = $reflectionClass->getProperty('dca');
         $reflectionPropertyDca->setAccessible(true);
+        $reflectionPropertyName = $reflectionClass->getProperty('strName');
+        $reflectionPropertyName->setAccessible(true);
 
         $widget = $this->getFieldPaletteWizardMock([
             'getViewTemplate',
@@ -324,38 +336,14 @@ class FieldPaletteWizartTest extends ContaoTestCase
             'id' => 5,
         ]);
 
-        $operations = [
-            'edit' => [
-                    'label' => [0 => 'Element bearbeiten', 1 => 'Element ID %s bearbeiten'],
-                    'href' => 'act=edit',
-                    'icon' => 'edit.gif',
-                ],
-            'delete' => [
-                    'label' => [0 => 'Element löschen', 1 => 'Element ID %s löschen'],
-                    'href' => 'act=delete',
-                    'icon' => 'delete.gif',
-                    'attributes' => 'onclick="if(!confirm(\'Soll der Eintrag ID %s wirklich gelöscht werden?\'))return false;FieldPaletteBackend.deleteFieldPaletteEntry(this,%s);return false;"',
-                ],
-            'toggle' => [
-                    'label' => [0 => 'Element veröffentlichen/unveröffentlichen', 1 => 'Element ID %s veröffentlichen/unveröffentlichen'],
-                    'icon' => 'visible.gif',
-                    'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
-                    'button_callback' => [0 => 'tl_fieldpalette', 1 => 'toggleIcon'],
-                ],
-            'show' => [
-                    'label' => [0 => 'Element anzeigen', 1 => 'Details des Elements ID %s anzeigen'],
-                    'href' => 'act=show',
-                    'icon' => 'show.gif',
-                ],
-        ];
         $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'] = '%s : %s';
         $GLOBALS['TL_LANG']['tl_fieldpalette']['paletteField'][0] = 'Testfeld';
         $GLOBALS['TL_LANG']['tl_fieldpalette']['cut'][1] = 'Beitrag ID %s verschieben';
 
-        $widget->setPaletteTable('tl_news');
-        $widget->setStrName('paletteField');
-
         $reflectionPropertyDca->setValue($widget, []);
+        $reflectionPropertyDca->setValue($widget, 'tl_news');
+        $reflectionPropertyName->setValue($widget, 'paletteField');
+
         $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
 
         $reflectionPropertyDca->setValue($widget, '');
@@ -365,14 +353,22 @@ class FieldPaletteWizartTest extends ContaoTestCase
             'list' => ['operations' => []],
         ]);
         $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+
         $reflectionPropertyDca->setValue($widget, [
             'list' => ['operations' => ''],
         ]);
         $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+
         $reflectionPropertyDca->setValue($widget, [
             'list' => ['operations' => null],
         ]);
         $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => ['operations' => 'Testoperationen'],
+        ]);
+        $this->assertSame('', $testMethod->invokeArgs($widget, [$itemModel]));
+
         $reflectionPropertyDca->setValue($widget, [
             'list' => [
                 'operations' => [
@@ -392,16 +388,74 @@ class FieldPaletteWizartTest extends ContaoTestCase
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel]);
         $this->assertTrue(is_string($result));
-//        $this->assertNotFalse(strpos($result, 'Editieren'));
-//        $this->assertNotFalse(strpos($result, 'delete'));
 
-//        $reflectionPropertyDca->setValue($widget, [
-//            'list' => [
-//                'operations' => $operations
-//            ]
-//        ]);
-//        $this->assertTrue(is_string($testMethod->invokeArgs($widget, [$itemModel])));
-//        $this->as('', $testMethod->invokeArgs($widget, [$itemModel]));
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'operations' => [
+                    'edit' => [
+                        'label' => [0 => 'LabelTestCallback', 1 => 'Element ID %s bearbeiten'],
+                        'href' => 'act=edit',
+                        'icon' => 'edit.gif',
+                        'button_callback' => [0 => CallbackListener::class, 1 => 'argumentThree'],
+                    ],
+                    'delete' => [
+                        'label' => [0 => 'LabelTestCallable', 1 => 'Element ID %s löschen'],
+                        'href' => 'act=delete',
+                        'icon' => 'delete.gif',
+                        'button_callback' => function ($row, $url, $label) {
+                            return $label;
+                        },
+                    ],
+                ],
+            ],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel]);
+        $this->assertTrue(is_string($result));
+        $this->assertNotFalse(strpos($result, 'LabelTestCallback'));
+        $this->assertNotFalse(strpos($result, 'LabelTestCallable'));
+    }
+
+    public function testGenerateGlobalButtons()
+    {
+        $reflectionClass = new \ReflectionClass(FieldPaletteWizard::class);
+        $testMethod = $reflectionClass->getMethod('generateGlobalButtons');
+        $testMethod->setAccessible(true);
+
+        $widget = $this->getFieldPaletteWizardMock([
+            'getViewTemplate',
+            'generateButtons',
+            'generateItemLabel',
+        ]);
+
+        $itemModel = $this->mockClassWithProperties(FieldPaletteModel::class, [
+            'ptable' => 'tl_news',
+            'pfield' => 'title',
+            'title' => 'Hallo',
+            'id' => 5,
+        ]);
+
+        $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'] = '%s : %s';
+        $GLOBALS['TL_LANG']['tl_fieldpalette']['paletteField'][0] = 'Testfeld';
+        $GLOBALS['TL_LANG']['tl_fieldpalette']['new'] = ['Neuer Beitrag', 'Neuen Beitrag anlegen'];
+
+        $buttonElementMock = $this->getMockBuilder(ButtonElement::class)->disableOriginalConstructor()->setMethods(['generate'])->getMock();
+        $buttonElementMock->method('generate')->willReturn('Result');
+
+        System::getContainer()->set('huh.fieldpalette.element.button', $buttonElementMock);
+
+        $this->assertSame('Result', $testMethod->invokeArgs($widget, [$itemModel]));
+        $options = System::getContainer()->get('huh.fieldpalette.element.button')->getOptions();
+
+        $this->assertSame('create', $options['act']);
+        $this->assertSame('Testfeld : Neuen Beitrag anlegen', $options['modalTitle']);
+        $this->assertSame('Neuer Beitrag', $options['label']);
+        $this->assertSame('Neuer Beitrag', $options['title']);
+
+        unset($GLOBALS['TL_LANG']['tl_fieldpalette']['paletteField'][0]);
+
+        $testMethod->invokeArgs($widget, [$itemModel]);
+        $options = System::getContainer()->get('huh.fieldpalette.element.button')->getOptions();
+        $this->assertSame('paletteField : Neuen Beitrag anlegen', $options['modalTitle']);
     }
 
     protected function getCollectionMock($value)
@@ -437,9 +491,11 @@ class FieldPaletteWizartTest extends ContaoTestCase
             $class = $this->getMockBuilder('AReallyNonExistingClass')->setMethods([
                 'callbackMethod',
                 'labelCallback',
+                'argumentThree',
             ])->getMock();
             $class->method('callbackMethod')->willReturnArgument(0);
             $class->method('labelCallback')->willReturnArgument(1);
+            $class->method('argumentThree')->willReturnArgument(2);
 
             return $class;
         });
