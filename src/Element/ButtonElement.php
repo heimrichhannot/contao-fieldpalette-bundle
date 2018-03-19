@@ -9,10 +9,9 @@
 namespace HeimrichHannot\FieldpaletteBundle\Element;
 
 use Contao\CoreBundle\Framework\ContaoFramework;
-use Contao\RequestToken;
 use HeimrichHannot\FieldPalette\FieldPalette;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Url\UrlUtil;
+use HeimrichHannot\UtilsBundle\Request\RoutingUtil;
 use Twig\Environment;
 
 class ButtonElement
@@ -35,17 +34,16 @@ class ButtonElement
      */
     private $defaultTable;
     /**
-     * @var UrlUtil
+     * @var RoutingUtil
      */
-    private $urlUtil;
+    private $routeUtil;
 
-    public function __construct(ContaoFramework $framework, string $table, Environment $twig, UrlUtil $urlUtil)
+    public function __construct(ContaoFramework $framework, string $table, Environment $twig, RoutingUtil $routeUtil)
     {
         $this->framework = $framework;
         $this->defaultTable = $table;
         $this->twig = $twig;
-        $this->options['base'] = 'contao';
-        $this->urlUtil = $urlUtil;
+        $this->routeUtil = $routeUtil;
     }
 
     /**
@@ -189,8 +187,6 @@ class ButtonElement
 
     protected function generateHref()
     {
-        $url = $this->base;
-
         $parameter = $this->prepareParameter($this->act);
 
         // for nested fielpalettes, fieldpalette must always be dca context
@@ -198,25 +194,20 @@ class ButtonElement
             $parameter['table'] = $this->table;
         }
 
-        foreach ($parameter as $key => $value) {
-            $url = $this->urlUtil->addQueryString($key.'='.$value, $url);
-        }
-
-        if (in_array('popup', $parameter, true)) {
-            $url = $this->urlUtil->addQueryString('popup=1', $url);
+        if (isset($parameter['popup']) && $parameter['popup']) {
+            $parameter['popup'] = 1;
             $this->options['attributes']['onclick'] =
                 'onclick="FieldPaletteBackend.openModalIframe({\'action\':\''.FieldPalette::$strFieldpaletteRefreshAction.'\',\'syncId\':\''.$this->syncId
                 .'\',\'width\':768,\'title\':\''.specialchars(sprintf($this->modalTitle, $this->id)).'\',\'url\':this.href});return false;"';
         }
 
-        $url = $this->urlUtil->addQueryString('rt='.RequestToken::get(), $url);
         // TODO: DC_TABLE : 2097 - catch POST and Cookie from saveNClose and do not redirect and just close modal
         //		$strUrl = \Haste\Util\Url::addQueryString('nb=1', $strUrl);
 
         // required by DC_TABLE::getNewPosition() within nested fieldpalettes
-        $url = $this->urlUtil->addQueryString('mode=2', $url);
+        $parameter['mode'] = 2;
 
-        return $url;
+        return str_replace('app_dev.php/', '', $this->routeUtil->generateBackendRoute($parameter, true));
     }
 
     protected function prepareParameter($act)

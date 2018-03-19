@@ -15,7 +15,7 @@ use Contao\Environment;
 use Contao\Input;
 use Contao\Widget;
 use HeimrichHannot\FieldPalette\FieldPalette;
-use HeimrichHannot\FieldpaletteBundle\Helper\DcaExtractor;
+use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class HookListener

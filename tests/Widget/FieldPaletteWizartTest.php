@@ -509,4 +509,21 @@ class FieldPaletteWizartTest extends ContaoTestCase
             Input::class => $inputAdapter,
         ]);
     }
+
+//    public function testReviseTable()
+//    {
+//        $reflectionClass = new \ReflectionClass(FieldPaletteWizard::class);
+//        $testMethod = $reflectionClass->getMethod('reviseTable');
+//        $testMethod->setAccessible(true);
+//
+//        $widget = $this->getFieldPaletteWizardMock([]);
+//
+//        $itemModel = $this->mockClassWithProperties(FieldPaletteModel::class, [
+//            'ptable' => 'tl_news',
+//            'pfield' => 'title',
+//            'title' => 'Hallo',
+//            'id' => 5,
+//        ]);
+//        $this->assertSame('Result', $testMethod->invokeArgs($widget, [$itemModel]));
+//    }
 }

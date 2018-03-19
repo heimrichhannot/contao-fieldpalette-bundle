@@ -17,7 +17,7 @@ services:
       - '@contao.framework'
       - '%huh.fieldpalette.table%'
       - '@twig'
-      - '@huh.utils.url'
+      - '@huh.utils.routing'
 
   huh.fieldpalette.registry:
     class: HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry

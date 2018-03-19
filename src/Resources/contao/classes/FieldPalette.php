@@ -395,7 +395,7 @@ class FieldPalette
 
         if ($objModel->ptable == \Config::get('fieldpalette_table'))
         {
-            $objModel = Sys::findByPk($objModel->pid);
+            $objModel = FieldPaletteModel::findByPk($objModel->pid);
 
             if ($objModel === null)
             {

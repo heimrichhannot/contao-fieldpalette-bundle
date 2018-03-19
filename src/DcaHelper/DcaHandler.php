@@ -251,7 +251,7 @@ class DcaHandler
 
             $arrChildPalettes = array_slice($arrPalettes, $i + 1, count($arrPalettes));
 
-            return static::findNestedFieldPaletteFields($arrChildPalettes, $arrFields[$strFieldPalette]['fieldpalette']['fields']);
+            return $this->findNestedFieldPaletteFields($arrChildPalettes, $arrFields[$strFieldPalette]['fieldpalette']['fields']);
         }
     }
 
@@ -377,7 +377,7 @@ class DcaHandler
         if (is_array($palette)) {
             $nestedPalette = $this->findNestedFieldPaletteFields($palette, $GLOBALS['TL_DCA'][$rootTable]['fields']);
 
-            if (false !== $nestedPalette) {
+            if ($nestedPalette) {
                 $strNestedPalette = key($nestedPalette);
                 $custom = $nestedPalette[$strNestedPalette]['fieldpalette'];
             }

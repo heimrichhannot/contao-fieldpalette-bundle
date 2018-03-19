@@ -9,6 +9,7 @@
 namespace HeimrichHannot\FieldpaletteBundle\Widget;
 
 use Contao\Controller;
+use Contao\Database;
 use Contao\DC_Table;
 use Contao\Environment;
 use Contao\Image;
@@ -17,6 +18,7 @@ use Contao\Model\Collection;
 use Contao\StringUtil;
 use Contao\System;
 use Contao\Widget;
+use HeimrichHannot\FieldPalette\FieldPalette;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use Patchwork\Utf8;
@@ -80,7 +82,9 @@ class FieldPaletteWizard extends Widget
 
         $this->import('Database');
 
-        $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
+        $this->dca = FieldPalette::getDca($this->strTable, $this->strTable, $this->strName);
+
+//        $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
         $this->viewMode = $this->dca['list']['viewMode'] ?: 0;
         $this->paletteTable = $this->dca['config']['table'] ?: $container->getParameter('huh.fieldpalette.table');
 
@@ -531,7 +535,7 @@ class FieldPaletteWizard extends Widget
         $ptable = $this->dca['config']['ptable'];
         $ctable = $this->dca['config']['ctable'];
 
-        $new_records = $this->Session->get('new_records');
+        $new_records = $container->get('session')->get('new_records');
 
         // HOOK: add custom logic
         if (isset($GLOBALS['TL_HOOKS']['reviseTable']) && is_array($GLOBALS['TL_HOOKS']['reviseTable'])) {
@@ -553,7 +557,7 @@ class FieldPaletteWizard extends Widget
 
         // Delete all new but incomplete fieldpalette records (tstamp=0)
         if (!empty($new_records[$this->paletteTable]) && is_array($new_records[$this->paletteTable])) {
-            $objStmt = $this->Database->prepare(
+            $result = $framework->createInstance(Database::class)->prepare(
                 'DELETE FROM '.$this->paletteTable.' WHERE id IN('.implode(
                     ',',
                     array_map(
@@ -563,7 +567,7 @@ class FieldPaletteWizard extends Widget
                 ).') AND tstamp=0 AND (? IS NULL OR id != ?)'
             )->execute($this->activeRecord->id, $this->activeRecord->id);
 
-            if ($objStmt->affectedRows > 0) {
+            if ($result->affectedRows > 0) {
                 $reload = true;
             }
         }
@@ -571,18 +575,18 @@ class FieldPaletteWizard extends Widget
         // Delete all fieldpalette records whose child record isn't existing
         if ('' !== $ptable) {
             if ($this->dca['config']['dynamicPtable']) {
-                $objStmt = $this->Database->execute(
+                $result = $framework->createInstance(Database::class)->execute(
                     'DELETE FROM '.$this->paletteTable." WHERE ptable='".$ptable."' AND NOT EXISTS (SELECT * FROM (SELECT * FROM "
                     .$ptable.') AS fpp WHERE '.$this->paletteTable.'.pid = fpp.id)'
                 );
             } else {
-                $objStmt = $this->Database->execute(
+                $result = $framework->createInstance(Database::class)->execute(
                     'DELETE FROM '.$this->paletteTable.' WHERE NOT EXISTS '.'(SELECT * FROM (SELECT * FROM '.$ptable.') AS fpp WHERE '
                     .$defaultTable.'.pid = fpp.id)'
                 );
             }
 
-            if ($objStmt->affectedRows > 0) {
+            if ($result->affectedRows > 0) {
                 $reload = true;
             }
         }
@@ -597,18 +601,18 @@ class FieldPaletteWizard extends Widget
                     }
 
                     if ($GLOBALS['TL_DCA'][$v]['config']['dynamicPtable']) {
-                        $objStmt = $this->Database->execute(
+                        $result = $framework->createInstance(Database::class)->execute(
                             "DELETE FROM $v WHERE ptable='".$this->paletteTable."' AND NOT EXISTS (SELECT * FROM ".'(SELECT * FROM '
                             .$this->paletteTable.") AS fp WHERE $v.pid = fp.id)"
                         );
                     } else {
-                        $objStmt = $this->Database->execute(
+                        $result = $framework->createInstance(Database::class)->execute(
                             "DELETE FROM $v WHERE NOT EXISTS (SELECT * FROM (SELECT * FROM ".$this->paletteTable
                             .") AS fp WHERE $v.pid = fp.id)"
                         );
                     }
 
-                    if ($objStmt->affectedRows > 0) {
+                    if ($result->affectedRows > 0) {
                         $reload = true;
                     }
                 }
