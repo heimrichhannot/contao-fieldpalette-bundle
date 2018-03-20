@@ -522,13 +522,9 @@ class FieldPaletteWizard extends Widget
         $container = System::getContainer();
         $framework = $container->get('contao.framework');
         $defaultTable = $container->getParameter('huh.fieldpalette.table');
-        /**
-         * @var Controller
-         */
+        /** @var Controller $controller */
         $controller = $framework->getAdapter(Controller::class);
-        /**
-         * @var Environment
-         */
+        /** @var Environment $environment */
         $environment = $framework->getAdapter(Environment::class);
         /**
          * @var System

@@ -31,6 +31,7 @@ return PhpCsFixer\Config::create()
         'ordered_class_elements' => true,
         'php_unit_strict' => true,
         'phpdoc_order' => true,
+        'phpdoc_var_without_name' => false,
         'no_useless_return' => true,
         'no_useless_else' => true,
         'no_unreachable_default_argument_value' => true,
