@@ -108,6 +108,83 @@ class FieldPaletteWizardTest extends ContaoTestCase
         return $mock;
     }
 
+    public function getCollectionMock($value)
+    {
+        $model1 = $this->mockClassWithProperties(FieldPaletteModel::class, [
+            'tstamp' => 1000,
+        ]);
+        $model2 = $this->mockClassWithProperties(FieldPaletteModel::class, [
+            'tstamp' => 2000,
+        ]);
+        $model3 = $this->mockClassWithProperties(FieldPaletteModel::class, [
+            'tstamp' => 0,
+        ]);
+
+        $collection = $this->createMock(Collection::class);
+        $collection->method('fetchEach')->willReturn($value);
+        $collection->method('next')->will($this->onConsecutiveCalls($model1, $model2, $model3));
+        $collection->method('current')->will($this->onConsecutiveCalls($model1, $model2, $model3));
+        $collection->method('getIterator')->willReturn(new \ArrayIterator([$model1, $model2, $model3]));
+
+        return $collection;
+    }
+
+    public function getFramework()
+    {
+        $imageAdapter = $this->mockAdapter(['getHtml']);
+        $imageAdapter->method('getHtml')->willReturnCallback(function ($src, $alt = '', $attributes = '') {
+            return '<img src="'.$src.'" '.$attributes.'>';
+        });
+
+        $systemAdapter = $this->mockAdapter(['importStatic']);
+        $systemAdapter->method('importStatic')->willReturnCallback(function ($className) {
+            $class = $this->getMockBuilder('AReallyNonExistingClass')->setMethods([
+                'callbackMethod',
+                'labelCallback',
+                'argumentThree',
+                'setTableAndTrue',
+                'setTableAndFalse',
+            ])->getMock();
+            $class->method('callbackMethod')->willReturnArgument(0);
+            $class->method('labelCallback')->willReturnArgument(1);
+            $class->method('argumentThree')->willReturnArgument(2);
+            $class->method('setTableAndTrue')->willReturnCallback(function ($table) {
+                $this->table[] = $table;
+
+                return true;
+            });
+            $class->method('setTableAndFalse')->willReturnCallback(function ($table) {
+                $this->table[] = $table;
+
+                return false;
+            });
+
+            return $class;
+        });
+
+        $inputAdapter = $this->mockAdapter(['get']);
+        $inputAdapter->method('get')->willReturnArgument(0);
+
+        $environmentAdapter = $this->mockAdapter(['get']);
+        $environmentAdapter->method('get')->willReturn(false);
+
+        $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer']);
+        $controllerAdapter->method('reload')->willReturn('redirect');
+        $controllerAdapter->method('loadDataContainer')->willReturn('redirect');
+
+        $framework = $this->mockContaoFramework([
+            Image::class => $imageAdapter,
+            System::class => $systemAdapter,
+            Input::class => $inputAdapter,
+            Environment::class => $environmentAdapter,
+            Controller::class => $controllerAdapter,
+        ]);
+
+        $this->mockFrameworkMethods($framework);
+
+        return $framework;
+    }
+
     public function mockFrameworkMethods(&$framework)
     {
         $framework->method('createInstance')->willReturnCallback(function ($class, $arg) {
@@ -729,82 +806,5 @@ class FieldPaletteWizardTest extends ContaoTestCase
         System::getContainer()->set('contao.framework', $framework);
         $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
         $this->assertCount(3, $this->table);
-    }
-
-    protected function getCollectionMock($value)
-    {
-        $model1 = $this->mockClassWithProperties(FieldPaletteModel::class, [
-            'tstamp' => 1000,
-        ]);
-        $model2 = $this->mockClassWithProperties(FieldPaletteModel::class, [
-            'tstamp' => 2000,
-        ]);
-        $model3 = $this->mockClassWithProperties(FieldPaletteModel::class, [
-            'tstamp' => 0,
-        ]);
-
-        $collection = $this->createMock(Collection::class);
-        $collection->method('fetchEach')->willReturn($value);
-        $collection->method('next')->will($this->onConsecutiveCalls($model1, $model2, $model3));
-        $collection->method('current')->will($this->onConsecutiveCalls($model1, $model2, $model3));
-        $collection->method('getIterator')->willReturn(new \ArrayIterator([$model1, $model2, $model3]));
-
-        return $collection;
-    }
-
-    protected function getFramework()
-    {
-        $imageAdapter = $this->mockAdapter(['getHtml']);
-        $imageAdapter->method('getHtml')->willReturnCallback(function ($src, $alt = '', $attributes = '') {
-            return '<img src="'.$src.'" '.$attributes.'>';
-        });
-
-        $systemAdapter = $this->mockAdapter(['importStatic']);
-        $systemAdapter->method('importStatic')->willReturnCallback(function ($className) {
-            $class = $this->getMockBuilder('AReallyNonExistingClass')->setMethods([
-                'callbackMethod',
-                'labelCallback',
-                'argumentThree',
-                'setTableAndTrue',
-                'setTableAndFalse',
-            ])->getMock();
-            $class->method('callbackMethod')->willReturnArgument(0);
-            $class->method('labelCallback')->willReturnArgument(1);
-            $class->method('argumentThree')->willReturnArgument(2);
-            $class->method('setTableAndTrue')->willReturnCallback(function ($table) {
-                $this->table[] = $table;
-
-                return true;
-            });
-            $class->method('setTableAndFalse')->willReturnCallback(function ($table) {
-                $this->table[] = $table;
-
-                return false;
-            });
-
-            return $class;
-        });
-
-        $inputAdapter = $this->mockAdapter(['get']);
-        $inputAdapter->method('get')->willReturnArgument(0);
-
-        $environmentAdapter = $this->mockAdapter(['get']);
-        $environmentAdapter->method('get')->willReturn(false);
-
-        $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer']);
-        $controllerAdapter->method('reload')->willReturn('redirect');
-        $controllerAdapter->method('loadDataContainer')->willReturn('redirect');
-
-        $framework = $this->mockContaoFramework([
-            Image::class => $imageAdapter,
-            System::class => $systemAdapter,
-            Input::class => $inputAdapter,
-            Environment::class => $environmentAdapter,
-            Controller::class => $controllerAdapter,
-        ]);
-
-        $this->mockFrameworkMethods($framework);
-
-        return $framework;
     }
 }

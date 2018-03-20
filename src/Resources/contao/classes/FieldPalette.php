@@ -375,7 +375,7 @@ class FieldPalette
         return Input::get(static::$strTableRequestKey);
     }
 
-    public static function getParentTableFromRequest()
+    public function getParentTableFromRequest()
     {
         return \Input::get(static::$strParentTableRequestKey);
     }

@@ -10,6 +10,7 @@ namespace HeimrichHannot\FieldpaletteBundle\Element;
 
 use Contao\CoreBundle\Framework\ContaoFramework;
 use HeimrichHannot\FieldPalette\FieldPalette;
+use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Request\RoutingUtil;
 use Twig\Environment;
@@ -37,13 +38,18 @@ class ButtonElement
      * @var RoutingUtil
      */
     private $routeUtil;
+    /**
+     * @var DcaHandler
+     */
+    private $dcaHandler;
 
-    public function __construct(ContaoFramework $framework, string $table, Environment $twig, RoutingUtil $routeUtil)
+    public function __construct(ContaoFramework $framework, string $table, Environment $twig, RoutingUtil $routeUtil, DcaHandler $dcaHandler)
     {
         $this->framework = $framework;
         $this->defaultTable = $table;
         $this->twig = $twig;
         $this->routeUtil = $routeUtil;
+        $this->dcaHandler = $dcaHandler;
     }
 
     /**
@@ -197,7 +203,7 @@ class ButtonElement
         if (isset($parameter['popup']) && $parameter['popup']) {
             $parameter['popup'] = 1;
             $this->options['attributes']['onclick'] =
-                'onclick="FieldPaletteBackend.openModalIframe({\'action\':\''.FieldPalette::$strFieldpaletteRefreshAction.'\',\'syncId\':\''.$this->syncId
+                'onclick="FieldPaletteBackend.openModalIframe({\'action\':\''.DcaHandler::FieldpaletteRefreshAction.'\',\'syncId\':\''.$this->syncId
                 .'\',\'width\':768,\'title\':\''.specialchars(sprintf($this->modalTitle, $this->id)).'\',\'url\':this.href});return false;"';
         }
 
@@ -210,6 +216,13 @@ class ButtonElement
         return str_replace('app_dev.php/', '', $this->routeUtil->generateBackendRoute($parameter, true));
     }
 
+    /**
+     * @param $act
+     *
+     * @throws \Exception
+     *
+     * @return array
+     */
     protected function prepareParameter($act)
     {
         $parameters = [
@@ -234,7 +247,7 @@ class ButtonElement
                     $this->ptable === $this->defaultTable &&
                     ($model = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($this->pid))
                 ) {
-                    $parameters['table'] = FieldPalette::getParentTable($model, $model->id);
+                    $parameters['table'] = $this->dcaHandler->getParentTable($model, $model->id);
                 }
                 break;
             case 'toggle':

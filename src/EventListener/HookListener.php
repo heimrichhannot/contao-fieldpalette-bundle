@@ -16,6 +16,8 @@ use Contao\Input;
 use Contao\Widget;
 use HeimrichHannot\FieldPalette\FieldPalette;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor;
+use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
+use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class HookListener
@@ -32,12 +34,22 @@ class HookListener
      * @var ContaoFramework
      */
     private $framework;
+    /**
+     * @var DcaHandler
+     */
+    private $dcaHandler;
+    /**
+     * @var FieldPaletteModelManager
+     */
+    private $modelManager;
 
-    public function __construct(DcaExtractor $dcaExtractor, ContainerInterface $container, ContaoFramework $framework)
+    public function __construct(DcaExtractor $dcaExtractor, ContainerInterface $container, ContaoFramework $framework, DcaHandler $dcaHandler, FieldPaletteModelManager $modelManager)
     {
         $this->dcaExtractor = $dcaExtractor;
         $this->container = $container;
         $this->framework = $framework;
+        $this->dcaHandler = $dcaHandler;
+        $this->modelManager = $modelManager;
     }
 
     /**
@@ -46,7 +58,7 @@ class HookListener
      */
     public function initializeSystemHook()
     {
-        $table = FieldPalette::getTableFromRequest();
+        $table = $this->framework->getAdapter(Input::class)->get(DcaHandler::TableRequestKey);
 
         if (empty($table)) {
             return;
@@ -73,40 +85,38 @@ class HookListener
      */
     public function executePostActionsHook($action, DataContainer $dc)
     {
-        if ($action === FieldPalette::$strFieldpaletteRefreshAction) {
-            if ($this->framework->getAdapter(Input::class)->post('field')) {
-                $this->framework->getAdapter(Controller::class)->loadDataContainer($dc->table);
+        if ($this->framework->getAdapter(Input::class)->post('field')) {
+            $this->framework->getAdapter(Controller::class)->loadDataContainer($dc->table);
 
-                $name = $this->framework->getAdapter(Input::class)->post('field');
-                $field = $GLOBALS['TL_DCA'][$dc->table]['fields'][$name];
+            $name = $this->framework->getAdapter(Input::class)->post('field');
+            $field = $GLOBALS['TL_DCA'][$dc->table]['fields'][$name];
 
-                // Die if the field does not exist
-                if (!is_array($field)) {
-                    header('HTTP/1.1 400 Bad Request');
-                    die('Bad Request');
-                }
-
-                /** @var Widget $class */
-                $class = $GLOBALS['BE_FFL'][$field['inputType']];
-
-                // Die if the class is not defined or inputType is not fieldpalette
-                if ('fieldpalette' !== $field['inputType'] || !class_exists($class)) {
-                    header('HTTP/1.1 400 Bad Request');
-                    die('Bad Request');
-                }
-
-                $attributes = $this->framework->getAdapter(Widget::class)->getAttributesFromDca($field, $name, $dc->activeRecord->{$name}, $name, $dc->table, $dc);
-
-                /** @var Widget $widget */
-                $widget = new $class($attributes);
-                $widget->currentRecord = $dc->id;
-
-                die(json_encode(['field' => $name, 'target' => '#ctrl_'.$name, 'content' => $widget->generate()]));
+            // Die if the field does not exist
+            if (!is_array($field)) {
+                header('HTTP/1.1 400 Bad Request');
+                die('Bad Request');
             }
 
-            header('HTTP/1.1 400 Bad Request');
-            die('Bad Request');
+            /** @var Widget $class */
+            $class = $GLOBALS['BE_FFL'][$field['inputType']];
+
+            // Die if the class is not defined or inputType is not fieldpalette
+            if ('fieldpalette' !== $field['inputType'] || !class_exists($class)) {
+                header('HTTP/1.1 400 Bad Request');
+                die('Bad Request');
+            }
+
+            $attributes = $this->framework->getAdapter(Widget::class)->getAttributesFromDca($field, $name, $dc->activeRecord->{$name}, $name, $dc->table, $dc);
+
+            /** @var Widget $widget */
+            $widget = new $class($attributes);
+            $widget->currentRecord = $dc->id;
+
+            die(json_encode(['field' => $name, 'target' => '#ctrl_'.$name, 'content' => $widget->generate()]));
         }
+
+        header('HTTP/1.1 400 Bad Request');
+        die('Bad Request');
     }
 
     /**
@@ -124,8 +134,7 @@ class HookListener
         if (preg_match('/(contao\/install)/', $environment->get('request')) || 'group' === $input->get('do')) {
             $this->extractTableFields($table);
         }
-
-        FieldPalette::registerFieldPalette($table);
+        $this->dcaHandler->registerFieldPalette($table);
     }
 
     /**

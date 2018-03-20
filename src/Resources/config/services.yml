@@ -8,9 +8,14 @@ services:
       - '@huh.fieldpalette.dca.extractor'
       - '@service_container'
       - '@contao.framework'
+      - '@huh.fieldpalette.dca.handler'
+      - '@huh.fieldpalette.manager'
   huh.fieldpalette.listener.callback:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
-
+    arguments:
+       - '@contao.framework'
+       - '@huh.fieldpalette.manager'
+       - '@huh.fieldpalette.dca.handler'
   huh.fieldpalette.element.button:
     class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
     arguments:
@@ -18,9 +23,11 @@ services:
       - '%huh.fieldpalette.table%'
       - '@twig'
       - '@huh.utils.routing'
-
+      - '@huh.fieldpalette.dca.handler'
   huh.fieldpalette.registry:
     class: HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry
+  huh.fieldpalette.manager:
+    class: HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager
   huh.fieldpalette.dca.extractor:
     class: HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor
     arguments: ['@service_container']
@@ -29,3 +36,5 @@ services:
     arguments:
       - '%huh.fieldpalette.table%'
       - '@contao.framework'
+      - '@huh.fieldpalette.manager'
+      - '@request_stack'

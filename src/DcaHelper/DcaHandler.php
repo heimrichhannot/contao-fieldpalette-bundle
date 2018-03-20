@@ -13,8 +13,13 @@ use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\Input;
+use Contao\Session;
+use Contao\StringUtil;
 use Contao\System;
+use HeimrichHannot\FieldPalette\FieldPalette;
+use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class DcaHandler
 {
@@ -41,12 +46,22 @@ class DcaHandler
     /**
      * @var string
      */
-    private $defaultTable;
+    private $fieldPaletteTable;
+    /**
+     * @var FieldPaletteModelManager
+     */
+    private $modelManager;
+    /**
+     * @var RequestStack
+     */
+    private $requestStack;
 
-    public function __construct(string $table, ContaoFramework $framework)
+    public function __construct(string $table, ContaoFramework $framework, FieldPaletteModelManager $modelManager, RequestStack $requestStack)
     {
+        $this->fieldPaletteTable = $table;
         $this->framework = $framework;
-        $this->defaultTable = $table;
+        $this->modelManager = $modelManager;
+        $this->requestStack = $requestStack;
     }
 
     /**
@@ -101,31 +116,41 @@ class DcaHandler
         return $extract;
     }
 
-    public static function loadDynamicPaletteByParentTable($strAct, $strTable, $strParentTable)
+    /**
+     * @param string $act
+     * @param string $table
+     * @param string $parentTable
+     *
+     * @throws \Exception
+     *
+     * @return array|bool
+     */
+    public function loadDynamicPaletteByParentTable(string $act, string $table, string $parentTable)
     {
-        if (!isset($GLOBALS['loadDataContainer'][$strTable])) {
-            \Controller::loadDataContainer($strTable);
+        $input = $this->framework->getAdapter(Input::class);
+
+        if (!isset($GLOBALS['loadDataContainer'][$table])) {
+            $this->framework->getAdapter(Controller::class)->loadDataContainer($table);
         }
 
         $strRootTable = '';
         $varPalette = [];
 
-        switch ($strAct) {
+        switch ($act) {
             case 'create':
-                $strParentTable = FieldPalette::getParentTableFromRequest();
-                $strRootTable = $strParentTable;
+                $parentTable = $this->getParentTableFromRequest();
+                $strRootTable = $parentTable;
 
                 // determine root table from parent entity tree, if requested parent table = tl_fieldpalette -> nested fieldpalette
-                if ($strParentTable === $strTable && $intPid = \Input::get('pid')) {
-                    $helper = new FieldPaletteModel();
-                    $objParent = $helper->setTable($strParentTable)->findByPk($intPid);
+                if ($parentTable === $table && $intPid = $input->get('pid')) {
+                    $objParent = $this->modelManager->getModelByTable($parentTable)->findByPk($intPid);
 
                     if (null !== $objParent) {
-                        list($strRootTable, $varPalette) = static::getParentTable($objParent, $objParent->id);
+                        list($strRootTable, $varPalette) = $this->getParentTable($objParent, $objParent->id);
                     }
                 }
 
-                $varPalette[] = FieldPalette::getPaletteFromRequest(); // append requested palette
+                $varPalette[] = $this->getPaletteFromRequest(); // append requested palette
 
                 break;
             case 'cut':
@@ -133,29 +158,24 @@ class DcaHandler
             case 'show':
             case 'delete':
             case 'toggle':
-                $id = strlen(\Input::get('id')) ? \Input::get('id') : CURRENT_ID;
+                $id = strlen($input->get('id')) ? $input->get('id') : CURRENT_ID;
 
-                $helper = new FieldPaletteModel();
-                $objModel = $helper->setTable($strTable)->findByPk($id);
+                $objModel = $this->modelManager->getModelByTable($table)->findByPk($id);
 
-                if (null === $objModel) {
+                if (!$objModel) {
                     break;
                 }
 
-                list($strRootTable, $varPalette) = FieldPalette::getParentTable($objModel, $objModel->id);
-                $strParentTable = $objModel->ptable;
+                list($strRootTable, $varPalette) = $this->getParentTable($objModel, $objModel->id);
+                $parentTable = $objModel->ptable;
 
                 // set back link from request
-                if (\Input::get('popup') && \Input::get('popupReferer')) {
-                    $arrSession = \Session::getInstance()->getData();
-
-                    if (class_exists('\Contao\StringUtil')) {
-                        $arrSession['popupReferer'][TL_REFERER_ID]['current'] = \StringUtil::decodeEntities(rawurldecode(\Input::get('popupReferer')));
-                    } else {
-                        $arrSession['popupReferer'][TL_REFERER_ID]['current'] = \StringUtil::decodeEntities(rawurldecode(\Input::get('popupReferer')));
-                    }
-
-                    \Session::getInstance()->setData($arrSession);
+                if ($input->get('popup') && $input->get('popupReferer')) {
+                    /** @var Session $session */
+                    $session = $this->framework->createInstance(Session::class)->getData();
+                    $refererId = $this->requestStack->getCurrentRequest()->get('_contao_referer_id');
+                    $session['popupReferer'][$refererId]['current'] = StringUtil::decodeEntities(rawurldecode($input->get('popupReferer')));
+                    $session->setData($session);
                 }
 
                 break;
@@ -165,26 +185,31 @@ class DcaHandler
             return false;
         }
 
-        return [$varPalette, $strRootTable, $strParentTable];
+        return [$varPalette, $strRootTable, $parentTable];
     }
 
-    public static function registerFieldPalette($strTable)
+    /**
+     * @param string $table
+     *
+     * @throws \Exception
+     *
+     * @return bool
+     */
+    public function registerFieldPalette(string $table)
     {
-        $strParentTable = static::getParentTableFromRequest();
+        $parentTable = $this->getParentTableFromRequest();
 
-        list(
-            $varPalette, $strRootTable, $strParentTable
-            ) = FieldPalette::loadDynamicPaletteByParentTable(\Input::get('act'), $strTable, $strParentTable);
+        list($palette, $rootTable, $parentTable) = $this->loadDynamicPaletteByParentTable($this->framework->getAdapter(Input::class)->get('act'), $table, $parentTable);
 
-        if (!$GLOBALS['TL_DCA'][$strTable]['config']['fieldpalette'] || null === $strParentTable || null === $varPalette) {
+        if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$parentTable || !$palette) {
             return false;
         }
 
-        if ($strTable !== $strRootTable) {
-            \Controller::loadDataContainer($strRootTable);
+        if ($table !== $rootTable) {
+            $this->framework->getAdapter(Controller::class)->loadDataContainer($rootTable);
         }
 
-        $arrDCA = $GLOBALS['TL_DCA'][$strRootTable];
+        $arrDCA = $GLOBALS['TL_DCA'][$rootTable];
 
         $arrFields = $arrDCA['fields'];
 
@@ -192,66 +217,66 @@ class DcaHandler
             return false;
         }
 
-        if (!$varPalette) {
+        if (!$palette) {
             return false;
         }
 
         // nested palette
-        if (is_array($varPalette)) {
-            $arrNestedPalette = static::findNestedFieldPaletteFields($varPalette, $arrFields);
+        if (is_array($palette)) {
+            $arrNestedPalette = $this->findNestedFieldPaletteFields($palette, $arrFields);
 
             if (false !== $arrNestedPalette) {
                 $arrFields = $arrNestedPalette;
             }
         } else {
-            if (!isset($arrFields[$varPalette])) {
+            if (!isset($arrFields[$palette])) {
                 return false;
             }
 
-            $arrFields = [$varPalette => $arrFields[$varPalette]];
+            $arrFields = [$palette => $arrFields[$palette]];
         }
 
-        $blnFound = static::registerFieldPaletteFields($dc, $strTable, $strParentTable, $strRootTable, $varPalette, $arrFields);
+        $blnFound = $this->registerFieldPaletteFields($dc, $table, $parentTable, $rootTable, $palette, $arrFields);
 
         if (!$blnFound) {
-            static::refuseFromBackendModuleByTable($strTable);
+            static::refuseFromBackendModuleByTable($table);
         }
     }
 
-    public function findNestedFieldPaletteFields(array $arrPalettes, $arrFields)
+    public function findNestedFieldPaletteFields(array $palettes, array $fields)
     {
-        if (1 === count($arrPalettes)) {
-            $strPalette = $arrPalettes[0];
+        if (1 === count($palettes)) {
+            $palette = $palettes[0];
 
             // root level
-            if (!isset($arrFields['fields']) && isset($arrFields[$strPalette])) {
-                return [$strPalette => $arrFields[$strPalette]];
+            if (!isset($fields['fields']) && isset($fields[$palette])) {
+                return [$palette => $fields[$palette]];
             }
 
             // nested palette
-            if (isset($arrFields['fields'][$strPalette])) {
-                return [$strPalette => $arrFields['fields'][$strPalette]];
+            if (isset($fields['fields'][$palette])) {
+                return [$palette => $fields['fields'][$palette]];
             }
 
             return false;
         }
 
-        foreach ($arrPalettes as $i => $strFieldPalette) {
-            if (!isset($arrFields[$strFieldPalette])) {
+        foreach ($palettes as $i => $fieldPalette) {
+            if (!isset($fields[$fieldPalette])) {
                 return false;
             }
 
-            if ($arrFields[$strFieldPalette]['inputType'] !== 'fieldpalette') {
+            if ($fields[$fieldPalette]['inputType'] !== 'fieldpalette') {
                 return false;
             }
 
-            if (!is_array($arrFields[$strFieldPalette]['fieldpalette'])) {
+            if (!is_array($fields[$fieldPalette]['fieldpalette'])) {
                 return false;
             }
 
-            $arrChildPalettes = array_slice($arrPalettes, $i + 1, count($arrPalettes));
+            $childPalettes = array_slice($palettes, $i + 1, count($palettes));
 
-            return $this->findNestedFieldPaletteFields($arrChildPalettes, $arrFields[$strFieldPalette]['fieldpalette']['fields']);
+            return $this->findNestedFieldPaletteFields($childPalettes, $fields[$fieldPalette]['fieldpalette']['fields']);
         }
     }
 
@@ -319,44 +344,53 @@ class DcaHandler
         return false;
     }
 
-    public static function getTableFromRequest()
+    public function getTableFromRequest()
     {
-        return Input::get(static::$strTableRequestKey);
+        return $this->framework->getAdapter(Input::class)->get(static::TableRequestKey);
     }
 
-    public static function getParentTableFromRequest()
+    public function getParentTableFromRequest()
     {
-        return \Input::get(static::$strParentTableRequestKey);
+        return $this->framework->getAdapter(Input::class)->get(static::ParentTableRequestKey);
     }
 
-    public static function getPaletteFromRequest()
+    public function getPaletteFromRequest()
     {
-        return \Input::get(static::$strPaletteRequestKey);
+        return $this->framework->getAdapter(Input::class)->get(static::PaletteRequestKey);
     }
 
-    public static function getParentTable($objModel, $intId, $arrPalette = [])
+    /**
+     * @param FieldPaletteModel $model
+     * @param int               $id
+     * @param array             $palette
+     *
+     * @throws \Exception
+     *
+     * @return array
+     */
+    public function getParentTable(FieldPaletteModel $model, int $id, array $palette = [])
     {
         // always store current pfield
-        if (empty($arrPalette)) {
-            $arrPalette = [$objModel->pfield];
+        if (empty($palette)) {
+            $palette = [$model->pfield];
         }
 
-        if ($objModel->ptable === \Config::get('fieldpalette_table')) {
-            $objModel = Sys::findByPk($objModel->pid);
+        if ($model->ptable === $this->fieldPaletteTable) {
+            $model = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($model->pid);
 
-            if (null === $objModel) {
-                throw new \Exception(sprintf($GLOBALS['TL_LANG']['ERR']['fieldPaletteNestedParentTableDoesNotExist'], $intId));
+            if (!$model) {
+                throw new \Exception(sprintf($GLOBALS['TL_LANG']['ERR']['fieldPaletteNestedParentTableDoesNotExist'], $id));
             }
 
             // save nested path
-            if ($objModel->pfield) {
-                $arrPalette[] = $objModel->pfield;
+            if ($model->pfield) {
+                $palette[] = $model->pfield;
             }
 
-            return static::getParentTable($objModel, $intId, $arrPalette);
+            return $this->getParentTable($model, $id, $palette);
         }
 
-        return [$objModel->ptable, array_reverse($arrPalette)];
+        return [$model->ptable, array_reverse($palette)];
     }
 
     public function getDca(string $rootTable, string $parentTable, string $field, array $palette = [])
@@ -365,7 +399,7 @@ class DcaHandler
         $controller->loadDataContainer($rootTable);
 
         // custom table support
-        $paletteTable = $GLOBALS['TL_DCA'][$rootTable]['fields'][$field]['fieldpalette']['config']['table'] ?: $this->defaultTable;
+        $paletteTable = $GLOBALS['TL_DCA'][$rootTable]['fields'][$field]['fieldpalette']['config']['table'] ?: $this->fieldPaletteTable;
 
         $controller->loadDataContainer($paletteTable);
 
@@ -407,7 +441,7 @@ class DcaHandler
             foreach ($data['fields'] as $k => $v) {
                 if ($v['exclude']) {
                     if ($backendUser->hasAccess($paletteTable.'::'.$k, 'alexf')) {
-                        if ('tl_user_group' === $this->defaultTable) {
+                        if ('tl_user_group' === $this->fieldPaletteTable) {
                             $data['fields'][$k]['orig_exclude'] = $data['fields'][$k]['exclude'];
                         }
 

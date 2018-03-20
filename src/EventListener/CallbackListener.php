@@ -9,50 +9,58 @@
 namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
 use Contao\Controller;
-use Contao\DataContainer;
-use HeimrichHannot\FieldPalette\FieldPalette;
-use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
+use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
+use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
+use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 
 class CallbackListener
 {
     /**
-     * Returns a new FieldPaletteModel instance.
-     *
-     * @param string $table
-     *
-     * @return FieldPaletteModel
+     * @var FieldPaletteModelManager
      */
-    public function getModelInstance(string $table = '')
-    {
-        $model = new FieldPaletteModel();
-        if (!empty($table)) {
-            $model->setTable($table);
-        }
+    private $modelManager;
+    /**
+     * @var DcaHandler
+     */
+    private $dcaHandler;
+    /**
+     * @var ContaoFrameworkInterface
+     */
+    private $framework;
 
-        return $model;
+    public function __construct(ContaoFrameworkInterface $framework, FieldPaletteModelManager $modelManager, DcaHandler $dcaHandler)
+    {
+        $this->modelManager = $modelManager;
+        $this->dcaHandler = $dcaHandler;
+        $this->framework = $framework;
     }
 
     /**
      * @param string $table
      * @param $insertID
      * @param $set
-     * @param DataContainer $dc
+     *
+     * @return bool
      */
-    public function setTable(string $table, $insertID, $set, DataContainer $dc)
+    public function setTable(string $table, int $insertID, array $set)
     {
-        Controller::loadDataContainer($table);
+        $this->framework->getAdapter(Controller::class)->loadDataContainer($table);
 
-        if (!$GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) {
-            return;
+        if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette'])) {
+            return false;
+        }
+        $fieldPalette = $this->dcaHandler->getPaletteFromRequest();
+
+        $model = $this->modelManager->getModelByTable($table);
+        $model = $model->findByPk($insertID);
+
+        if (!$model) {
+            return false;
         }
 
-        $strFieldPalette = FieldPalette::getPaletteFromRequest();
-
-        $model = $this->getModelInstance($table)->findByPk($insertID);
-
         // if are within nested fieldpalettes set parent item tstamp
-        if ('tl_fieldpalette' === $set['ptable']) {
-            $parent = FieldPaletteModel::findByPk($model->pid);
+        if (isset($set['ptable']) && 'tl_fieldpalette' === $set['ptable']) {
+            $parent = $model->findByPk($model->pid);
 
             if (null !== $parent) {
                 $parent->tstamp = time();
@@ -61,7 +69,9 @@ class CallbackListener
         }
 
         // set fieldpalette field
-        $model->pfield = $strFieldPalette;
+        $model->pfield = $fieldPalette;
         $model->save();
+
+        return true;
     }
 }
