@@ -8,7 +8,10 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Test\Widget;
 
+use Contao\Controller;
+use Contao\Database;
 use Contao\DC_Table;
+use Contao\Environment;
 use Contao\Image;
 use Contao\Input;
 use Contao\Model\Collection;
@@ -20,11 +23,19 @@ use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard;
 use HeimrichHannot\UtilsBundle\Form\FormUtil;
 use HeimrichHannot\UtilsBundle\Request\RoutingUtil;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 
-class FieldPaletteWizartTest extends ContaoTestCase
+class FieldPaletteWizardTest extends ContaoTestCase
 {
+    /**
+     * @var int
+     */
+    protected $affectedRows = 0;
+    protected $table = [];
+
     protected function setUp()
     {
         parent::setUp();
@@ -46,6 +57,7 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $container->set('huh.fieldpalette.element.button', $buttonElementMock);
         $container->setParameter('contao.csrf_token_name', 'dummy_token');
         $container->set('security.csrf.token_manager', $tokenManager);
+        $container->set('session', new Session(new MockArraySessionStorage()));
         System::setContainer($container);
 
         if (!\interface_exists('\listable')) {
@@ -54,7 +66,10 @@ class FieldPaletteWizartTest extends ContaoTestCase
     }
 
     /**
+     * @param array $methods
      * @param mixed $value
+     *
+     * @throws \ReflectionException
      *
      * @return FieldPaletteWizard|\PHPUnit_Framework_MockObject_MockObject
      */
@@ -91,6 +106,40 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $mock->method('findByPidAndTableAndField')->willReturn($this->getCollectionMock($value));
 
         return $mock;
+    }
+
+    public function mockFrameworkMethods(&$framework)
+    {
+        $framework->method('createInstance')->willReturnCallback(function ($class, $arg) {
+            switch ($class) {
+                case Database::class:
+                    $dbresult = $this->mockAdapter(['execute']);
+                    $dbresult->method('execute')->willReturnCallback(function (int $a, $b) {
+                        $class = new \stdClass();
+                        $class->affectedRows = $a;
+
+                        return $class;
+                    });
+                    $database = $this->mockAdapter(['prepare', 'execute']);
+                    $database->method('prepare')->willReturnCallback(function ($sql) use ($dbresult) {
+                        $dbresult->sql = $sql;
+
+                        return $dbresult;
+                    });
+                    $database->method('execute')->willReturnCallback(function ($sql) {
+                        $strEnde = (strpos($sql, 'FROM') - 13);
+                        $this->table[] = substr($sql, 12, $strEnde);
+                        $class = new \stdClass();
+                        $class->affectedRows = $this->affectedRows;
+
+                        return $class;
+                    });
+
+                    return $database;
+                default:
+                    return null;
+            }
+        });
     }
 
     public function testGenerate()
@@ -458,6 +507,181 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $this->assertSame('paletteField : Neuen Beitrag anlegen', $options['modalTitle']);
     }
 
+    public function testReviseTable()
+    {
+        $reflectionClass = new \ReflectionClass(FieldPaletteWizard::class);
+        $testMethod = $reflectionClass->getMethod('reviseTable');
+        $testMethod->setAccessible(true);
+
+        $reflectionPropertyDca = $reflectionClass->getProperty('dca');
+        $reflectionPropertyDca->setAccessible(true);
+        $reflectionPropertyRecord = $reflectionClass->getProperty('objDca');
+        $reflectionPropertyRecord->setAccessible(true);
+
+        $widget = $this->getFieldPaletteWizardMock([]);
+        System::getContainer()->setParameter('huh.fieldpalette.table', 'tl_fieldpalette');
+
+        // Test without changes
+        // Ajax request false
+        // Reload false
+
+        $reflectionPropertyDca->setValue($widget, []);
+        $dcaObject = new \stdClass();
+        $dcaObject->activeRecord = new \stdClass();
+        $reflectionPropertyRecord->setValue($widget, $dcaObject);
+
+        $result = $testMethod->invokeArgs($widget, []);
+        $this->assertFalse($result);
+
+        System::getContainer()->get('session')->set('new_records', null);
+        $result = $testMethod->invokeArgs($widget, []);
+        $this->assertFalse($result);
+
+        System::getContainer()->get('session')->set('new_records', '');
+        $result = $testMethod->invokeArgs($widget, []);
+        $this->assertFalse($result);
+
+        System::getContainer()->get('session')->set('new_records', []);
+        $result = $testMethod->invokeArgs($widget, []);
+        $this->assertFalse($result);
+
+        System::getContainer()->get('session')->set('new_records', 42);
+        $result = $testMethod->invokeArgs($widget, []);
+        $this->assertFalse($result);
+
+        System::getContainer()->get('session')->set('new_records', []);
+        $reflectionPropertyDca->setValue($widget, ['config' => ['ptable' => 'tl_news']]);
+        $result = $testMethod->invokeArgs($widget, []);
+        $this->assertFalse($result);
+
+        $reflectionPropertyDca->setValue($widget, ['config' => ['ptable' => 'tl_news']]);
+        $result = $testMethod->invokeArgs($widget, []);
+        $this->assertFalse($result);
+
+        $reflectionPropertyDca->setValue($widget, ['config' => ['ptable' => 'tl_news', 'dynamicPtable' => true]]);
+        $result = $testMethod->invokeArgs($widget, []);
+        $this->assertFalse($result);
+
+        $reflectionPropertyDca->setValue($widget, ['config' => ['ctable' => 'tl_news', 'dynamicPtable' => true]]);
+        $result = $testMethod->invokeArgs($widget, []);
+        $this->assertFalse($result);
+
+        // Test with changes
+        // Ajax request false
+        // Reload true
+
+        System::getContainer()->get('session')->set('new_records', ['tl_news' => [3, 4, 5]]);
+        $reflectionPropertyDca->setValue($widget, []);
+        $dcaObject = new \stdClass();
+        $dcaObject->activeRecord = new \stdClass();
+        $dcaObject->activeRecord->id = 3;
+        $reflectionPropertyRecord->setValue($widget, $dcaObject);
+
+        System::getContainer()->get('session')->set('new_records', []);
+        $this->affectedRows = 2;
+        $reflectionPropertyDca->setValue($widget, ['config' => ['ptable' => 'tl_news']]);
+        $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
+
+        $reflectionPropertyDca->setValue($widget, ['config' => ['ptable' => 'tl_news', 'dynamicPtable' => true]]);
+        $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
+
+        $framework = System::getContainer()->get('contao.framework');
+        $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer']);
+        $controllerAdapter->method('reload')->willReturn('redirect');
+        $controllerAdapter->expects($this->once())->method('loadDataContainer');
+        $framework = $this->mockContaoFramework([
+            Environment::class => $framework->getAdapter(Environment::class),
+            Controller::class => $controllerAdapter,
+        ]);
+        $this->mockFrameworkMethods($framework);
+        System::getContainer()->set('contao.framework', $framework);
+        $GLOBALS['loadDataContainer']['tl_news_archive'] = true;
+        $reflectionPropertyDca->setValue($widget, ['config' => ['ctable' => ['tl_news', 'tl_news_archive']]]);
+        $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
+
+        $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer']);
+        $controllerAdapter->method('reload')->willReturn('redirect');
+        $controllerAdapter->method('loadDataContainer');
+        $framework = $this->mockContaoFramework([
+            Environment::class => $framework->getAdapter(Environment::class),
+            Controller::class => $controllerAdapter,
+        ]);
+        $this->mockFrameworkMethods($framework);
+        System::getContainer()->set('contao.framework', $framework);
+        $GLOBALS['loadDataContainer']['tl_news'] = true;
+        $GLOBALS['loadDataContainer']['tl_news_archive'] = true;
+        $this->table = [];
+        $reflectionPropertyDca->setValue($widget, ['config' => ['ctable' => ['tl_news', 'tl_news_archive', '']]]);
+        $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
+        $this->assertCount(2, $this->table);
+
+        $this->table = [];
+        $reflectionPropertyDca->setValue($widget, ['config' => ['ctable' => [
+            'tl_news', 'tl_news_archive', '', null, ['Hallo'], ]]]);
+        $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
+        $this->assertCount(2, $this->table);
+
+        // Test with changes and AJAX
+        // Ajax request true
+        // Reload true
+
+        $environmentAdapter = $this->mockAdapter(['get']);
+        $environmentAdapter->method('get')->willReturn(true);
+        $framework = $this->mockContaoFramework([
+            Environment::class => $environmentAdapter,
+            Controller::class => $framework->getAdapter(Controller::class),
+        ]);
+        $this->mockFrameworkMethods($framework);
+        System::getContainer()->set('contao.framework', $framework);
+        $this->assertTrue($testMethod->invokeArgs($widget, []));
+
+        // Test with changes
+        // Ajax request true
+        // Reload false
+
+        System::getContainer()->get('session')->set('new_records', null);
+        $reflectionPropertyDca->setValue($widget, []);
+        $environmentAdapter = $this->mockAdapter(['get']);
+        $environmentAdapter->method('get')->willReturn(true);
+        $framework = $this->mockContaoFramework([
+            Environment::class => $environmentAdapter,
+            Controller::class => $framework->getAdapter(Controller::class),
+        ]);
+        $this->mockFrameworkMethods($framework);
+        System::getContainer()->set('contao.framework', $framework);
+        $this->assertFalse($testMethod->invokeArgs($widget, []));
+
+        // Test Hooks
+        // Ajax request false
+        // Reload false
+
+        $GLOBALS['TL_HOOKS']['reviseTable'] = [
+            function ($table, $records) {
+                $this->table[] = $table;
+
+                return false;
+            },
+            [],
+            [CallbackListener::class, 'setTableAndFalse'],
+            [CallbackListener::class, 'setTableAndTrue'],
+            'Test',
+        ];
+        $this->table = [];
+        System::getContainer()->get('session')->set('new_records', null);
+        $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer']);
+        $controllerAdapter->expects($this->once())->method('reload')->willReturn('redirect');
+        $controllerAdapter->method('loadDataContainer');
+        $framework = $this->getFramework();
+        $framework = $this->mockContaoFramework([
+            System::class => $framework->getAdapter(System::class),
+            Controller::class => $controllerAdapter,
+            Environment::class => $framework->getAdapter(Environment::class),
+        ]);
+        System::getContainer()->set('contao.framework', $framework);
+        $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
+        $this->assertCount(3, $this->table);
+    }
+
     protected function getCollectionMock($value)
     {
         $model1 = $this->mockClassWithProperties(FieldPaletteModel::class, [
@@ -492,10 +716,22 @@ class FieldPaletteWizartTest extends ContaoTestCase
                 'callbackMethod',
                 'labelCallback',
                 'argumentThree',
+                'setTableAndTrue',
+                'setTableAndFalse',
             ])->getMock();
             $class->method('callbackMethod')->willReturnArgument(0);
             $class->method('labelCallback')->willReturnArgument(1);
             $class->method('argumentThree')->willReturnArgument(2);
+            $class->method('setTableAndTrue')->willReturnCallback(function ($table) {
+                $this->table[] = $table;
+
+                return true;
+            });
+            $class->method('setTableAndFalse')->willReturnCallback(function ($table) {
+                $this->table[] = $table;
+
+                return false;
+            });
 
             return $class;
         });
@@ -503,27 +739,23 @@ class FieldPaletteWizartTest extends ContaoTestCase
         $inputAdapter = $this->mockAdapter(['get']);
         $inputAdapter->method('get')->willReturnArgument(0);
 
-        return $this->mockContaoFramework([
+        $environmentAdapter = $this->mockAdapter(['get']);
+        $environmentAdapter->method('get')->willReturn(false);
+
+        $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer']);
+        $controllerAdapter->method('reload')->willReturn('redirect');
+        $controllerAdapter->method('loadDataContainer')->willReturn('redirect');
+
+        $framework = $this->mockContaoFramework([
             Image::class => $imageAdapter,
             System::class => $systemAdapter,
             Input::class => $inputAdapter,
+            Environment::class => $environmentAdapter,
+            Controller::class => $controllerAdapter,
         ]);
-    }
 
-//    public function testReviseTable()
-//    {
-//        $reflectionClass = new \ReflectionClass(FieldPaletteWizard::class);
-//        $testMethod = $reflectionClass->getMethod('reviseTable');
-//        $testMethod->setAccessible(true);
-//
-//        $widget = $this->getFieldPaletteWizardMock([]);
-//
-//        $itemModel = $this->mockClassWithProperties(FieldPaletteModel::class, [
-//            'ptable' => 'tl_news',
-//            'pfield' => 'title',
-//            'title' => 'Hallo',
-//            'id' => 5,
-//        ]);
-//        $this->assertSame('Result', $testMethod->invokeArgs($widget, [$itemModel]));
-//    }
+        $this->mockFrameworkMethods($framework);
+
+        return $framework;
+    }
 }

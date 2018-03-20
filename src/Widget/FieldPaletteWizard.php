@@ -74,7 +74,7 @@ class FieldPaletteWizard extends Widget
 
         $container = System::getContainer();
         $framework = $container->get('contao.framework');
-        $dcaHandler = $container->get('huh.fieldpalette.dca.handler');
+//        $dcaHandler = $container->get('huh.fieldpalette.dca.handler');
         $controller = $framework->getAdapter(Controller::class);
 
         $controller->loadLanguageFile($container->getParameter('huh.fieldpalette.table'));
@@ -530,21 +530,24 @@ class FieldPaletteWizard extends Widget
          * @var Environment
          */
         $environment = $framework->getAdapter(Environment::class);
+        /**
+         * @var System
+         */
+        $system = $framework->getAdapter(System::class);
 
         $reload = false;
-        $ptable = $this->dca['config']['ptable'];
-        $ctable = $this->dca['config']['ctable'];
+        $ptable = isset($this->dca['config']['ptable']) ? $this->dca['config']['ptable'] : null;
+        $ctable = isset($this->dca['config']['ctable']) ? $this->dca['config']['ctable'] : null;
 
-        $new_records = $container->get('session')->get('new_records');
+        $new_records = $container->get('session')->get('new_records') ?: null;
 
         // HOOK: add custom logic
         if (isset($GLOBALS['TL_HOOKS']['reviseTable']) && is_array($GLOBALS['TL_HOOKS']['reviseTable'])) {
             foreach ($GLOBALS['TL_HOOKS']['reviseTable'] as $callback) {
-                $status = null;
+                $status = false;
 
-                if (is_array($callback)) {
-                    $this->import($callback[0]);
-                    $status = $this->{$callback[0]}->{$callback[1]}($this->strTable, $new_records[$this->strTable], $ptable, $ctable);
+                if (is_array($callback) && count($callback) >= 2) {
+                    $status = $system->importStatic($callback[0])->{$callback[1]}($this->strTable, $new_records[$this->strTable], $ptable, $ctable);
                 } elseif (is_callable($callback)) {
                     $status = $callback($this->strTable, $new_records[$this->strTable], $ptable, $ctable);
                 }
@@ -573,8 +576,8 @@ class FieldPaletteWizard extends Widget
         }
 
         // Delete all fieldpalette records whose child record isn't existing
-        if ('' !== $ptable) {
-            if ($this->dca['config']['dynamicPtable']) {
+        if (!empty($ptable)) {
+            if (isset($this->dca['config']['dynamicPtable']) && $this->dca['config']['dynamicPtable']) {
                 $result = $framework->createInstance(Database::class)->execute(
                     'DELETE FROM '.$this->paletteTable." WHERE ptable='".$ptable."' AND NOT EXISTS (SELECT * FROM (SELECT * FROM "
                     .$ptable.') AS fpp WHERE '.$this->paletteTable.'.pid = fpp.id)'
@@ -594,13 +597,14 @@ class FieldPaletteWizard extends Widget
         // Delete all records of the child table that are not related to the current table
         if (!empty($ctable) && is_array($ctable)) {
             foreach ($ctable as $v) {
-                if ('' !== $v) {
+                if (is_string($v) && !empty($v)) {
                     // Load the DCA configuration so we can check for "dynamicPtable"
                     if (!isset($GLOBALS['loadDataContainer'][$v])) {
                         $controller->loadDataContainer($v);
                     }
 
-                    if ($GLOBALS['TL_DCA'][$v]['config']['dynamicPtable']) {
+                    if (isset($GLOBALS['TL_DCA'][$v]['config']['dynamicPtable'])
+                        && $GLOBALS['TL_DCA'][$v]['config']['dynamicPtable']) {
                         $result = $framework->createInstance(Database::class)->execute(
                             "DELETE FROM $v WHERE ptable='".$this->paletteTable."' AND NOT EXISTS (SELECT * FROM ".'(SELECT * FROM '
                             .$this->paletteTable.") AS fp WHERE $v.pid = fp.id)"
@@ -622,10 +626,12 @@ class FieldPaletteWizard extends Widget
         // Reload the page
         if ($reload) {
             if ($environment->get('isAjaxRequest')) {
-                return;
+                return true;
             }
 
-            $controller->reload();
+            return $controller->reload();
         }
+
+        return false;
     }
 }
