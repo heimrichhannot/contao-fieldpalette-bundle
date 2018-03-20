@@ -462,6 +462,37 @@ class FieldPaletteWizardTest extends ContaoTestCase
         $this->assertTrue(is_string($result));
         $this->assertNotFalse(strpos($result, 'LabelTestCallback'));
         $this->assertNotFalse(strpos($result, 'LabelTestCallable'));
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'operations' => [
+                    'move' => [
+                        'label' => [0 => 'LabelTestCallback', 1 => 'Element ID %s bearbeiten'],
+                        'href' => 'act=edit',
+                        'icon' => 'edit.gif',
+                        'button_callback' => [0 => CallbackListener::class, 1 => 'argumentThree'],
+                    ],
+                ],
+            ],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel]);
+        $this->assertTrue(is_string($result));
+
+        $reflectionPropertyDca->setValue($widget, [
+            'list' => [
+                'operations' => [
+                    'move' => [
+                        'label' => [0 => 'LabelTestCallback', 1 => 'Element ID %s bearbeiten'],
+                        'href' => 'act=edit',
+                        'icon' => 'edit.gif',
+                        'button_callback' => [0 => CallbackListener::class, 1 => 'argumentThree'],
+                    ],
+                ],
+            ],
+            'config' => ['notSortable' => true],
+        ]);
+        $result = $testMethod->invokeArgs($widget, [$itemModel]);
+        $this->assertTrue(is_string($result));
     }
 
     public function testGenerateGlobalButtons()
@@ -576,6 +607,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
         $dcaObject->activeRecord = new \stdClass();
         $dcaObject->activeRecord->id = 3;
         $reflectionPropertyRecord->setValue($widget, $dcaObject);
+        $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
 
         System::getContainer()->get('session')->set('new_records', []);
         $this->affectedRows = 2;
@@ -598,6 +630,23 @@ class FieldPaletteWizardTest extends ContaoTestCase
         $GLOBALS['loadDataContainer']['tl_news_archive'] = true;
         $reflectionPropertyDca->setValue($widget, ['config' => ['ctable' => ['tl_news', 'tl_news_archive']]]);
         $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
+
+        $framework = System::getContainer()->get('contao.framework');
+        $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer']);
+        $controllerAdapter->method('reload')->willReturn('redirect');
+        $controllerAdapter->expects($this->once())->method('loadDataContainer');
+        $framework = $this->mockContaoFramework([
+            Environment::class => $framework->getAdapter(Environment::class),
+            Controller::class => $controllerAdapter,
+        ]);
+        $this->mockFrameworkMethods($framework);
+        System::getContainer()->set('contao.framework', $framework);
+        $this->table = [];
+        $GLOBALS['TL_DCA']['tl_news_archive']['config']['dynamicPtable'] = true;
+        $this->assertSame('redirect', $testMethod->invokeArgs($widget, []));
+        $this->assertCount(2, $this->table);
+
+        unset($GLOBALS['TL_DCA']['tl_news_archive']['config']['dynamicPtable']);
 
         $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer']);
         $controllerAdapter->method('reload')->willReturn('redirect');

@@ -439,8 +439,8 @@ class FieldPaletteWizard extends Widget
             $defaultTable = $container->getParameter('huh.fieldpalette.table');
 
             foreach ($arrDirections as $dir) {
-                $label = $GLOBALS['TL_LANG'][$defaultTable][$dir][0] ?: $dir;
-                $title = $GLOBALS['TL_LANG'][$defaultTable][$dir][1] ?: $dir;
+                $label = isset($GLOBALS['TL_LANG'][$defaultTable][$dir][0]) ? $GLOBALS['TL_LANG'][$defaultTable][$dir][0] : $dir;
+                $title = isset($GLOBALS['TL_LANG'][$defaultTable][$dir][1]) ? $GLOBALS['TL_LANG'][$defaultTable][$dir][1] : $dir;
 
                 $label = $image->getHtml($dir.'.gif', $label);
                 $href = $value['href'] ?: '&amp;act=move';
