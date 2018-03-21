@@ -6,7 +6,7 @@
 [![](https://img.shields.io/coveralls/heimrichhannot/contao-fieldpalette-bundle/master.svg)](https://coveralls.io/github/heimrichhannot/contao-fieldpalette-bundle)
 
 FieldPalette is a contao widget similar to [MultiColumnWizard](https://github.com/menatwork/MultiColumnWizard).
-Unlike MultiColumnWizard, fields are stored flatly into 'tl_fieldpalette' table and synced with its parent field.
+Unlike MultiColumnWizard, fields are stored flatly into `tl_fieldpalette` table and synced with its parent field.
 
 The fieldpalette configuration is based on Contao's [Data Container Arrays](https://docs.contao.org/books/api/dca/index.html).
 
@@ -20,10 +20,10 @@ The fieldpalette configuration is based on Contao's [Data Container Arrays](http
 
 ### Default Setup (`tl_fieldpalette` table)
 
-This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That example is available within the module [heimrichhannot/contao-plus] (https://packagist.org/packages/heimrichhannot/contao-news_plus).
+This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That example is available within the module [heimrichhannot/contao-news_plus] (https://packagist.org/packages/heimrichhannot/contao-news_plus).
 
 ```php
-#/system/modules/[MyModule]/dca/tl_news.php
+# /src/Ressource/contao/dca/tl_news.php
 
 $dc = &$GLOBALS['TL_DCA']['tl_news'];
 
@@ -162,11 +162,11 @@ In order to use Fieldpalette with your own table, create a Data Container Array 
 
 ```
 <?php
-/* /dca/tl_member_address.php */
+# src/Ressources/contao/dca/tl_member_address.php 
 
-\Controller::loadLanguageFile('tl_fieldpalette');
-\Controller::loadDataContainer('tl_fieldpalette');
-\Controller::loadDataContainer('tl_member');
+Controller::loadLanguageFile('tl_fieldpalette');
+Controller::loadDataContainer('tl_fieldpalette');
+Controller::loadDataContainer('tl_member');
 
 $GLOBALS['TL_DCA']['tl_member_address'] = $GLOBALS['TL_DCA']['tl_fieldpalette'];
 $dca                                    = &$GLOBALS['TL_DCA']['tl_member_address'];
@@ -235,25 +235,23 @@ All attributes from https://docs.contao.org/books/api/dca/reference.html support
 
 ##### Sorting
 
-|  Key  | Value  | Description
-|  ---  | ---  | ---
+  Key    | Value               | Description
+---------| ------------------  | ---
 viewMode | View mode (integer) | **0** Table (default) <br /> **1** List 
 
 ### Support recursive copying of fieldpalette records by copying their parent record
 
-Simply add a ```oncopy_callback``` to the dca containing fields of type "fieldpalette":
+Simply add a `oncopy_callback` to the dca containing fields of type `fieldpalette`:
 
-```
-$GLOBALS['TL_DCA']['tl_*'] = array
-(
-    'config'   => array
-    (
+```php
+$GLOBALS['TL_DCA']['tl_*'] = [
+    'config'   => [
         // ...
-        'oncopy_callback' => array(
-            array('HeimrichHannot\FieldPalette\FieldPalette', 'copyFieldPaletteRecords')
-        ),
-    )
-)
+        'oncopy_callback' => [
+            ['huh.fieldpalette.listener.callback', 'copyFieldPaletteRecords']
+        ],
+    ]
+]
 ```
 
 #### Manipulate fieldpalette records about to be copied on the fly

@@ -18,7 +18,6 @@ use Contao\Model\Collection;
 use Contao\StringUtil;
 use Contao\System;
 use Contao\Widget;
-use HeimrichHannot\FieldPalette\FieldPalette;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use Patchwork\Utf8;
@@ -74,17 +73,14 @@ class FieldPaletteWizard extends Widget
 
         $container = System::getContainer();
         $framework = $container->get('contao.framework');
-//        $dcaHandler = $container->get('huh.fieldpalette.dca.handler');
+        $dcaHandler = $container->get('huh.fieldpalette.dca.handler');
         $controller = $framework->getAdapter(Controller::class);
 
         $controller->loadLanguageFile($container->getParameter('huh.fieldpalette.table'));
         $controller->loadLanguageFile($this->strTable);
 
         $this->import('Database');
-
-        $this->dca = FieldPalette::getDca($this->strTable, $this->strTable, $this->strName);
-
-//        $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
+        $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
         $this->viewMode = $this->dca['list']['viewMode'] ?: 0;
         $this->paletteTable = $this->dca['config']['table'] ?: $container->getParameter('huh.fieldpalette.table');
 

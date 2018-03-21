@@ -14,7 +14,6 @@ use Contao\DataContainer;
 use Contao\Environment;
 use Contao\Input;
 use Contao\Widget;
-use HeimrichHannot\FieldPalette\FieldPalette;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
@@ -53,7 +52,8 @@ class HookListener
     }
 
     /**
-     * Adjust back end module to allow fieldpalette table access
+     * Adjust back end module to allow fieldpalette table access.
+     *
      * Note: Do never execute Controller::loadDataContainer() inside this function as no BackendUser is available inside initializeSystem Hook.
      */
     public function initializeSystemHook()
@@ -172,11 +172,14 @@ class HookListener
      */
     protected function extractTableFields($tables)
     {
-        $palettes = FieldPalette::extractFieldPaletteFields($tables, $GLOBALS['TL_DCA'][$tables]['fields']);
-
+        $dcaFields = $GLOBALS['TL_DCA'][$tables]['fields'];
+        $palettes = [];
+        if (!empty($dcaFields)) {
+            $palettes = $this->dcaHandler->extractFieldPaletteFields($tables, $dcaFields);
+        }
         foreach ($palettes as $paletteTable => $fields) {
             if (!isset($GLOBALS['loadDataContainer'][$paletteTable])) {
-                Controller::loadDataContainer($paletteTable);
+                $this->framework->getAdapter(Controller::class)->loadDataContainer($paletteTable);
             }
 
             $GLOBALS['TL_DCA'][$paletteTable]['fields'] = array_merge(

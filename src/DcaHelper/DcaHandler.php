@@ -16,9 +16,9 @@ use Contao\Input;
 use Contao\Session;
 use Contao\StringUtil;
 use Contao\System;
-use HeimrichHannot\FieldPalette\FieldPalette;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
+use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class DcaHandler
@@ -55,13 +55,18 @@ class DcaHandler
      * @var RequestStack
      */
     private $requestStack;
+    /**
+     * @var FieldPaletteRegistry
+     */
+    private $registry;
 
-    public function __construct(string $table, ContaoFramework $framework, FieldPaletteModelManager $modelManager, RequestStack $requestStack)
+    public function __construct(string $table, ContaoFramework $framework, FieldPaletteModelManager $modelManager, RequestStack $requestStack, FieldPaletteRegistry $registry)
     {
         $this->fieldPaletteTable = $table;
         $this->framework = $framework;
         $this->modelManager = $modelManager;
         $this->requestStack = $requestStack;
+        $this->registry = $registry;
     }
 
     /**
@@ -73,12 +78,12 @@ class DcaHandler
      *
      * @return array
      */
-    public static function extractFieldPaletteFields(string $table, $fields = [], $paletteTable = null)
+    public function extractFieldPaletteFields(string $table, array $fields = [], $paletteTable = null)
     {
         $extract = [];
 
         if (null === $paletteTable) {
-            $paletteTable = Config::get('fieldpalette_table');
+            $paletteTable = $this->fieldPaletteTable;
         }
 
         if (!is_array($fields)) {
@@ -91,13 +96,13 @@ class DcaHandler
             }
 
             if (!isset($field['fieldpalette']['config']['table'])) {
-                $paletteTable = Config::get('fieldpalette_table');
+                $paletteTable = $this->fieldPaletteTable;
             }
 
             if ($field['fieldpalette']['config']['table'] && $field['fieldpalette']['config']['table'] !== $paletteTable) {
                 $paletteTable = $field['fieldpalette']['config']['table'];
 
-                Controller::loadDataContainer($paletteTable);
+                $this->framework->getAdapter(Controller::class)->loadDataContainer($paletteTable);
 
                 if (!isset($GLOBALS['TL_DCA'][$paletteTable])) {
                     throw new \Exception('Custom fieldpalette table '.$paletteTable.' does not exist.');
@@ -110,22 +115,22 @@ class DcaHandler
                 is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []
             );
 
-            $extract = array_merge_recursive($extract, static::extractFieldPaletteFields($table, $field['fieldpalette']['fields']));
+            $extract = array_merge_recursive($extract, $this->extractFieldPaletteFields($table, $field['fieldpalette']['fields']));
         }
 
         return $extract;
     }
 
     /**
-     * @param string $act
-     * @param string $table
-     * @param string $parentTable
+     * @param string|null $act
+     * @param string      $table
+     * @param string|null $parentTable
      *
      * @throws \Exception
      *
      * @return array|bool
      */
-    public function loadDynamicPaletteByParentTable(string $act, string $table, string $parentTable)
+    public function loadDynamicPaletteByParentTable($act, string $table, $parentTable)
     {
         $input = $this->framework->getAdapter(Input::class);
 
@@ -143,7 +148,7 @@ class DcaHandler
 
                 // determine root table from parent entity tree, if requested parent table = tl_fieldpalette -> nested fieldpalette
                 if ($parentTable === $table && $intPid = $input->get('pid')) {
-                    $objParent = $this->modelManager->getModelByTable($parentTable)->findByPk($intPid);
+                    $objParent = $this->modelManager->createModelByTable($parentTable)->findByPk($intPid);
 
                     if (null !== $objParent) {
                         list($strRootTable, $varPalette) = $this->getParentTable($objParent, $objParent->id);
@@ -160,7 +165,7 @@ class DcaHandler
             case 'toggle':
                 $id = strlen($input->get('id')) ? $input->get('id') : CURRENT_ID;
 
-                $objModel = $this->modelManager->getModelByTable($table)->findByPk($id);
+                $objModel = $this->modelManager->createModelByTable($table)->findByPk($id);
 
                 if (!$objModel) {
                     break;
@@ -211,9 +216,9 @@ class DcaHandler
 
         $arrDCA = $GLOBALS['TL_DCA'][$rootTable];
 
-        $arrFields = $arrDCA['fields'];
+        $fields = $arrDCA['fields'];
 
-        if (!is_array($arrFields)) {
+        if (!is_array($fields)) {
             return false;
         }
 
@@ -223,26 +228,32 @@ class DcaHandler
 
         // nested palette
         if (is_array($palette)) {
-            $arrNestedPalette = $this->findNestedFieldPaletteFields($palette, $arrFields);
+            $arrNestedPalette = $this->findNestedFieldPaletteFields($palette, $fields);
 
             if (false !== $arrNestedPalette) {
-                $arrFields = $arrNestedPalette;
+                $fields = $arrNestedPalette;
             }
         } else {
-            if (!isset($arrFields[$palette])) {
+            if (!isset($fields[$palette])) {
                 return false;
             }
 
-            $arrFields = [$palette => $arrFields[$palette]];
+            $fields = [$palette => $fields[$palette]];
         }
 
-        $blnFound = $this->registerFieldPaletteFields($dc, $table, $parentTable, $rootTable, $palette, $arrFields);
+        $blnFound = $this->registerFieldPaletteFields($dc, $table, $parentTable, $rootTable, $palette, $fields);
 
         if (!$blnFound) {
-            static::refuseFromBackendModuleByTable($table);
+            $this->refuseFromBackendModuleByTable($table);
         }
     }
 
+    /**
+     * @param array $palettes
+     * @param array $fields
+     *
+     * @return array|bool
+     */
     public function findNestedFieldPaletteFields(array $palettes, array $fields)
     {
         if (1 === count($palettes)) {
@@ -280,28 +291,39 @@ class DcaHandler
         }
     }
 
-    public static function registerFieldPaletteFields(&$dc, $strTable, $strParentTable, $strRootTable, $varPalette, $arrFields, $blnFound = false)
+    /**
+     * @param $dc
+     * @param string $table
+     * @param string $parentTable
+     * @param string $rootTable
+     * @param $palette
+     * @param array $fields
+     * @param bool  $blnFound
+     *
+     * @return bool
+     */
+    public function registerFieldPaletteFields(&$dc, string $table, string $parentTable, string $rootTable, $palette, array $fields, $blnFound = false)
     {
-        if (!is_array($arrFields)) {
+        if (!is_array($fields)) {
             return false;
         }
 
-        foreach ($arrFields as $strField => $arrData) {
-            if (!is_array($arrData) || !is_array($arrData['fieldpalette'])) {
+        foreach ($fields as $field => $fieldData) {
+            if (!is_array($fieldData) || !is_array($fieldData['fieldpalette'])) {
                 continue;
             }
 
             $dc['fields'] = array_merge(
                 is_array($dc['fields']) ? $dc['fields'] : [],
-                is_array($arrData['fieldpalette']['fields']) ? $arrData['fieldpalette']['fields'] : [],
-                is_array($GLOBALS['TL_DCA'][$strTable]['fields']) ? $GLOBALS['TL_DCA'][$strTable]['fields'] : []);
+                is_array($fieldData['fieldpalette']['fields']) ? $fieldData['fieldpalette']['fields'] : [],
+                is_array($GLOBALS['TL_DCA'][$table]['fields']) ? $GLOBALS['TL_DCA'][$table]['fields'] : []);
 
-            System::getContainer()->get('huh.fieldpalette.registry')->set($strRootTable, $strField, $dc);
+            $this->registry->set($rootTable, $field, $dc);
 
             // set active ptable
-            if (static::isActive($strRootTable, $strParentTable, $strTable, $strField)) {
-                \Controller::loadLanguageFile($strRootTable); // allow translations within parent fieldpalette table
-                $GLOBALS['TL_DCA'][$strTable] = static::getDca($strRootTable, $strParentTable, $strField, $varPalette);
+            if ($this->isActive($rootTable, $parentTable, $table, $field)) {
+                $this->framework->getAdapter(Controller::class)->loadLanguageFile($rootTable); // allow translations within parent fieldpalette table
+                $GLOBALS['TL_DCA'][$table] = $this->getDca($rootTable, $parentTable, $field, $palette);
             }
 
             $blnFound = true;
@@ -310,19 +332,20 @@ class DcaHandler
         return $blnFound;
     }
 
-    public static function isActive($strRootTable, $strParentTable, $strTable, $strField)
+    public function isActive(string $rootTable, string $parentTable, string $table, string $field)
     {
-        $arrRegistry = System::getContainer()->get('huh.fieldpalette.registry')->get($strRootTable);
+        $registry = $this->registry->get($rootTable);
 
-        if (!isset($arrRegistry[$strField])) {
+        if (!isset($registry[$field])) {
             return false;
         }
 
         // determine active state by current element
-        if (Fieldpalette::getTableFromRequest() === $strTable) {
-            $id = strlen(\Input::get('id')) ? \Input::get('id') : CURRENT_ID;
+        if ($this->getTableFromRequest() === $table) {
+            $id = $this->framework->getAdapter(Input::class)->get('id') ?: CURRENT_ID;
+            $act = $this->framework->getAdapter(Input::class)->get('act');
 
-            switch (\Input::get('act')) {
+            switch ($act) {
                 case 'create':
                     return true;
                 case 'cut':
@@ -330,14 +353,12 @@ class DcaHandler
                 case 'show':
                 case 'delete':
                 case 'toggle':
-                    $helper = new FieldPaletteModel();
-                    $objModel = $helper->setTable($strTable)->findByPk($id);
-
-                    if (null === $objModel) {
+                    $model = $this->modelManager->createModelByTable($table)->findByPk($id);
+                    if (!$model) {
                         return false;
                     }
 
-                    return $strParentTable === $objModel->ptable && $strField === $objModel->pfield;
+                    return $parentTable === $model->ptable && $field === $model->pfield;
             }
         }
 
@@ -393,6 +414,14 @@ class DcaHandler
         return [$model->ptable, array_reverse($palette)];
     }
 
+    /**
+     * @param string $rootTable
+     * @param string $parentTable
+     * @param string $field
+     * @param array  $palette
+     *
+     * @return array
+     */
     public function getDca(string $rootTable, string $parentTable, string $field, array $palette = [])
     {
         $controller = $this->framework->getAdapter(Controller::class);
@@ -434,7 +463,7 @@ class DcaHandler
             $data['palettes']['default'] .= ';{published_legend},published'; // always append published
         }
 
-        $backendUser = $this->framework->getAdapter(BackendUser::class)->getInstance;
+        $backendUser = $this->framework->createInstance(BackendUser::class);
 
         // Include all excluded fields which are allowed for the current user
         if ($data['fields']) {
@@ -454,7 +483,10 @@ class DcaHandler
         return $data;
     }
 
-    public static function refuseFromBackendModuleByTable($strTable)
+    /**
+     * @param string $table
+     */
+    public function refuseFromBackendModuleByTable(string $table)
     {
         foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup) {
             if (!is_array($arrGroup)) {
@@ -466,8 +498,8 @@ class DcaHandler
                     continue;
                 }
 
-                if (!in_array($strTable, $arrModule['tables'], true)
-                    || false === ($idx = array_search(\Config::get('fieldpalette_table'), $arrModule['tables'], true))
+                if (!in_array($table, $arrModule['tables'], true)
+                    || false === ($idx = array_search($this->fieldPaletteTable, $arrModule['tables'], true))
                 ) {
                     continue;
                 }
@@ -478,85 +510,86 @@ class DcaHandler
     }
 
     /**
-     * @param $intPid       int The id of the former parent record
-     * @param $intNewId     int the id of the new parent record just copied from the former record
-     * @param $strTable     string The parent table
-     * @param $arrDcaFields array A dca array of fields
+     * @param int    $pid       The id of the former parent record
+     * @param int    $newId     the id of the new parent record just copied from the former record
+     * @param string $table     The parent table
+     * @param array  $dcaFields A dca array of fields
      */
-    public static function recursivelyCopyFieldPaletteRecords($intPid, $intNewId, $strTable, array $arrDcaFields)
+    public function recursivelyCopyFieldPaletteRecords(int $pid, int $newId, string $table, array $dcaFields)
     {
-        foreach ($arrDcaFields as $strField => $arrData) {
-            if ('fieldpalette' === $arrData['inputType']) {
-                if (isset($arrData['fieldpalette']['fields']) && !$arrData['eval']['doNotCopy']) {
-                    $objFieldPaletteRecords = System::getContainer()->get('contao.framework')->getAdapter(FieldPaletteModel::class)->findByPidAndTableAndField($intPid, $strTable, $strField);
+        foreach ($dcaFields as $field => $fieldData) {
+            if ('fieldpalette' === $fieldData['inputType']) {
+                if (isset($fieldData['fieldpalette']['fields']) && !$fieldData['eval']['doNotCopy']) {
+                    $fieldPaletteRecords = $this->modelManager->createModel()->findByPidAndTableAndField($pid, $table, $field);
 
-                    if (null === $objFieldPaletteRecords) {
+                    if (!$fieldPaletteRecords) {
                         continue;
                     }
 
-                    while ($objFieldPaletteRecords->next()) {
-                        $objFieldpalette = new FieldPaletteModel();
+                    while ($fieldPaletteRecords->next()) {
+                        $fieldPaletteModel = $this->modelManager->createModel();
 
                         // get existing data except id
-                        $arrFieldData = $objFieldPaletteRecords->row();
+                        $arrFieldData = $fieldPaletteRecords->row();
                         unset($arrFieldData['id']);
 
-                        $objFieldpalette->setRow($arrFieldData);
+                        $fieldPaletteModel->setRow($arrFieldData);
 
                         // set new data
-                        $objFieldpalette->tstamp = time();
-                        $objFieldpalette->pid = $intNewId;
-                        $objFieldpalette->published = true;
+                        $fieldPaletteModel->tstamp = time();
+                        $fieldPaletteModel->pid = $newId;
+                        $fieldPaletteModel->published = true;
 
-                        if (isset($arrData['eval']['fieldpalette']['copy_callback']) && is_array($arrData['eval']['fieldpalette']['copy_callback'])) {
-                            foreach ($arrData['eval']['fieldpalette']['copy_callback'] as $arrCallback) {
-                                if (is_array($arrCallback)) {
-                                    \System::importStatic($arrCallback[0]);
-                                    $arrCallback[0]::$arrCallback[1]($objFieldpalette, $intPid, $intNewId, $strTable, $arrData);
-                                } elseif (is_callable($arrCallback)) {
-                                    $arrCallback($objFieldpalette, $intPid, $intNewId, $strTable, $arrData);
+                        if (isset($fieldData['eval']['fieldpalette']['copy_callback']) && is_array($fieldData['eval']['fieldpalette']['copy_callback'])) {
+                            foreach ($fieldData['eval']['fieldpalette']['copy_callback'] as $callback) {
+                                if (is_array($callback)) {
+                                    $this->framework->getAdapter(System::class)
+                                        ->importStatic($callback[0]);
+                                    $callback[0]::$callback[1]($fieldPaletteModel, $pid, $newId, $table, $fieldData);
+                                } elseif (is_callable($callback)) {
+                                    $callback($fieldPaletteModel, $pid, $newId, $table, $fieldData);
                                 }
                             }
                         }
 
-                        $objFieldpalette->save();
+                        $fieldPaletteModel->save();
 
-                        static::recursivelyCopyFieldPaletteRecords(
-                            $objFieldPaletteRecords->id,
-                            $objFieldpalette->id,
-                            \Config::get('fieldpalette_table'),
-                            $arrData['fieldpalette']['fields']
+                        $this->recursivelyCopyFieldPaletteRecords(
+                            $fieldPaletteRecords->id,
+                            $fieldPaletteModel->id,
+                            $this->fieldPaletteTable,
+                            $fieldData['fieldpalette']['fields']
                         );
                     }
                 }
             } else {
-                if ($strTable === \Config::get('fieldpalette_table')) {
-                    $objFieldPaletteRecords = System::getContainer()->get('contao.framework')->getAdapter(FieldPaletteModel::class)->findByPidAndTableAndField($intPid, $strTable, $strField);
+                if ($table === $this->fieldPaletteTable) {
+                    $fieldPaletteRecords = $this->modelManager->createModel()
+                        ->findByPidAndTableAndField($pid, $table, $field);
 
-                    if (null === $objFieldPaletteRecords) {
+                    if (!$fieldPaletteRecords) {
                         continue;
                     }
 
-                    while ($objFieldPaletteRecords->next()) {
-                        $objFieldpalette = new FieldPaletteModel();
-                        $objFieldpalette->setRow($objFieldPaletteRecords->row());
+                    while ($fieldPaletteRecords->next()) {
+                        $fieldPaletteModel = $this->modelManager->createModel();
+                        $fieldPaletteModel->setRow($fieldPaletteRecords->row());
                         // set new data
-                        $objFieldpalette->tstamp = time();
-                        $objFieldpalette->pid = $intNewId;
-                        $objFieldpalette->published = true;
+                        $fieldPaletteModel->tstamp = time();
+                        $fieldPaletteModel->pid = $newId;
+                        $fieldPaletteModel->published = true;
 
-                        if (isset($arrData['eval']['fieldpalette']['copy_callback']) && is_array($arrData['eval']['fieldpalette']['copy_callback'])) {
-                            foreach ($arrData['eval']['fieldpalette']['copy_callback'] as $arrCallback) {
-                                if (is_array($arrCallback)) {
-                                    \System::importStatic($arrCallback[0]);
-                                    $arrCallback[0]::$arrCallback[1]($objFieldpalette, $intPid, $intNewId, $strTable, $arrData);
-                                } elseif (is_callable($arrCallback)) {
-                                    $arrCallback($objFieldpalette, $intPid, $intNewId, $strTable, $arrData);
+                        if (isset($fieldData['eval']['fieldpalette']['copy_callback']) && is_array($fieldData['eval']['fieldpalette']['copy_callback'])) {
+                            foreach ($fieldData['eval']['fieldpalette']['copy_callback'] as $callback) {
+                                if (is_array($callback)) {
+                                    $this->framework->getAdapter(System::class)->importStatic($callback[0]);
+                                    $callback[0]->$callback[1]($fieldPaletteModel, $pid, $newId, $table, $fieldData);
+                                } elseif (is_callable($callback)) {
+                                    $callback($fieldPaletteModel, $pid, $newId, $table, $fieldData);
                                 }
                             }
                         }
-
-                        $objFieldpalette->save();
+                        $fieldPaletteModel->save();
                     }
                 }
             }

@@ -10,8 +10,10 @@ namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
+use Contao\Input;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
+use HeimrichHannot\UtilsBundle\Container\ContainerUtil;
 
 class CallbackListener
 {
@@ -27,12 +29,17 @@ class CallbackListener
      * @var ContaoFrameworkInterface
      */
     private $framework;
+    /**
+     * @var ContainerUtil
+     */
+    private $containerUtil;
 
-    public function __construct(ContaoFrameworkInterface $framework, FieldPaletteModelManager $modelManager, DcaHandler $dcaHandler)
+    public function __construct(ContaoFrameworkInterface $framework, FieldPaletteModelManager $modelManager, DcaHandler $dcaHandler, ContainerUtil $containerUtil)
     {
         $this->modelManager = $modelManager;
         $this->dcaHandler = $dcaHandler;
         $this->framework = $framework;
+        $this->containerUtil = $containerUtil;
     }
 
     /**
@@ -51,7 +58,7 @@ class CallbackListener
         }
         $fieldPalette = $this->dcaHandler->getPaletteFromRequest();
 
-        $model = $this->modelManager->getModelByTable($table);
+        $model = $this->modelManager->createModelByTable($table);
         $model = $model->findByPk($insertID);
 
         if (!$model) {
@@ -73,5 +80,31 @@ class CallbackListener
         $model->save();
 
         return true;
+    }
+
+    /**
+     * Use this method as an oncopy_callback.
+     * Support recursive copying fieldpalette records by copying their parent record.
+     *
+     * @param int $newId
+     */
+    public function copyFieldPaletteRecords(int $newId)
+    {
+        if (!$this->containerUtil->isBackend()) {
+            return;
+        }
+
+        $id = $this->framework->getAdapter(Input::class)->get('id') ?: CURRENT_ID;
+        $do = $this->framework->getAdapter(Input::class)->get('do');
+
+        $table = $do ? 'tl_'.$do : null;
+
+        if (!$id || !$table) {
+            return;
+        }
+        $this->framework->getAdapter(Controller::class)->loadDataContainer($table);
+        $dcaFields = $GLOBALS['TL_DCA'][$table]['fields'];
+
+        $this->dcaHandler->recursivelyCopyFieldPaletteRecords($id, $newId, $table, $dcaFields);
     }
 }

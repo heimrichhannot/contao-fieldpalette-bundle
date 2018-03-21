@@ -16,6 +16,7 @@ services:
        - '@contao.framework'
        - '@huh.fieldpalette.manager'
        - '@huh.fieldpalette.dca.handler'
+       - '@huh.utils.container'
   huh.fieldpalette.element.button:
     class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
     arguments:
@@ -38,3 +39,4 @@ services:
       - '@contao.framework'
       - '@huh.fieldpalette.manager'
       - '@request_stack'
+      - '@huh.fieldpalette.registry'

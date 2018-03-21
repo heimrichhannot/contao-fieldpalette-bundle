@@ -9,7 +9,6 @@
 namespace HeimrichHannot\FieldpaletteBundle\Element;
 
 use Contao\CoreBundle\Framework\ContaoFramework;
-use HeimrichHannot\FieldPalette\FieldPalette;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Request\RoutingUtil;
@@ -213,7 +212,7 @@ class ButtonElement
         // required by DC_TABLE::getNewPosition() within nested fieldpalettes
         $parameter['mode'] = 2;
 
-        return str_replace('app_dev.php/', '', $this->routeUtil->generateBackendRoute($parameter, true));
+        return $this->routeUtil->generateBackendRoute($parameter, true);
     }
 
     /**
