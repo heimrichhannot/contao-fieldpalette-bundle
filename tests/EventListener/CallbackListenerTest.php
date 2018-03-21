@@ -13,45 +13,28 @@ use Contao\TestCase\ContaoTestCase;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
+use HeimrichHannot\UtilsBundle\Container\ContainerUtil;
+use HeimrichHannot\UtilsBundle\Request\RoutingUtil;
+use HeimrichHannot\UtilsBundle\Url\UrlUtil;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\RouterInterface;
 
 class CallbackListenerTest extends ContaoTestCase
 {
     protected $testCounter = 0;
 
-    protected function setUp()
+    public function setUp()
     {
         parent::setUp();
         $this->testCounter = 0;
     }
 
-    public function testSetTable()
-    {
-        $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock());
-
-        $result = $listener->setTable('tl_news', 1, []);
-        $this->assertFalse($result);
-
-        $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
-        $result = $listener->setTable('null', 1, []);
-        $this->assertFalse($result);
-
-        $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
-        $result = $listener->setTable('tl_news', 1, []);
-        $this->assertTrue($result);
-
-        $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
-        $result = $listener->setTable('tl_news', 1, ['ptable' => 'tl_news']);
-        $this->assertTrue($result);
-
-        $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
-        $result = $listener->setTable('tl_news', 1, ['ptable' => 'tl_fieldpalette']);
-        $this->assertTrue($result);
-    }
-
     /**
      * @return \Contao\CoreBundle\Framework\ContaoFramework|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected function getFrameworkMock()
+    public function getFrameworkMock()
     {
         $controllerAdapter = $this->mockAdapter(['loadDataContainer']);
         $controllerAdapter->method('loadDataContainer')->willReturn(true);
@@ -66,10 +49,10 @@ class CallbackListenerTest extends ContaoTestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject|FieldPaletteModelManager
      */
-    protected function getModelManagerMock()
+    public function getModelManagerMock()
     {
         $manager = $this->createMock(FieldPaletteModelManager::class);
-        $manager->method('getModelByTable')->willReturnCallback(function ($table) {
+        $manager->method('createModelByTable')->willReturnCallback(function ($table) {
             switch ($table) {
                 case 'null':
                     return null;
@@ -115,11 +98,86 @@ class CallbackListenerTest extends ContaoTestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject|DcaHandler
      */
-    protected function getDcaHandlerMock()
+    public function getDcaHandlerMock()
     {
         $handler = $this->createMock(DcaHandler::class);
         $handler->method('getPaletteFromRequest')->willReturn('tl_news');
 
         return $handler;
+    }
+
+    public function getRequestStackMock()
+    {
+        $router = $this->createMock(RouterInterface::class);
+        $requestStack = new RequestStack();
+        $request = new Request();
+        $request->attributes->set('_contao_referer_id', 'foobar');
+        $requestStack->push($request);
+
+        return $requestStack;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject|ContainerUtil
+     */
+    public function getContainerUtilMock()
+    {
+        $util = $this->createMock(ContainerUtil::class);
+
+        return $util;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject|UrlUtil
+     */
+    public function getUrlUtilMock()
+    {
+        $util = $this->createMock(UrlUtil::class);
+
+        return $util;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject|LoggerInterface
+     */
+    public function getLoggerMock()
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+
+        return $logger;
+    }
+
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject|RoutingUtil
+     */
+    public function getRoutingUtilMock()
+    {
+        $util = $this->createMock(RoutingUtil::class);
+
+        return $util;
+    }
+
+    public function testSetTable()
+    {
+        $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock(), $this->getRequestStackMock(), $this->getContainerUtilMock(), $this->getUrlUtilMock(), $this->getRoutingUtilMock(), $this->getLoggerMock());
+
+        $result = $listener->setTable('tl_news', 1, []);
+        $this->assertFalse($result);
+
+        $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
+        $result = $listener->setTable('null', 1, []);
+        $this->assertFalse($result);
+
+        $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
+        $result = $listener->setTable('tl_news', 1, []);
+        $this->assertTrue($result);
+
+        $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
+        $result = $listener->setTable('tl_news', 1, ['ptable' => 'tl_news']);
+        $this->assertTrue($result);
+
+        $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
+        $result = $listener->setTable('tl_news', 1, ['ptable' => 'tl_fieldpalette']);
+        $this->assertTrue($result);
     }
 }
