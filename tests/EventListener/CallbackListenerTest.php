@@ -9,6 +9,7 @@
 namespace HeimrichHannot\FieldpaletteBundle\Test\EventListener;
 
 use Contao\Controller;
+use Contao\Input;
 use Contao\TestCase\ContaoTestCase;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener;
@@ -24,11 +25,13 @@ use Symfony\Component\Routing\RouterInterface;
 class CallbackListenerTest extends ContaoTestCase
 {
     protected $testCounter = 0;
+    protected $loadDataContainerCount = 0;
 
     public function setUp()
     {
         parent::setUp();
         $this->testCounter = 0;
+        $this->loadDataContainerCount = 0;
     }
 
     /**
@@ -37,10 +40,19 @@ class CallbackListenerTest extends ContaoTestCase
     public function getFrameworkMock()
     {
         $controllerAdapter = $this->mockAdapter(['loadDataContainer']);
-        $controllerAdapter->method('loadDataContainer')->willReturn(true);
+        $controllerAdapter->method('loadDataContainer')->willReturnCallback(function () {
+            ++$this->loadDataContainerCount;
+
+            return true;
+        });
+
+        $inputAdapter = $this->mockAdapter(['get']);
+        $inputAdapter->method('get')->willReturnCallback(function () {
+        });
 
         $framework = $this->mockContaoFramework([
             Controller::class => $controllerAdapter,
+            Input::class => $inputAdapter,
         ]);
 
         return $framework;
@@ -120,9 +132,10 @@ class CallbackListenerTest extends ContaoTestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject|ContainerUtil
      */
-    public function getContainerUtilMock()
+    public function getContainerUtilMock($isBackend = false)
     {
         $util = $this->createMock(ContainerUtil::class);
+        $util->method('isBackend')->willReturn($isBackend);
 
         return $util;
     }
@@ -179,5 +192,18 @@ class CallbackListenerTest extends ContaoTestCase
         $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
         $result = $listener->setTable('tl_news', 1, ['ptable' => 'tl_fieldpalette']);
         $this->assertTrue($result);
+    }
+
+    public function testCopyFieldPaletteRecords()
+    {
+        $containerUtil = $this->getContainerUtilMock(false);
+        $containerUtil->expects($this->once())->method('isBackend')->willReturn(false);
+        $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock(), $this->getRequestStackMock(), $containerUtil, $this->getUrlUtilMock(), $this->getRoutingUtilMock(), $this->getLoggerMock());
+        $listener->copyFieldPaletteRecords(3);
+
+//        $containerUtil = $this->getContainerUtilMock(true);
+//        $containerUtil->expects($this->once())->method('isBackend')->willReturn(true);
+//        $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock(), $this->getRequestStackMock(), $containerUtil, $this->getUrlUtilMock(), $this->getRoutingUtilMock(), $this->getLoggerMock());
+//        $listener->copyFieldPaletteRecords(3);
     }
 }
