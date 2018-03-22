@@ -9,8 +9,6 @@
  * @license http://www.gnu.org/licences/lgpl-3.0.html LGPL
  */
 
-use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-
 $GLOBALS['TL_DCA']['tl_fieldpalette'] = [
     'config'      => [
         'dataContainer'     => 'Table',
@@ -20,7 +18,7 @@ $GLOBALS['TL_DCA']['tl_fieldpalette'] = [
         'enableVersioning'  => true,
         'notCopyable'       => true,
         'onload_callback'   => [
-            'setDateAdded'              => ['HeimrichHannot\HastePlus\Utilities', 'setDateAdded', true],
+            'setDateAdded'              => ['huh.utils.dca', 'setDateAdded', true],
             'setReferrerOnSaveAndClose' => ['huh.fieldpalette.listener.callback', 'setReferrerOnSaveAndClose'],
         ],
         'sql'               => [

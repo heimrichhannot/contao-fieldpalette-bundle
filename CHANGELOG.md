@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2018-03-22
+
+#### Changed
+* removed haste_plus dependencies
+
 ## [0.1.1] - 2018-03-22
 
 #### Fixed

@@ -113,18 +113,18 @@ FieldPaletteBackend.openModalIframe = function (options) {
         var hasError = form.querySelectorAll('.tl_error').length > 0;
 
         var url = form.getAttribute('action'),
-            closeModal = HASTE_PLUS.getParameterByName('closeModal', url);
+            closeModal = UtilsBundle.getParameterByName('closeModal', url);
 
         if (closeModal && !hasError) {
             M.hide();
         }
         else {
-            url = HASTE_PLUS.removeParameterFromUri(url, 'closeModal');
+            url = UtilsBundle.removeParameterFromUri(url, 'closeModal');
             form.setAttribute('action', url);
         }
 
         form.getElementById('saveNclose').addEventListener("click", function () {
-            url = HASTE_PLUS.addParameterToUri(url, 'closeModal', 1);
+            url = UtilsBundle.addParameterToUri(url, 'closeModal', 1);
             form.setAttribute('action', url);
         });
 
