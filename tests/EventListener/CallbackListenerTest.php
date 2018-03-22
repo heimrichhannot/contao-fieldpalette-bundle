@@ -68,6 +68,8 @@ class CallbackListenerTest extends ContaoTestCase
             switch ($table) {
                 case 'null':
                     return null;
+                case 'tl_null':
+                    return null;
                 default:
                     $model = $this->mockAdapter([
                         'findByPk',
@@ -98,7 +100,11 @@ class CallbackListenerTest extends ContaoTestCase
                         }
                     });
                     $model->method('save')->willReturnSelf();
-                    $model->pid = 2;
+                    if ('tl_parentnull' === $table) {
+                        $model->pid = 0;
+                    } else {
+                        $model->pid = 2;
+                    }
 
                     return $model;
             }
@@ -178,7 +184,15 @@ class CallbackListenerTest extends ContaoTestCase
         $this->assertFalse($result);
 
         $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;
+        $GLOBALS['TL_DCA']['tl_null']['config']['fieldpalette'] = true;
+
         $result = $listener->setTable('null', 1, []);
+        $this->assertFalse($result);
+
+        $result = $listener->setTable('tl_null', 1, []);
+        $this->assertFalse($result);
+
+        $result = $listener->setTable('tl_parentnull', 1, []);
         $this->assertFalse($result);
 
         $GLOBALS['TL_DCA']['tl_news']['config']['fieldpalette'] = true;

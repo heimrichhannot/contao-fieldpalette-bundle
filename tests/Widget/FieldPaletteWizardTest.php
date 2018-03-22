@@ -540,14 +540,14 @@ class FieldPaletteWizardTest extends ContaoTestCase
         $this->assertNotFalse(strpos($result, 'LabelTestCallback'));
         $this->assertNotFalse(strpos($result, 'LabelTestCallable'));
 
+        System::getContainer()->setParameter('huh.fieldpalette.table', 'tl_fieldpalette');
         $reflectionPropertyDca->setValue($widget, [
             'list' => [
                 'operations' => [
                     'move' => [
                         'label' => [0 => 'LabelTestCallback', 1 => 'Element ID %s bearbeiten'],
-                        'href' => 'act=edit',
-                        'icon' => 'edit.gif',
-                        'button_callback' => [0 => CallbackListener::class, 1 => 'argumentThree'],
+                        'href' => 'act=move',
+                        'icon' => 'move.gif',
                     ],
                 ],
             ],

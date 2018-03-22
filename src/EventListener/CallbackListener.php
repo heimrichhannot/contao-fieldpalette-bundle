@@ -102,16 +102,17 @@ class CallbackListener
         }
         $fieldPalette = $this->dcaHandler->getPaletteFromRequest();
 
-        $model = $this->modelManager->createModelByTable($table);
-        $model = $model->findByPk($insertID);
-
-        if (!$model) {
+        if (!$model = $this->modelManager->createModelByTable($table)) {
+            return false;
+        }
+        $parentModel = $model->findByPk($insertID);
+        if (!$parentModel) {
             return false;
         }
 
         // if are within nested fieldpalettes set parent item tstamp
         if (isset($set['ptable']) && 'tl_fieldpalette' === $set['ptable']) {
-            $parent = $model->findByPk($model->pid);
+            $parent = $parentModel->findByPk($parentModel->pid);
 
             if (null !== $parent) {
                 $parent->tstamp = time();
@@ -120,8 +121,8 @@ class CallbackListener
         }
 
         // set fieldpalette field
-        $model->pfield = $fieldPalette;
-        $model->save();
+        $parentModel->pfield = $fieldPalette;
+        $parentModel->save();
 
         return true;
     }
