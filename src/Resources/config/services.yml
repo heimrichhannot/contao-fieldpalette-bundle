@@ -19,6 +19,7 @@ services:
        - '@request_stack'
        - '@huh.utils.container'
        - '@huh.utils.url'
+       - '@huh.utils.routing'
        - '@monolog.logger.contao'
   huh.fieldpalette.element.button:
     class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement

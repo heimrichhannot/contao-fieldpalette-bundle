@@ -168,9 +168,10 @@ class FieldPaletteWizardTest extends ContaoTestCase
         $environmentAdapter = $this->mockAdapter(['get']);
         $environmentAdapter->method('get')->willReturn(false);
 
-        $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer']);
+        $controllerAdapter = $this->mockAdapter(['reload', 'loadDataContainer', 'addToUrl']);
         $controllerAdapter->method('reload')->willReturn('redirect');
         $controllerAdapter->method('loadDataContainer')->willReturn('redirect');
+        $controllerAdapter->method('addToUrl')->willReturnArgument(0);
 
         $framework = $this->mockContaoFramework([
             Image::class => $imageAdapter,
@@ -555,20 +556,13 @@ class FieldPaletteWizardTest extends ContaoTestCase
         $result = $testMethod->invokeArgs($widget, [$itemModel]);
         $this->assertTrue(is_string($result));
 
-        $reflectionPropertyDca->setValue($widget, [
-            'list' => [
-                'operations' => [
-                    'move' => [
-                        'label' => [0 => 'LabelTestCallback', 1 => 'Element ID %s bearbeiten'],
-                        'href' => 'act=edit',
-                        'icon' => 'edit.gif',
-                        'button_callback' => [0 => CallbackListener::class, 1 => 'argumentThree'],
-                    ],
-                ],
-            ],
-            'config' => ['notSortable' => true],
-        ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel]);
+        $this->assertTrue(is_string($result));
+
+        $result = $testMethod->invokeArgs($widget, [$itemModel, [], false, null, '5']);
+        $this->assertTrue(is_string($result));
+
+        $result = $testMethod->invokeArgs($widget, [$itemModel, [], false, null, '5', '4']);
         $this->assertTrue(is_string($result));
     }
 

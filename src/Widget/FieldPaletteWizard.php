@@ -433,6 +433,7 @@ class FieldPaletteWizard extends Widget
             $arrDirections = ['up', 'down'];
             $rootIds = is_array($rootIds) ? $rootIds : [$rootIds];
             $defaultTable = $container->getParameter('huh.fieldpalette.table');
+            $controller = $framework->getAdapter(Controller::class);
 
             foreach ($arrDirections as $dir) {
                 $label = isset($GLOBALS['TL_LANG'][$defaultTable][$dir][0]) ? $GLOBALS['TL_LANG'][$defaultTable][$dir][0] : $dir;
@@ -442,27 +443,24 @@ class FieldPaletteWizard extends Widget
                 $href = $value['href'] ?: '&amp;act=move';
 
                 if ('up' === $dir) {
-                    $return .= ((is_numeric($previous)
-                            && (!in_array($rowModel->id, $rootIds, true)
-                                || empty($this->dca['list']['sorting']['root'])))
-                            ? '<a href="'.$this->addToUrl(
-                                $href.'&amp;id='.$rowModel->id
-                            ).'&amp;sid='.(int) $previous.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
-                            : $image->getHtml(
-                                'up_.gif'
-                            )).' ';
+                    if (is_numeric($previous) && (!in_array($rowModel->id, $rootIds, true)
+                            || empty($this->dca['list']['sorting']['root']))) {
+                        $return .= '<a href="'.$controller->addToUrl($href.'&amp;id='.$rowModel->id)
+                            .'&amp;sid='.(int) $previous.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$label.'</a> ';
+                    } else {
+                        $return .= $image->getHtml('up_.gif').' ';
+                    }
                     continue;
                 }
 
-                $return .= ((is_numeric($next)
-                        && (!in_array($rowModel->id, $rootIds, true)
-                            || empty($this->dca['list']['sorting']['root'])))
-                        ? '<a href="'.$this->addToUrl(
-                            $href.'&amp;id='.$rowModel->id
-                        ).'&amp;sid='.(int) $next.'" title="'.specialchars($title).'"'.$attributes.'>'.$label.'</a> '
-                        : $image->getHtml(
-                            'down_.gif'
-                        )).' ';
+                if (is_numeric($next)
+                    && (!in_array($rowModel->id, $rootIds, true)
+                        || empty($this->dca['list']['sorting']['root']))) {
+                    $return .= '<a href="'.$controller->addToUrl($href.'&amp;id='.$rowModel->id)
+                        .'&amp;sid='.(int) $next.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$label.'</a> ';
+                } else {
+                    $return .= $image->getHtml('down_.gif');
+                }
             }
         }
 
