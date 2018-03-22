@@ -26,12 +26,20 @@ class CallbackListenerTest extends ContaoTestCase
 {
     protected $testCounter = 0;
     protected $loadDataContainerCount = 0;
+    protected $inputDo = null;
+    protected $inputId = null;
+    protected $inputCountGet = 0;
+    protected $mockedMethodResult = 0;
 
     public function setUp()
     {
         parent::setUp();
         $this->testCounter = 0;
         $this->loadDataContainerCount = 0;
+        $this->inputCountGet = 0;
+        $this->inputId = null;
+        $this->inputDo = null;
+        $this->mockedMethodResult = null;
     }
 
     /**
@@ -47,7 +55,14 @@ class CallbackListenerTest extends ContaoTestCase
         });
 
         $inputAdapter = $this->mockAdapter(['get']);
-        $inputAdapter->method('get')->willReturnCallback(function () {
+        $inputAdapter->method('get')->willReturnCallback(function ($param) {
+            ++$this->inputCountGet;
+            switch ($param) {
+                case 'do':
+                    return $this->inputDo;
+                case 'id':
+                    return $this->inputId;
+            }
         });
 
         $framework = $this->mockContaoFramework([
@@ -120,6 +135,9 @@ class CallbackListenerTest extends ContaoTestCase
     {
         $handler = $this->createMock(DcaHandler::class);
         $handler->method('getPaletteFromRequest')->willReturn('tl_news');
+        $handler->method('recursivelyCopyFieldPaletteRecords')->willReturnCallback(function ($id, $newId, $table, $dcaFields) {
+            $this->mockedMethodResult = [$id, $newId, $table, $dcaFields];
+        });
 
         return $handler;
     }
@@ -214,10 +232,50 @@ class CallbackListenerTest extends ContaoTestCase
         $containerUtil->expects($this->once())->method('isBackend')->willReturn(false);
         $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock(), $this->getRequestStackMock(), $containerUtil, $this->getUrlUtilMock(), $this->getRoutingUtilMock(), $this->getLoggerMock());
         $listener->copyFieldPaletteRecords(3);
+        $this->assertSame(0, $this->inputCountGet);
 
-//        $containerUtil = $this->getContainerUtilMock(true);
-//        $containerUtil->expects($this->once())->method('isBackend')->willReturn(true);
-//        $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock(), $this->getRequestStackMock(), $containerUtil, $this->getUrlUtilMock(), $this->getRoutingUtilMock(), $this->getLoggerMock());
-//        $listener->copyFieldPaletteRecords(3);
+        if (!defined('CURRENT_ID')) {
+            define('CURRENT_ID', null);
+        }
+
+        $containerUtil = $this->getContainerUtilMock(true);
+        $containerUtil->expects($this->once())->method('isBackend')->willReturn(true);
+        $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock(), $this->getRequestStackMock(), $containerUtil, $this->getUrlUtilMock(), $this->getRoutingUtilMock(), $this->getLoggerMock());
+        $listener->copyFieldPaletteRecords(3);
+        $this->assertSame(2, $this->inputCountGet);
+
+        $this->inputCountGet = 0;
+        $this->inputId = 5;
+        $this->inputDo = null;
+        $containerUtil = $this->getContainerUtilMock(true);
+        $containerUtil->expects($this->once())->method('isBackend')->willReturn(true);
+        $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock(), $this->getRequestStackMock(), $containerUtil, $this->getUrlUtilMock(), $this->getRoutingUtilMock(), $this->getLoggerMock());
+        $listener->copyFieldPaletteRecords(3);
+        $this->assertSame(2, $this->inputCountGet);
+
+        $this->inputCountGet = 0;
+        $this->inputId = null;
+        $this->inputDo = 'news';
+        $containerUtil = $this->getContainerUtilMock(true);
+        $containerUtil->expects($this->once())->method('isBackend')->willReturn(true);
+        $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock(), $this->getRequestStackMock(), $containerUtil, $this->getUrlUtilMock(), $this->getRoutingUtilMock(), $this->getLoggerMock());
+        $listener->copyFieldPaletteRecords(3);
+        $this->assertSame(2, $this->inputCountGet);
+
+        $GLOBALS['TL_DCA']['tl_news']['fields'] = ['Felder'];
+        $this->loadDataContainerCount = 0;
+        $this->inputCountGet = 0;
+        $this->inputId = 5;
+        $this->inputDo = 'news';
+        $containerUtil = $this->getContainerUtilMock(true);
+        $containerUtil->expects($this->once())->method('isBackend')->willReturn(true);
+        $listener = new CallbackListener($this->getFrameworkMock(), $this->getModelManagerMock(), $this->getDcaHandlerMock(), $this->getRequestStackMock(), $containerUtil, $this->getUrlUtilMock(), $this->getRoutingUtilMock(), $this->getLoggerMock());
+        $listener->copyFieldPaletteRecords(3);
+        $this->assertSame(2, $this->inputCountGet);
+        $this->assertSame(1, $this->loadDataContainerCount);
+        $this->assertSame($this->inputId, $this->mockedMethodResult[0]);
+        $this->assertSame(3, $this->mockedMethodResult[1]);
+        $this->assertSame('tl_news', $this->mockedMethodResult[2]);
+        $this->assertSame(['Felder'], $this->mockedMethodResult[3]);
     }
 }

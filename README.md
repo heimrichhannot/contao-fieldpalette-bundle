@@ -20,9 +20,10 @@ The fieldpalette configuration is based on Contao's [Data Container Arrays](http
 
 ### Default Setup (`tl_fieldpalette` table)
 
-This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That example is available within the module [heimrichhannot/contao-news_plus] (https://packagist.org/packages/heimrichhannot/contao-news_plus).
+This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That example is available within the module [Contao News Leisure Bundle](https://github.com/heimrichhannot/contao-news-leisure-bundle).
 
 ```php
+<?php
 # /src/Ressource/contao/dca/tl_news.php
 
 $dc = &$GLOBALS['TL_DCA']['tl_news'];
@@ -164,9 +165,9 @@ In order to use Fieldpalette with your own table, create a Data Container Array 
 <?php
 # src/Ressources/contao/dca/tl_member_address.php 
 
-Controller::loadLanguageFile('tl_fieldpalette');
-Controller::loadDataContainer('tl_fieldpalette');
-Controller::loadDataContainer('tl_member');
+\Contao\Controller::loadLanguageFile('tl_fieldpalette');
+\Contao\Controller::loadDataContainer('tl_fieldpalette');
+\Contao\Controller::loadDataContainer('tl_member');
 
 $GLOBALS['TL_DCA']['tl_member_address'] = $GLOBALS['TL_DCA']['tl_fieldpalette'];
 $dca                                    = &$GLOBALS['TL_DCA']['tl_member_address'];
@@ -229,7 +230,7 @@ $dca['fields']['additionalAddresses'] = [
 
 ### Additional dca reference
 
-All attributes from https://docs.contao.org/books/api/dca/reference.html supported, if they are implemented yet. Additional attributes will be listed here
+The most attributes listed in the [DCA Reference](https://docs.contao.org/books/api/dca/reference.html) are supported. Additional attributes will be listed here.
 
 #### Listing records
 
@@ -274,22 +275,23 @@ You can adjust that by using the copy_callback definable in your field's dca (th
 
 Example for such a callback:
 
-```
-public static function updateOptionValuesOnCopy($objFieldpalette, $intPid, $intNewId, $strTable, $arrData)
-{
-    $objFilter = \HeimrichHannot\FieldPalette\FieldPaletteModel::findByPk($objFieldpalette->selectionModel_questionData_options_filter);
+```php
 
-    if ($objFilter === null)
+public function updateOptionValuesOnCopy($fieldPalette, int $pid, int $newId, string $table, array $data)
+{
+    $filter = FieldPaletteModel::findByPk($fieldPalette->selectionModel_questionData_options_filter);
+
+    if ($filter === null)
         return;
 
-    $objFilterNew = \HeimrichHannot\FieldPalette\FieldPaletteModel::findBy(
+    $filterNew = FieldPaletteModel::findBy(
         array('selectionModel_questionData_filters_title=?', 'pid=?'),
-        array($objFilter->selectionModel_questionData_filters_title, $intNewId)
+        array($filter->selectionModel_questionData_filters_title, $newId)
     );
 
-    if ($objFilterNew !== null)
+    if ($filterNew !== null)
     {
-        $objFieldpalette->selectionModel_questionData_options_filter = $objFilterNew->id;
+        $fieldPalette->selectionModel_questionData_options_filter = $filterNew->id;
     }
 }
 ```
@@ -298,44 +300,44 @@ public static function updateOptionValuesOnCopy($objFieldpalette, $intPid, $intN
 
 ### Widgets
 
-Name | Description
----- | -----------
+Name         | Description
+------------ | -----------
 fieldpalette | The FieldPaletteWizard renders the tl_fieldpalette items and provide crud functionality within its parent record (e.g. tl_news).
 
 ### Fields
 
 tl_fieldpalette:
 
-Name | Description
----- | -----------
-id | autoincrement unique identifiere
-pid | id of the parent entry
-ptable | parent table name (e.g. tl_news)
-pfield | parent field name (e.g. tl_news.venues)
-sorting | the sorting value
+Name      | Description
+--------- | -----------
+id        | autoincrement unique identifiere
+pid       | id of the parent entry
+ptable    | parent table name (e.g. tl_news)
+pfield    | parent field name (e.g. tl_news.venues)
+sorting   | the sorting value
 published | the published state (1 = published) 
-start | timestamp from where the element is published 
-stop | timestamp until the element is published
+start     | timestamp from where the element is published 
+stop      | timestamp until the element is published
 
 ### Form Callbacks
 
 tl_fieldpalette:
 
-Type | Description
----- | -----------
+Type              | Description
+----------------- | -----------
 oncreate_callback | Get fieldpalette key from request, check if the parent table is active within Fieldpalette Registry and set the pfield to tl_fieldpalette item. 
 onsubmit_callback | Update/Sync parent fieldpalette item value (for example tl_news.venues) when tl_fieldpalette entries were updated.
-oncut_callback | Update/Sync parent fieldpalette item value (for example tl_news.venues) when tl_fieldpalette entries were sorted.
+oncut_callback    | Update/Sync parent fieldpalette item value (for example tl_news.venues) when tl_fieldpalette entries were sorted.
 ondelete_callback | Update/Sync parent fieldpalette item value (for example tl_news.venues) when tl_fieldpalette entries were deleted.
 
 
 ### Hooks
 
-Name | Arguments | Description
----- | --------- | -----------
-loadDataContainer | $strTable | Register fields from parent datacontainer (like tl_news) to tl_fieldpalette and disable fieldpalette support from back end modules where no fieldpalette fields exists (see: initializeSystem Hook). 
-initializeSystem | - | Enable tl_fieldpalette table within all back end modules.	
-executePostActions | $strAction, \DataContainer $dc | Add refreshFieldPaletteField ajax action that return the updated FieldPaletteWizard content.
+Name               | Arguments                     | Description
+-----------------  | ----------------------------- | -----------
+loadDataContainer  | $strTable                     | Register fields from parent datacontainer (like tl_news) to tl_fieldpalette and disable fieldpalette support from back end modules where no fieldpalette fields exists (see: initializeSystem Hook). 
+initializeSystem   | -                             | Enable tl_fieldpalette table within all back end modules.	
+executePostActions | $strAction, DataContainer $dc | Add refreshFieldPaletteField ajax action that return the updated FieldPaletteWizard content.
 
 ## Restrictions
 
