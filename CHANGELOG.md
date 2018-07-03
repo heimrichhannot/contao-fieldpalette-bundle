@@ -1,7 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.2.1] - 2018-03-22
+## [0.2.2] - 2018-07-03
+
+### Fixed
+* ensure that `$GLOBALS['TL_JAVASCRIPT']` is an array before `array_merge()` backend styles
+
+## [0.2.1] - 2018-07-03
 
 ### Fixed
 * correctly size modal window responsive
