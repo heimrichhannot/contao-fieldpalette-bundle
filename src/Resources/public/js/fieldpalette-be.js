@@ -70,11 +70,11 @@ FieldPaletteBackend.makeFieldPaletteListSortable = function (ul) {
  * @param {object} options An optional options object
  */
 FieldPaletteBackend.openModalIframe = function (options) {
-    var opt = options || {};
-    var max = (window.getSize().y - 180).toInt();
-    if (!opt.height || opt.height > max) {
-        opt.height = max;
-    }
+    var opt = options || {},
+        maxWidth = (window.getSize().x - 20).toInt(),
+        maxHeight = (window.getSize().y - 137).toInt();
+    if (!opt.width || opt.width > maxWidth) opt.width = Math.min(maxWidth, 900);
+    if (!opt.height || opt.height > maxHeight) opt.height = maxHeight;
     var M = new SimpleModal({
         'keyEsc': false, // see https://github.com/terminal42/contao-notification_center/issues/99
         'width': opt.width,
