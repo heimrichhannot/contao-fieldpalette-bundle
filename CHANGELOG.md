@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2018-07-11
+
+### Fixed
+- `Argument 2 passed to HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler::extractFieldPaletteFields() must be of the type array, null given`
+
 ## [0.2.2] - 2018-07-03
 
 ### Fixed

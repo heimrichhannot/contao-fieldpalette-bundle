@@ -115,7 +115,7 @@ class DcaHandler
                 is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []
             );
 
-            $extract = array_merge_recursive($extract, $this->extractFieldPaletteFields($table, $field['fieldpalette']['fields']));
+            $extract = array_merge_recursive($extract, $this->extractFieldPaletteFields($table, is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []));
         }
 
         return $extract;
