@@ -141,6 +141,12 @@ FieldPaletteBackend.refreshFieldPalette = function (id) {
             $(id).getElement('.tl_fielpalette_indicator').show();
         },
         onSuccess: function (txt, json) {
+
+            if ('' !== json.autoSubmit) {
+                Backend.autoSubmit(json.autoSubmit);
+                return;
+            }
+
             var tmp = new Element('div', {html: json.content});
             tmp.getFirst().replaces($(id));
             $(id).getElement('.tl_fielpalette_indicator').hide();

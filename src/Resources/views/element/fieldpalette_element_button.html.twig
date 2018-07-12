@@ -1,7 +1,7 @@
 <a href="{{ href }}"
-    {{ cssClass ? 'class="' ~ cssClass ~ '" '|raw }}
-    {{ title ? 'title="' ~ title ~ '" '|raw }}
-    {{ accesskey is defined ? 'accesskey="' ~ accesskey ~ '" '|raw }}
+    {{ (cssClass ? 'class="' ~ cssClass ~ '"')|raw }}
+    {{ (title ? 'title="' ~ title ~ '"')|raw }}
+    {{ (accesskey is defined ? 'accesskey="' ~ accesskey ~ '"')|raw }}
     {{ attributes|raw }}
 >
     {{ label|raw }}

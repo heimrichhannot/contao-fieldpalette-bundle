@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2018-07-12
+
+### Fixed
+- Do not die() in `HookListener::executePostActionsHook` if `$field['inputType']` is not `fieldpalette`, otherwise nested field `executePostActions` Hooks wont work anymore (e.g. multicolumneditor) 
+- Invalid button html markup that prevent display of `header_new` icon for instance 
+
+### Added
+- Now supports `submitOnChange` in `eval` for input type `fieldpalette` and `autoSubmit` parent table form 
+
 ## [0.2.3] - 2018-07-11
 
 ### Fixed
