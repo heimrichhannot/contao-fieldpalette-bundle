@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2018-07-12
+
+### Fixed
+- syntax-error in default list template (#2)
+
 ## [0.3.0] - 2018-07-12
 
 ### Fixed
