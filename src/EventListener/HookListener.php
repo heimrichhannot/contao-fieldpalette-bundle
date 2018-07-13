@@ -119,9 +119,6 @@ class HookListener
 
             die(json_encode($data));
         }
-
-        header('HTTP/1.1 400 Bad Request');
-        die('Bad Request');
     }
 
     /**

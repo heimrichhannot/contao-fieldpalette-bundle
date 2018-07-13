@@ -277,7 +277,7 @@ class DcaHandler
                 return false;
             }
 
-            if ($fields[$fieldPalette]['inputType'] !== 'fieldpalette') {
+            if ('fieldpalette' !== $fields[$fieldPalette]['inputType']) {
                 return false;
             }
 
