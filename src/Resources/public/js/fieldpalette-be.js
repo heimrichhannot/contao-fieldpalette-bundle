@@ -142,7 +142,7 @@ FieldPaletteBackend.refreshFieldPalette = function (id) {
         },
         onSuccess: function (txt, json) {
 
-            if ('' !== json.autoSubmit) {
+            if ('' !== json.autoSubmit && undefined !== json.autoSubmit && 'undefinded' !== json.autoSubmit && null !== json.autoSubmit) {
                 Backend.autoSubmit(json.autoSubmit);
                 return;
             }
