@@ -23,8 +23,7 @@ The fieldpalette configuration is based on Contao's [Data Container Arrays](http
 This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That example is available within the module [Contao News Leisure Bundle](https://github.com/heimrichhannot/contao-news-leisure-bundle).
 
 ```php
-<?php
-# /src/Ressource/contao/dca/tl_news.php
+// src/Ressource/contao/dca/tl_news.php
 
 $dc = &$GLOBALS['TL_DCA']['tl_news'];
 
@@ -74,7 +73,7 @@ $arrFields = array
 			),
 			'palettes' => array
 			(
-				'default' => 'venueName,venueStreet,venuePostal,venueCity,venueCountry,venueSingleCoords,venuePhone,venueFax,venueEmail,venueWebsite,venueText',
+				'default' => 'venueName,venueStreet,venuePostal,venueCity,venueCountry',
 			),
 			'fields'   => array
 			(
@@ -127,28 +126,6 @@ $arrFields = array
 					'eval'      => array('includeBlankOption' => true, 'chosen' => true, 'tl_class' => 'w50'),
 					'sql'       => "varchar(2) NOT NULL default ''",
 				),
-				'venueSingleCoords' => array
-				(
-					'label'         => &$GLOBALS['TL_LANG']['tl_news']['venueSingleCoords'],
-					'exclude'       => true,
-					'search'        => true,
-					'inputType'     => 'text',
-					'eval'          => array('maxlength' => 64),
-					'sql'           => "varchar(64) NOT NULL default ''",
-					'save_callback' => array
-					(
-						array('tl_news_plus', 'generateVenueCoords'),
-					),
-				),
-				'venueText'         => array
-				(
-					'label'     => &$GLOBALS['TL_LANG']['tl_news']['venueText'],
-					'exclude'   => true,
-					'search'    => true,
-					'inputType' => 'textarea',
-					'eval'      => array('rte' => 'tinyMCE', 'tl_class' => 'clr'),
-					'sql'       => "text NULL",
-				),
 			),
 		),
 	),
@@ -162,8 +139,7 @@ $dc['fields'] = array_merge($dc['fields'], $arrFields);
 In order to use Fieldpalette with your own table, create a Data Container Array that extends from `$GLOBALS['TL_DCA']['tl_fieldpalette']`, as the following example describes.
 
 ```
-<?php
-# src/Ressources/contao/dca/tl_member_address.php 
+// src/Ressources/contao/dca/tl_member_address.php 
 
 \Contao\Controller::loadLanguageFile('tl_fieldpalette');
 \Contao\Controller::loadDataContainer('tl_fieldpalette');
@@ -191,7 +167,7 @@ $dca['fields'] = array_merge($dca['fields'], $fields);
 Than add the following fieldpalette input to your parent table (e.g. `tl_member`).
 
 ```
-/* /dca/tl_member.php */
+// src/Ressources/contao/dca/tl_member.php
 
 $dca = &$GLOBALS['TL_DCA']['tl_member'];
 
@@ -260,7 +236,7 @@ $GLOBALS['TL_DCA']['tl_*'] = [
 Sometimes your fieldpalette records contain references to other fieldpalette records. When copying them, reference ids don't match the new (copied) ids anymore.
 You can adjust that by using the copy_callback definable in your field's dca (the field of type "fieldpalette"):
 
-```
+```php
 'inputType' => 'fieldpalette',
 'eval'       => array(
     'fieldpalette' => array(
