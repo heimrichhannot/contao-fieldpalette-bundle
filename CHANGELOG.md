@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [DEV] - 2018-07-16
+## [0.3.3] - 2018-07-16
 
 #### Fixed
 - not catched undefinded return value in fieldpalette-be.js (#5)
