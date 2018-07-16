@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.3.4] - 2018-07-16
+
+#### Fixed
+- missing ajax action check in HookListener::executePostActionsHook()
+
 ## [0.3.3] - 2018-07-16
 
 #### Fixed

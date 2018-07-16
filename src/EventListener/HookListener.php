@@ -85,39 +85,41 @@ class HookListener
      */
     public function executePostActionsHook($action, DataContainer $dc)
     {
-        if ($this->framework->getAdapter(Input::class)->post('field')) {
-            $this->framework->getAdapter(Controller::class)->loadDataContainer($dc->table);
+        if (DcaHandler::FieldpaletteRefreshAction === $action) {
+            if ($this->framework->getAdapter(Input::class)->post('field')) {
+                $this->framework->getAdapter(Controller::class)->loadDataContainer($dc->table);
 
-            $name = $this->framework->getAdapter(Input::class)->post('field');
-            $field = $GLOBALS['TL_DCA'][$dc->table]['fields'][$name];
+                $name = $this->framework->getAdapter(Input::class)->post('field');
+                $field = $GLOBALS['TL_DCA'][$dc->table]['fields'][$name];
 
-            // Die if the field does not exist
-            if (!is_array($field)) {
-                header('HTTP/1.1 400 Bad Request');
-                die('Bad Request');
+                // Die if the field does not exist
+                if (!is_array($field)) {
+                    header('HTTP/1.1 400 Bad Request');
+                    die('Bad Request');
+                }
+
+                /** @var Widget $class */
+                $class = $GLOBALS['BE_FFL'][$field['inputType']];
+
+                // Die if the class is not defined or inputType is not fieldpalette
+                if ('fieldpalette' !== $field['inputType'] || !class_exists($class)) {
+                    return;
+                }
+
+                $attributes = $this->framework->getAdapter(Widget::class)->getAttributesFromDca($field, $name, $dc->activeRecord->{$name}, $name, $dc->table, $dc);
+
+                /** @var Widget $widget */
+                $widget = new $class($attributes);
+                $widget->currentRecord = $dc->id;
+
+                $data = ['field' => $name, 'target' => '#ctrl_'.$name, 'content' => $widget->generate()];
+
+                if ($widget->submitOnChange) {
+                    $data['autoSubmit'] = $dc->table;
+                }
+
+                die(json_encode($data));
             }
-
-            /** @var Widget $class */
-            $class = $GLOBALS['BE_FFL'][$field['inputType']];
-
-            // Die if the class is not defined or inputType is not fieldpalette
-            if ('fieldpalette' !== $field['inputType'] || !class_exists($class)) {
-                return;
-            }
-
-            $attributes = $this->framework->getAdapter(Widget::class)->getAttributesFromDca($field, $name, $dc->activeRecord->{$name}, $name, $dc->table, $dc);
-
-            /** @var Widget $widget */
-            $widget = new $class($attributes);
-            $widget->currentRecord = $dc->id;
-
-            $data = ['field' => $name, 'target' => '#ctrl_'.$name, 'content' => $widget->generate()];
-
-            if ($widget->submitOnChange) {
-                $data['autoSubmit'] = $dc->table;
-            }
-
-            die(json_encode($data));
         }
     }
 
