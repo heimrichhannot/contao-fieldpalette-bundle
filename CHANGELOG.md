@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.3.5] - 2018-07-25
+
+#### Changed
+- jquery not included static
+- updated readme
+- added UPDATE.md for upgrading from module
+
 ## [0.3.4] - 2018-07-16
 
 #### Fixed

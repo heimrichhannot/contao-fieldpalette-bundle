@@ -43,7 +43,7 @@ if (\Contao\System::getContainer()->get('huh.utils.container')->isBackend())
         unset($GLOBALS['TL_JAVASCRIPT']['jquery']);
     }
     $GLOBALS['TL_JAVASCRIPT'] = array_merge(
-        ['jquery' => 'assets/jquery/js/jquery.min.js'],
+        ['jquery' => 'assets/jquery/js/jquery.min.js|static'],
         is_array($GLOBALS['TL_JAVASCRIPT']) ? $GLOBALS['TL_JAVASCRIPT'] : []
     );
     $GLOBALS['TL_JAVASCRIPT']['datatables-i18n']       = 'assets/datatables-additional/datatables-i18n/datatables-i18n.min.js|static';

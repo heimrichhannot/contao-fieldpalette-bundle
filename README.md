@@ -238,15 +238,14 @@ You can adjust that by using the copy_callback definable in your field's dca (th
 
 ```php
 'inputType' => 'fieldpalette',
-'eval'       => array(
-    'fieldpalette' => array(
-        'copy_callback' => array(
-            array('tl_selection_model', 'updateOptionValuesOnCopy')
-        )
-    ),
+'eval'      => [
+    'fieldpalette' => [
+        'copy_callback' => [
+            ['appbundle.listener.tl_selection_model', 'updateOptionValuesOnCopy']
+        ]
+    ],
     // ...
-)
-    
+]
 ```
 
 Example for such a callback:

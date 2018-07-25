@@ -13,7 +13,7 @@
         {
             "name": "Heimrich & Hannot",
             "email": "digitales@heimrich-hannot.de",
-            "homepage": "http://www.heimrich-hannot.de",
+            "homepage": "https://www.heimrich-hannot.de",
             "role": "Developer"
         }
     ],
@@ -41,9 +41,6 @@
         "psr-4": {
             "HeimrichHannot\\FieldpaletteBundle\\": "src/"
         },
-        "classmap": [
-            "src/Resources/contao/"
-        ],
         "exclude-from-classmap": [
             "src/Resources/contao/config/",
             "src/Resources/contao/dca/",
