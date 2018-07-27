@@ -17,7 +17,7 @@ $GLOBALS['TL_CONFIG']['fieldpalette_table'] = 'tl_fieldpalette';
 /**
  * Back end form fields
  */
-$GLOBALS['BE_FFL']['fieldpalette'] = \HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard::class;
+$GLOBALS['BE_FFL'][\HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard::TYPE] = \HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard::class;
 
 /**
  * Hooks

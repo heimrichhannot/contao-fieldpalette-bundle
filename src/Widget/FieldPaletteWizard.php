@@ -24,6 +24,8 @@ use Patchwork\Utf8;
 
 class FieldPaletteWizard extends Widget
 {
+    const TYPE = 'fieldpalette';
+
     /**
      * Submit user input.
      *

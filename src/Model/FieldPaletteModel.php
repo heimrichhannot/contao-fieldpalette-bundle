@@ -36,7 +36,9 @@ use Contao\System;
  */
 class FieldPaletteModel extends Model
 {
-    protected static $strTable = 'tl_fieldpalette';
+    const TABLE = 'tl_fieldpalette';
+
+    protected static $strTable = self::TABLE;
 
     /**
      * Use this model with a custom fieldpalette table.
@@ -49,9 +51,8 @@ class FieldPaletteModel extends Model
     {
         static::$strTable = $table;
         $framework = System::getContainer()->get('contao.framework');
-        /**
-         * @var Database
-         */
+
+        /** @var Database $database */
         $database = $framework->getAdapter(Database::class)->getInstance();
 
         if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$database->tableExists($table)) {
@@ -66,6 +67,22 @@ class FieldPaletteModel extends Model
         }
 
         return $this;
+    }
+
+    /**
+     * Check if instance has the correct table.
+     *
+     * @param string $table
+     *
+     * @return bool
+     */
+    public function hasTable(string $table = self::TABLE)
+    {
+        if (static::$strTable === $table) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

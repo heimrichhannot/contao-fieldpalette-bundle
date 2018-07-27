@@ -1,12 +1,22 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2018-07-26
+
+#### Added
+- `FieldPaletteModelManager::getInstance()`
+- `FieldPaletteModel::hasTable()`
+- FieldPalette input type constant (`FieldPaletteWizard::TYPE`)
+
+#### Changed
+- updated UPGRADE.md
+
 ## [0.3.5] - 2018-07-25
 
 #### Changed
-- jquery not included static
+- jquery now included static
 - updated readme
-- added UPDATE.md for upgrading from module
+- added UPGRADE.md for upgrading from module
 
 ## [0.3.4] - 2018-07-16
 
