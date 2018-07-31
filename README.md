@@ -34,37 +34,15 @@ FieldPalette comes with an custom input type `fieldpalette`. The configuration f
 #### Default Setup (`tl_fieldpalette` table)
 
 
-This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That example is available within the module [Contao News Leisure Bundle](https://github.com/heimrichhannot/contao-news-leisure-bundle).
+This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That (shortend) example is available within the module [Contao News Leisure Bundle](https://github.com/heimrichhannot/contao-news-leisure-bundle).
 
 ```php
 // src/Ressource/contao/dca/tl_news.php
 
 $dc = &$GLOBALS['TL_DCA']['tl_news'];
 
-/**
- * Selectors
- */
-$dc['palettes']['__selector__'][] = 'addVenues';
-
-/**
- * Subpalettes
- */
-$dc['subpalettes']['addVenues'] = 'venues';
-
-/**
- * Fields
- */
-$arrFields = array
+$fields = array
 (
-	// venue
-	'addVenues'           => array
-	(
-		'label'     => &$GLOBALS['TL_LANG']['tl_news']['addVenues'],
-		'exclude'   => true,
-		'inputType' => 'checkbox',
-		'eval'      => array('submitOnChange' => true),
-		'sql'       => "char(1) NOT NULL default ''",
-	),
 	'venues'              => array
 	(
 		'label'        => &$GLOBALS['TL_LANG']['tl_news']['venues'],
@@ -134,7 +112,7 @@ $arrFields = array
 	),
 );
 
-$dc['fields'] = array_merge($dc['fields'], $arrFields);
+$dc['fields'] = array_merge($dc['fields'], $fields);
 ```
 
 
@@ -147,6 +125,27 @@ $dc['fields'] = array_merge($dc['fields'], $arrFields);
 [Custom table set up](docs/developers/custom_table.md)  
 [Working with fieldpalette records](/docs/developers/fieldpalette_records.md) (copying (parent) records)  
 
+### Working with fieldpalette model
+
+The `FieldPaletteModel` is not intended to be called directly and all custom methods are non static. We recommend to use the `huh.fieldpalette.manager` service. 
+
+Example: 
+```php
+/** 
+ * @var ContainerInterface $container 
+ */
+
+// Return a model instance (with default table) for usage with model method (like find methods)
+$container->get('huh.fieldpalette.manager')->getInstance()->findByPidAndTableAndField($item->id, 'tl_item', 'parentItem');
+
+// Return a new model instance
+$container->get('huh.fieldpalette.manager')->createModel()->findByPidAndTableAndField($item->id, 'tl_item', 'parentItem');
+
+// Return a new model instance with custom table
+$container->get('huh.fieldpalette.manager')->createModelByTable('tl_my_custom_table')->findByPidAndTableAndField($item->id, 'tl_item', 'parentItem');
+```
+
+Default model methods are still callable static. Custom method can also be called by creating a new model instance. 
 
 ### Widgets
 
