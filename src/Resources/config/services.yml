@@ -4,6 +4,7 @@ parameters:
 services:
   huh.fieldpalette.listener.hook:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\HookListener
+    public: true
     arguments:
       - '@huh.fieldpalette.dca.extractor'
       - '@service_container'
@@ -12,6 +13,7 @@ services:
       - '@huh.fieldpalette.manager'
   huh.fieldpalette.listener.callback:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
+    public: true
     arguments:
        - '@contao.framework'
        - '@huh.fieldpalette.manager'
@@ -38,6 +40,7 @@ services:
     arguments: ['@service_container']
   huh.fieldpalette.dca.handler:
     class: HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler
+    public: true
     arguments:
       - '%huh.fieldpalette.table%'
       - '@contao.framework'

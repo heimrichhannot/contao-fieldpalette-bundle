@@ -16,9 +16,23 @@ The fieldpalette configuration is based on Contao's [Data Container Arrays](http
 ![alt fieldpalette edit](./docs/img/fieldpalette_edit.jpg)
 *FieldPalette Wizard - Edit item*
 
+
 ## Technical instructions
 
-### Default Setup (`tl_fieldpalette` table)
+### Install 
+
+```
+composer require heimrichhannot/contao-fieldpalette-bundle
+```
+
+You need to updated the contao database updated. 
+
+### Getting started
+
+FieldPalette comes with an custom input type `fieldpalette`. The configuration for this input type is done in the `fieldpalette` index of the field configuration array. You can customize your fieldpalette nearly as an "normal" dca configuration. When you finished setting up your fieldpalette input, you need to call the contao database tool to add the new fields to the table.  See following example for a real world use case:
+
+#### Default Setup (`tl_fieldpalette` table)
+
 
 This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That example is available within the module [Contao News Leisure Bundle](https://github.com/heimrichhannot/contao-news-leisure-bundle).
 
@@ -73,7 +87,7 @@ $arrFields = array
 			),
 			'palettes' => array
 			(
-				'default' => 'venueName,venueStreet,venuePostal,venueCity,venueCountry',
+				'default' => 'venueName,venueStreet,venuePostal,venueCity',
 			),
 			'fields'   => array
 			(
@@ -115,17 +129,6 @@ $arrFields = array
 					'eval'      => array('maxlength' => 255, 'tl_class' => 'w50'),
 					'sql'       => "varchar(255) NOT NULL default ''",
 				),
-				'venueCountry'      => array
-				(
-					'label'     => &$GLOBALS['TL_LANG']['tl_news']['venueCountry'],
-					'exclude'   => true,
-					'filter'    => true,
-					'sorting'   => true,
-					'inputType' => 'select',
-					'options'   => System::getCountries(),
-					'eval'      => array('includeBlankOption' => true, 'chosen' => true, 'tl_class' => 'w50'),
-					'sql'       => "varchar(2) NOT NULL default ''",
-				),
 			),
 		),
 	),
@@ -134,144 +137,16 @@ $arrFields = array
 $dc['fields'] = array_merge($dc['fields'], $arrFields);
 ```
 
-### Custom table setup (e.g. `tl_member_address`)
 
-In order to use Fieldpalette with your own table, create a Data Container Array that extends from `$GLOBALS['TL_DCA']['tl_fieldpalette']`, as the following example describes.
 
-```
-// src/Ressources/contao/dca/tl_member_address.php 
+## Developers
 
-\Contao\Controller::loadLanguageFile('tl_fieldpalette');
-\Contao\Controller::loadDataContainer('tl_fieldpalette');
-\Contao\Controller::loadDataContainer('tl_member');
+### Guides
 
-$GLOBALS['TL_DCA']['tl_member_address'] = $GLOBALS['TL_DCA']['tl_fieldpalette'];
-$dca                                    = &$GLOBALS['TL_DCA']['tl_member_address'];
+[DCA reference](docs/developers/dca_reference.md)  
+[Custom table set up](docs/developers/custom_table.md)  
+[Working with fieldpalette records](/docs/developers/fieldpalette_records.md) (copying (parent) records)  
 
-$fields = [
-    'company'     => $GLOBALS['TL_DCA']['tl_member']['fields']['company'],
-    'phone'       => $GLOBALS['TL_DCA']['tl_member']['fields']['phone'],
-    'fax'         => $GLOBALS['TL_DCA']['tl_member']['fields']['fax'],
-    'street'      => $GLOBALS['TL_DCA']['tl_member']['fields']['street'],
-    'street2'     => $GLOBALS['TL_DCA']['tl_member']['fields']['street2'],
-    'postal'      => $GLOBALS['TL_DCA']['tl_member']['fields']['postal'],
-    'city'        => $GLOBALS['TL_DCA']['tl_member']['fields']['city'],
-    'state'       => $GLOBALS['TL_DCA']['tl_member']['fields']['state'],
-    'country'     => $GLOBALS['TL_DCA']['tl_member']['fields']['country'],
-    'addressText' => $GLOBALS['TL_DCA']['tl_member']['fields']['addressText'],
-];
-
-$dca['fields'] = array_merge($dca['fields'], $fields);
-```
-
-Than add the following fieldpalette input to your parent table (e.g. `tl_member`).
-
-```
-// src/Ressources/contao/dca/tl_member.php
-
-$dca = &$GLOBALS['TL_DCA']['tl_member'];
-
-/**
-* Adjust palettes
-*/
-$dca['palettes']['default'] = str_replace('country', 'country,additionalAddresses', $dca['palettes']['default']);
-
-/**
-* Adjust fields
-*/
-$dca['fields']['additionalAddresses'] = [
-    'label'        => &$GLOBALS['TL_LANG']['tl_member']['additionalAddresses'],
-    'inputType'    => 'fieldpalette',
-    'foreignKey'   => 'tl_member_address.id',
-    'relation'     => ['type' => 'hasMany', 'load' => 'eager'],
-    'sql'          => "blob NULL",
-    'fieldpalette' => [
-        'config'   => [
-            'hidePublished' => false,
-            'table'         => 'tl_member_address',
-        ],
-        'list'     => [
-            'label' => [
-                'fields' => ['city'],
-                'format' => '%s',
-            ],
-        ],
-        'palettes' => [
-            'default' => '{contact_legend},phone,fax;{address_legend},company,street,street2,postal,city,state,country,addressText',
-        ],
-    ],
-];
-
-```
-
-### Additional dca reference
-
-The most attributes listed in the [DCA Reference](https://docs.contao.org/books/api/dca/reference.html) are supported. Additional attributes will be listed here.
-
-#### Listing records
-
-##### Sorting
-
-  Key    | Value               | Description
----------| ------------------  | ---
-viewMode | View mode (integer) | **0** Table (default) <br /> **1** List 
-
-### Support recursive copying of fieldpalette records by copying their parent record
-
-Simply add a `oncopy_callback` to the dca containing fields of type `fieldpalette`:
-
-```php
-$GLOBALS['TL_DCA']['tl_*'] = [
-    'config'   => [
-        // ...
-        'oncopy_callback' => [
-            ['huh.fieldpalette.listener.callback', 'copyFieldPaletteRecords']
-        ],
-    ]
-]
-```
-
-#### Manipulate fieldpalette records about to be copied on the fly
-
-Sometimes your fieldpalette records contain references to other fieldpalette records. When copying them, reference ids don't match the new (copied) ids anymore.
-You can adjust that by using the copy_callback definable in your field's dca (the field of type "fieldpalette"):
-
-```php
-'inputType' => 'fieldpalette',
-'eval'      => [
-    'fieldpalette' => [
-        'copy_callback' => [
-            ['appbundle.listener.tl_selection_model', 'updateOptionValuesOnCopy']
-        ]
-    ],
-    // ...
-]
-```
-
-Example for such a callback:
-
-```php
-
-public function updateOptionValuesOnCopy($fieldPalette, int $pid, int $newId, string $table, array $data)
-{
-    $filter = FieldPaletteModel::findByPk($fieldPalette->selectionModel_questionData_options_filter);
-
-    if ($filter === null)
-        return;
-
-    $filterNew = FieldPaletteModel::findBy(
-        array('selectionModel_questionData_filters_title=?', 'pid=?'),
-        array($filter->selectionModel_questionData_filters_title, $newId)
-    );
-
-    if ($filterNew !== null)
-    {
-        $fieldPalette->selectionModel_questionData_options_filter = $filterNew->id;
-    }
-}
-```
-
-## Features
 
 ### Widgets
 

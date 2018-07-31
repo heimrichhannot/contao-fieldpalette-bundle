@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.2] - 2018-07-31
+
+#### Fixed
+* deprecation warnings due private services
+
+#### Changed
+* updated documentation
+
 ## [0.4.1] - 2018-07-31
 
 #### Fixed
