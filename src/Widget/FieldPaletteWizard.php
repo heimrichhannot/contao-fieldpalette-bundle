@@ -269,12 +269,12 @@ class FieldPaletteWizard extends Widget
         $dc->id = $model->id;
         $dc->activeRecord = $model;
 
-        foreach ($showFields as $k => $v) {
-            $value = $model->{$v};
+        foreach ($showFields as $key => $fieldName) {
+            $value = $model->{$fieldName};
 
             // Call load_callback
-            if (isset($this->dca['fields'][$v]['load_callback'])) {
-                foreach ($this->dca['fields'][$v]['load_callback'] as $callback) {
+            if (isset($this->dca['fields'][$fieldName]['load_callback'])) {
+                foreach ($this->dca['fields'][$fieldName]['load_callback'] as $callback) {
                     if (is_array($callback)) {
                         $value = $system->importStatic($callback[0])->{$callback[1]}($value, $dc);
                     } elseif (is_callable($callback)) {
@@ -282,7 +282,7 @@ class FieldPaletteWizard extends Widget
                     }
                 }
             }
-            $args[$k] = $formUtil->prepareSpecialValueForOutput($v, $value, $dc);
+            $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, ['_dcaOverride' => $this->dca['fields'][$fieldName]]);
         }
 
         $label = vsprintf(

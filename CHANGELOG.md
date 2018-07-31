@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2018-07-31
+
+#### Fixed
+* no entity encoding for item template label
+
 ## [0.4.0] - 2018-07-26
 
 #### Added
