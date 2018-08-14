@@ -11,7 +11,7 @@ namespace HeimrichHannot\FieldpaletteBundle\Element;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Request\RoutingUtil;
+use HeimrichHannot\UtilsBundle\Routing\RoutingUtil;
 use Twig\Environment;
 
 class ButtonElement

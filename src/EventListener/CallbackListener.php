@@ -25,7 +25,7 @@ use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Container\ContainerUtil;
-use HeimrichHannot\UtilsBundle\Request\RoutingUtil;
+use HeimrichHannot\UtilsBundle\Routing\RoutingUtil;
 use HeimrichHannot\UtilsBundle\Url\UrlUtil;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
