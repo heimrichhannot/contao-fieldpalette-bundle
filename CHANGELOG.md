@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.4] - 2018-10-10
+
+#### Fixed
+* add 100% width to nesting .tl_fieldpalette_wrapper > div
+
 ## [0.4.3] - 2018-07-31
 
 #### Fixed

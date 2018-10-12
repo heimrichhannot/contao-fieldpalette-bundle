@@ -32,6 +32,10 @@
     padding: 0;
 }
 
+.fielpalette-wizard .tl_fieldpalette_wrapper > div{
+    width: 100%;
+}
+
 .fielpalette-wizard .tl_fielpalette_indicator {
     position: absolute;
     width: 100%;
