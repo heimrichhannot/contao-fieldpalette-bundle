@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.5] - 2018-11-12
+
+#### Fixed
+* #7 `services.yml / huh.fieldpalette.element.button service not public` 
+
 ## [0.4.4] - 2018-10-10
 
 #### Fixed

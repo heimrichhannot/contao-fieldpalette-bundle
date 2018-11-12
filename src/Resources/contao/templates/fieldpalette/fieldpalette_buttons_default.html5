@@ -1,4 +1,4 @@
-<a href="contao/main.php?do=<?= $this->do; ?>&amp;ptable=<?= $this->ptable; ?>&amp;table=<?= $this->table; ?>&amp;<?= $this->act; ?>&amp;pid=<?= $this->pid; ?>&amp;<?= $this->fieldpaletteKey; ?>=<?= $this->fieldpalette; ?>&amp;popup=1&amp;rt=<?= \RequestToken::get(); ?>"
+<a href="contao_backend?do=<?= $this->do; ?>&amp;ptable=<?= $this->ptable; ?>&amp;table=<?= $this->table; ?>&amp;<?= $this->act; ?>&amp;pid=<?= $this->pid; ?>&amp;<?= $this->fieldpaletteKey; ?>=<?= $this->fieldpalette; ?>&amp;popup=1&amp;rt=<?= REQUEST_TOKEN ?>"
    class="<?= $this->cssClass; ?>" title="<?= $this->title;?>" accesskey="n" onclick="Backend.getScrollOffset();FieldpaletteBackend.openModalIframe({'width':768,'title':'<?= specialchars(sprintf($this->modalTitle, $this->currentRecord)); ?>','url':this.href});return false">
 	<?= $this->label; ?>
 </a>

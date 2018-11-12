@@ -25,6 +25,7 @@ services:
        - '@monolog.logger.contao'
   huh.fieldpalette.element.button:
     class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
+    public: true
     arguments:
       - '@contao.framework'
       - '%huh.fieldpalette.table%'
