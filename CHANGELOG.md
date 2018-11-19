@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.6] - 2018-11-19
+
+#### Fixed
+* symfony 4.x compatibility 
+* request_token not getting verified correctly #8
+
 ## [0.4.5] - 2018-11-12
 
 #### Fixed

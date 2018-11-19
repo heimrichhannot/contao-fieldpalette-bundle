@@ -36,6 +36,7 @@ services:
     class: HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry
   huh.fieldpalette.manager:
     class: HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager
+    public: true
   huh.fieldpalette.dca.extractor:
     class: HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor
     arguments: ['@service_container']
@@ -48,3 +49,5 @@ services:
       - '@huh.fieldpalette.manager'
       - '@request_stack'
       - '@huh.fieldpalette.registry'
+  # Symfony 4 autowire convention fix (ambiguous namespace alias)
+  HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager: '@huh.fieldpalette.manager'
