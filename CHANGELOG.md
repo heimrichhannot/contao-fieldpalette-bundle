@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.7] - 2018-12-06
+
+#### Fixed
+* do not throw Exception fieldPaletteNestedParentTableDoesNotExist if model is null, because nested fieldpalette model might have already been removed
+
 ## [0.4.6] - 2018-11-19
 
 #### Fixed

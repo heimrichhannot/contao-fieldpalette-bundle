@@ -387,7 +387,7 @@ class DcaHandler
      *
      * @throws \Exception
      *
-     * @return array
+     * @return array|null
      */
     public function getParentTable(FieldPaletteModel $model, int $id, array $palette = [])
     {
@@ -399,8 +399,8 @@ class DcaHandler
         if ($model->ptable === $this->fieldPaletteTable) {
             $model = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($model->pid);
 
-            if (!$model) {
-                throw new \Exception(sprintf($GLOBALS['TL_LANG']['ERR']['fieldPaletteNestedParentTableDoesNotExist'], $id));
+            if (null === $model) {
+                return [$model->ptable, null];
             }
 
             // save nested path
