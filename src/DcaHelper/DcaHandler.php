@@ -387,7 +387,7 @@ class DcaHandler
      *
      * @throws \Exception
      *
-     * @return array|null
+     * @return array
      */
     public function getParentTable(FieldPaletteModel $model, int $id, array $palette = [])
     {
