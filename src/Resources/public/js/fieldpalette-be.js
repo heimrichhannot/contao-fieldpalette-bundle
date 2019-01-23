@@ -2,6 +2,7 @@
 jQuery.noConflict();
 
 var FieldPaletteBackend = {};
+var UtilsBundle = window.utilsBundle;
 
 FieldPaletteBackend.deleteFieldPaletteEntry = function (el, id) {
     new Request.Contao({
@@ -113,18 +114,18 @@ FieldPaletteBackend.openModalIframe = function (options) {
         var hasError = form.querySelectorAll('.tl_error').length > 0;
 
         var url = form.getAttribute('action'),
-            closeModal = UtilsBundle.getParameterByName('closeModal', url);
+            closeModal = UtilsBundle.url.getParameterByName('closeModal', url);
 
         if (closeModal && !hasError) {
             M.hide();
         }
         else {
-            url = UtilsBundle.removeParameterFromUri(url, 'closeModal');
+            url = UtilsBundle.url.removeParameterFromUri(url, 'closeModal');
             form.setAttribute('action', url);
         }
 
         form.getElementById('saveNclose').addEventListener("click", function () {
-            url = UtilsBundle.addParameterToUri(url, 'closeModal', 1);
+            url = UtilsBundle.url.addParameterToUri(url, 'closeModal', 1);
             form.setAttribute('action', url);
         });
 

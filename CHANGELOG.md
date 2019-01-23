@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.8] - 2019-01-23
+
+#### Fixed
+* error due changes in utils bundle js
+
+#### Changed
+* increased utils bundle version dependency
+
 ## [0.4.7] - 2018-12-06
 
 #### Fixed
