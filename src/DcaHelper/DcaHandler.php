@@ -86,7 +86,7 @@ class DcaHandler
             $paletteTable = $this->fieldPaletteTable;
         }
 
-        if (!is_array($fields)) {
+        if (!\is_array($fields)) {
             return $extract;
         }
 
@@ -111,11 +111,11 @@ class DcaHandler
             }
 
             $extract[$paletteTable] = array_merge(
-                is_array($extract[$paletteTable]) ? $extract[$paletteTable] : [],
-                is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []
+                \is_array($extract[$paletteTable]) ? $extract[$paletteTable] : [],
+                \is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []
             );
 
-            $extract = array_merge_recursive($extract, $this->extractFieldPaletteFields($table, is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []));
+            $extract = array_merge_recursive($extract, $this->extractFieldPaletteFields($table, \is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []));
         }
 
         return $extract;
@@ -163,7 +163,7 @@ class DcaHandler
             case 'show':
             case 'delete':
             case 'toggle':
-                $id = strlen($input->get('id')) ? $input->get('id') : CURRENT_ID;
+                $id = \strlen($input->get('id')) ? $input->get('id') : CURRENT_ID;
 
                 $objModel = $this->modelManager->createModelByTable($table)->findByPk($id);
 
@@ -218,7 +218,7 @@ class DcaHandler
 
         $fields = $arrDCA['fields'];
 
-        if (!is_array($fields)) {
+        if (!\is_array($fields)) {
             return false;
         }
 
@@ -227,7 +227,7 @@ class DcaHandler
         }
 
         // nested palette
-        if (is_array($palette)) {
+        if (\is_array($palette)) {
             $arrNestedPalette = $this->findNestedFieldPaletteFields($palette, $fields);
 
             if (false !== $arrNestedPalette) {
@@ -256,7 +256,7 @@ class DcaHandler
      */
     public function findNestedFieldPaletteFields(array $palettes, array $fields)
     {
-        if (1 === count($palettes)) {
+        if (1 === \count($palettes)) {
             $palette = $palettes[0];
 
             // root level
@@ -281,11 +281,11 @@ class DcaHandler
                 return false;
             }
 
-            if (!is_array($fields[$fieldPalette]['fieldpalette'])) {
+            if (!\is_array($fields[$fieldPalette]['fieldpalette'])) {
                 return false;
             }
 
-            $childPalettes = array_slice($palettes, $i + 1, count($palettes));
+            $childPalettes = \array_slice($palettes, $i + 1, \count($palettes));
 
             return $this->findNestedFieldPaletteFields($childPalettes, $fields[$fieldPalette]['fieldpalette']['fields']);
         }
@@ -304,19 +304,19 @@ class DcaHandler
      */
     public function registerFieldPaletteFields(&$dc, string $table, string $parentTable, string $rootTable, $palette, array $fields, $blnFound = false)
     {
-        if (!is_array($fields)) {
+        if (!\is_array($fields)) {
             return false;
         }
 
         foreach ($fields as $field => $fieldData) {
-            if (!is_array($fieldData) || !is_array($fieldData['fieldpalette'])) {
+            if (!\is_array($fieldData) || !\is_array($fieldData['fieldpalette'])) {
                 continue;
             }
 
             $dc['fields'] = array_merge(
-                is_array($dc['fields']) ? $dc['fields'] : [],
-                is_array($fieldData['fieldpalette']['fields']) ? $fieldData['fieldpalette']['fields'] : [],
-                is_array($GLOBALS['TL_DCA'][$table]['fields']) ? $GLOBALS['TL_DCA'][$table]['fields'] : []);
+                \is_array($dc['fields']) ? $dc['fields'] : [],
+                \is_array($fieldData['fieldpalette']['fields']) ? $fieldData['fieldpalette']['fields'] : [],
+                \is_array($GLOBALS['TL_DCA'][$table]['fields']) ? $GLOBALS['TL_DCA'][$table]['fields'] : []);
 
             $this->registry->set($rootTable, $field, $dc);
 
@@ -437,7 +437,7 @@ class DcaHandler
         $defauts = $GLOBALS['TL_DCA'][$paletteTable];
         $custom = $GLOBALS['TL_DCA'][$rootTable]['fields'][$field]['fieldpalette'];
 
-        if (is_array($palette)) {
+        if (\is_array($palette)) {
             $nestedPalette = $this->findNestedFieldPaletteFields($palette, $GLOBALS['TL_DCA'][$rootTable]['fields']);
 
             if ($nestedPalette) {
@@ -446,7 +446,7 @@ class DcaHandler
             }
         }
 
-        if (!is_array($defauts) || !is_array($custom)) {
+        if (!\is_array($defauts) || !\is_array($custom)) {
             return $data;
         }
 
@@ -489,16 +489,16 @@ class DcaHandler
     public function refuseFromBackendModuleByTable(string $table)
     {
         foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup) {
-            if (!is_array($arrGroup)) {
+            if (!\is_array($arrGroup)) {
                 continue;
             }
 
             foreach ($arrGroup as $strModule => $arrModule) {
-                if (!is_array($arrModule) || !is_array($arrModule['tables'])) {
+                if (!\is_array($arrModule) || !\is_array($arrModule['tables'])) {
                     continue;
                 }
 
-                if (!in_array($table, $arrModule['tables'], true)
+                if (!\in_array($table, $arrModule['tables'], true)
                     || false === ($idx = array_search($this->fieldPaletteTable, $arrModule['tables'], true))
                 ) {
                     continue;
@@ -540,13 +540,13 @@ class DcaHandler
                         $fieldPaletteModel->pid = $newId;
                         $fieldPaletteModel->published = true;
 
-                        if (isset($fieldData['eval']['fieldpalette']['copy_callback']) && is_array($fieldData['eval']['fieldpalette']['copy_callback'])) {
+                        if (isset($fieldData['eval']['fieldpalette']['copy_callback']) && \is_array($fieldData['eval']['fieldpalette']['copy_callback'])) {
                             foreach ($fieldData['eval']['fieldpalette']['copy_callback'] as $callback) {
-                                if (is_array($callback)) {
+                                if (\is_array($callback)) {
                                     $this->framework->getAdapter(System::class)
                                         ->importStatic($callback[0]);
                                     $callback[0]::$callback[1]($fieldPaletteModel, $pid, $newId, $table, $fieldData);
-                                } elseif (is_callable($callback)) {
+                                } elseif (\is_callable($callback)) {
                                     $callback($fieldPaletteModel, $pid, $newId, $table, $fieldData);
                                 }
                             }
@@ -579,12 +579,12 @@ class DcaHandler
                         $fieldPaletteModel->pid = $newId;
                         $fieldPaletteModel->published = true;
 
-                        if (isset($fieldData['eval']['fieldpalette']['copy_callback']) && is_array($fieldData['eval']['fieldpalette']['copy_callback'])) {
+                        if (isset($fieldData['eval']['fieldpalette']['copy_callback']) && \is_array($fieldData['eval']['fieldpalette']['copy_callback'])) {
                             foreach ($fieldData['eval']['fieldpalette']['copy_callback'] as $callback) {
-                                if (is_array($callback)) {
+                                if (\is_array($callback)) {
                                     $this->framework->getAdapter(System::class)->importStatic($callback[0]);
                                     $callback[0]->$callback[1]($fieldPaletteModel, $pid, $newId, $table, $fieldData);
-                                } elseif (is_callable($callback)) {
+                                } elseif (\is_callable($callback)) {
                                     $callback($fieldPaletteModel, $pid, $newId, $table, $fieldData);
                                 }
                             }

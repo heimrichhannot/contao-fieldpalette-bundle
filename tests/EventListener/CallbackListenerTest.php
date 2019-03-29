@@ -234,8 +234,8 @@ class CallbackListenerTest extends ContaoTestCase
         $listener->copyFieldPaletteRecords(3);
         $this->assertSame(0, $this->inputCountGet);
 
-        if (!defined('CURRENT_ID')) {
-            define('CURRENT_ID', null);
+        if (!\defined('CURRENT_ID')) {
+            \define('CURRENT_ID', null);
         }
 
         $containerUtil = $this->getContainerUtilMock(true);

@@ -52,8 +52,8 @@ class FieldPaletteModelTest extends ContaoTestCase
 
     public function testFindPublishedByIdsFrontend()
     {
-        if (!defined('BE_USER_LOGGED_IN')) {
-            define('BE_USER_LOGGED_IN', false);
+        if (!\defined('BE_USER_LOGGED_IN')) {
+            \define('BE_USER_LOGGED_IN', false);
         }
         /**
          * @var FieldPaletteModel
@@ -74,8 +74,8 @@ class FieldPaletteModelTest extends ContaoTestCase
 
     public function testFindPublishedByPidAndTableAndField()
     {
-        if (!defined('BE_USER_LOGGED_IN')) {
-            define('BE_USER_LOGGED_IN', false);
+        if (!\defined('BE_USER_LOGGED_IN')) {
+            \define('BE_USER_LOGGED_IN', false);
         }
         /**
          * @var FieldPaletteModel
@@ -94,8 +94,8 @@ class FieldPaletteModelTest extends ContaoTestCase
 
     public function testFindPublishedByPidsAndTableAndField()
     {
-        if (!defined('BE_USER_LOGGED_IN')) {
-            define('BE_USER_LOGGED_IN', false);
+        if (!\defined('BE_USER_LOGGED_IN')) {
+            \define('BE_USER_LOGGED_IN', false);
         }
         /**
          * @var FieldPaletteModel
@@ -117,8 +117,8 @@ class FieldPaletteModelTest extends ContaoTestCase
 
     public function testFindByPidAndTableAndField()
     {
-        if (!defined('BE_USER_LOGGED_IN')) {
-            define('BE_USER_LOGGED_IN', false);
+        if (!\defined('BE_USER_LOGGED_IN')) {
+            \define('BE_USER_LOGGED_IN', false);
         }
         /**
          * @var FieldPaletteModel
@@ -143,8 +143,8 @@ class FieldPaletteModelTest extends ContaoTestCase
      */
     public function testFindPublishedByBackend()
     {
-        if (!defined('BE_USER_LOGGED_IN')) {
-            define('BE_USER_LOGGED_IN', true);
+        if (!\defined('BE_USER_LOGGED_IN')) {
+            \define('BE_USER_LOGGED_IN', true);
         }
         /**
          * @var FieldPaletteModel
@@ -162,7 +162,7 @@ class FieldPaletteModelTest extends ContaoTestCase
     {
         if (!empty($array)) {
             foreach ($array as $entry) {
-                if (!is_string($entry)) {
+                if (!\is_string($entry)) {
                     return false;
                 }
             }

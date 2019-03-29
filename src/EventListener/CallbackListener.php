@@ -168,11 +168,11 @@ class CallbackListener
             $sessionData = $session->all();
             $referer = $this->requestStack->getCurrentRequest()->get('_contao_referer_id');
 
-            if (!is_array($sessionData[$key]) || !is_array($sessionData[$key][$referer])) {
+            if (!\is_array($sessionData[$key]) || !\is_array($sessionData[$key][$referer])) {
                 $sessionData[$key][$referer]['last'] = '';
             }
 
-            while (count($sessionData[$key]) >= 25) {
+            while (\count($sessionData[$key]) >= 25) {
                 array_shift($sessionData[$key]);
             }
 
@@ -185,11 +185,11 @@ class CallbackListener
 
                 $sessionData[$key][$referer] = array_merge($sessionData[$key][$referer], $sessionData[$key][$ref]);
                 $sessionData[$key][$referer]['last'] = $sessionData[$key][$ref]['current'];
-            } elseif (count($sessionData[$key]) > 1) {
+            } elseif (\count($sessionData[$key]) > 1) {
                 $sessionData[$key][$referer] = end($sessionData[$key]);
             }
 
-            $strUrl = substr($this->framework->getAdapter(Environment::class)->get('requestUri'), strlen(TL_PATH) + 1);
+            $strUrl = substr($this->framework->getAdapter(Environment::class)->get('requestUri'), \strlen(TL_PATH) + 1);
 
             $sessionData[$key][$referer]['current'] = $strUrl;
             $sessionData[$key][$referer]['last'] = $strUrl;
@@ -280,11 +280,11 @@ class CallbackListener
         $objVersions->initialize();
 
         // Trigger the save_callback
-        if (is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'])) {
+        if (\is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'])) {
             foreach ($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'] as $callback) {
-                if (is_array($callback)) {
+                if (\is_array($callback)) {
                     $this->framework->getAdapter(System::class)->importStatic($callback[0])->{$callback[1]}($visible, ($dc ?: $this));
-                } elseif (is_callable($callback)) {
+                } elseif (\is_callable($callback)) {
                     $visible = $callback($visible, ($dc ?: $this));
                 }
             }

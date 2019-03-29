@@ -99,7 +99,7 @@ class FieldPaletteModel extends Model
     {
         $t = static::$strTable;
 
-        if (!is_array($fieldpaletteIds) || empty($fieldpaletteIds)) {
+        if (!\is_array($fieldpaletteIds) || empty($fieldpaletteIds)) {
             return null;
         }
 

@@ -65,12 +65,12 @@ class HookListener
         }
 
         foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup) {
-            if (!is_array($arrGroup)) {
+            if (!\is_array($arrGroup)) {
                 continue;
             }
 
             foreach ($arrGroup as $strModule => $arrModule) {
-                if (!is_array($arrModule) && !is_array($arrModule['tables'])) {
+                if (!\is_array($arrModule) && !\is_array($arrModule['tables'])) {
                     continue;
                 }
 
@@ -93,7 +93,7 @@ class HookListener
                 $field = $GLOBALS['TL_DCA'][$dc->table]['fields'][$name];
 
                 // Die if the field does not exist
-                if (!is_array($field)) {
+                if (!\is_array($field)) {
                     header('HTTP/1.1 400 Bad Request');
                     die('Bad Request');
                 }
@@ -187,8 +187,8 @@ class HookListener
             }
 
             $GLOBALS['TL_DCA'][$paletteTable]['fields'] = array_merge(
-                is_array($GLOBALS['TL_DCA'][$paletteTable]['fields']) ? $GLOBALS['TL_DCA'][$paletteTable]['fields'] : [],
-                is_array($fields) ? $fields : []
+                \is_array($GLOBALS['TL_DCA'][$paletteTable]['fields']) ? $GLOBALS['TL_DCA'][$paletteTable]['fields'] : [],
+                \is_array($fields) ? $fields : []
             );
         }
     }

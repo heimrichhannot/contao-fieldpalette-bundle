@@ -60,7 +60,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
         $container->set('session', new Session(new MockArraySessionStorage()));
         System::setContainer($container);
 
-        if (!\interface_exists('\listable')) {
+        if (!interface_exists('\listable')) {
             include_once __DIR__.'/../../vendor/contao/core-bundle/src/Resources/contao/helper/interface.php';
         }
     }
@@ -350,7 +350,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
         $this->assertSame('Hallo', $result);
 
         $reflectionPropertyDca->setValue($widget, [
@@ -366,7 +366,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
         $this->assertSame('Hallo', $result);
 
         $reflectionPropertyDca->setValue($widget, [
@@ -384,7 +384,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
         $this->assertSame('HalloA', $result);
 
         $reflectionPropertyDca->setValue($widget, [
@@ -396,7 +396,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
         $this->assertSame('Hallo tl_news', $result);
 
         $reflectionPropertyDca->setValue($widget, [
@@ -408,7 +408,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
         $this->assertSame('Ha …', $result);
 
         $reflectionPropertyDca->setValue($widget, [
@@ -421,7 +421,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
         $this->assertSame('Hallo', $result);
 
         $reflectionPropertyDca->setValue($widget, [
@@ -435,7 +435,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel, '']);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
         $this->assertSame('Holla', $result);
     }
 
@@ -514,7 +514,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel]);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
 
         $reflectionPropertyDca->setValue($widget, [
             'list' => [
@@ -537,7 +537,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel]);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
         $this->assertNotFalse(strpos($result, 'LabelTestCallback'));
         $this->assertNotFalse(strpos($result, 'LabelTestCallable'));
 
@@ -554,16 +554,16 @@ class FieldPaletteWizardTest extends ContaoTestCase
             ],
         ]);
         $result = $testMethod->invokeArgs($widget, [$itemModel]);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
 
         $result = $testMethod->invokeArgs($widget, [$itemModel]);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
 
         $result = $testMethod->invokeArgs($widget, [$itemModel, [], false, null, '5']);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
 
         $result = $testMethod->invokeArgs($widget, [$itemModel, [], false, null, '5', '4']);
-        $this->assertTrue(is_string($result));
+        $this->assertTrue(\is_string($result));
     }
 
     public function testGenerateGlobalButtons()

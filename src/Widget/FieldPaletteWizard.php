@@ -208,7 +208,7 @@ class FieldPaletteWizard extends Widget
             }
         }
         $sortable = true;
-        if (isset($this->dca['config']['notSortable']) && is_bool($this->dca['config']['notSortable'])) {
+        if (isset($this->dca['config']['notSortable']) && \is_bool($this->dca['config']['notSortable'])) {
             $sortable = !$this->dca['config']['notSortable'];
         }
 
@@ -275,9 +275,9 @@ class FieldPaletteWizard extends Widget
             // Call load_callback
             if (isset($this->dca['fields'][$fieldName]['load_callback'])) {
                 foreach ($this->dca['fields'][$fieldName]['load_callback'] as $callback) {
-                    if (is_array($callback)) {
+                    if (\is_array($callback)) {
                         $value = $system->importStatic($callback[0])->{$callback[1]}($value, $dc);
-                    } elseif (is_callable($callback)) {
+                    } elseif (\is_callable($callback)) {
                         $value = $callback($value, $dc);
                     }
                 }
@@ -303,12 +303,12 @@ class FieldPaletteWizard extends Widget
         // Call the label_callback ($row, $label, $this)
         if (isset($this->dca['list']['label']['label_callback'])) {
             $callback = &$this->dca['list']['label']['label_callback'];
-            if (is_array($callback)) {
+            if (\is_array($callback)) {
                 $strClass = $callback[0];
                 $strMethod = $callback[1];
 
                 $label = $system->importStatic($strClass)->{$strMethod}($model->row(), $label, $this, $folderAttribute, false, $protected);
-            } elseif (is_callable($callback)) {
+            } elseif (\is_callable($callback)) {
                 $label = $callback($model->row(), $label, $this, $folderAttribute, false, $protected);
             }
         }
@@ -341,7 +341,7 @@ class FieldPaletteWizard extends Widget
         }
 
         $operations = $this->dca['list']['operations'];
-        if (!is_array($operations)) {
+        if (!\is_array($operations)) {
             return '';
         }
 
@@ -364,7 +364,7 @@ class FieldPaletteWizard extends Widget
         $dc->activeRecord = $rowModel;
 
         foreach ($operations as $key => $value) {
-            $value = is_array($value) ? $value : [$value];
+            $value = \is_array($value) ? $value : [$value];
             $id = StringUtil::specialchars(rawurldecode($rowModel->id));
 
             $label = $value['label'][0] ?: $key;
@@ -389,7 +389,7 @@ class FieldPaletteWizard extends Widget
 
             if (isset($value['button_callback'])) {
                 // Call a custom function instead of using the default button
-                if (is_array($value['button_callback'])) {
+                if (\is_array($value['button_callback'])) {
                     $return .= $system->importStatic($value['button_callback'][0])->{$value['button_callback'][1]}(
                         $rowModel->row(),
                         $button->getHref(),
@@ -406,7 +406,7 @@ class FieldPaletteWizard extends Widget
                         $dc
                     );
                     continue;
-                } elseif (is_callable($value['button_callback'])) {
+                } elseif (\is_callable($value['button_callback'])) {
                     $return .= $value['button_callback'](
                         $rowModel->row(),
                         $button->getHref(),
@@ -433,7 +433,7 @@ class FieldPaletteWizard extends Widget
             }
 
             $arrDirections = ['up', 'down'];
-            $rootIds = is_array($rootIds) ? $rootIds : [$rootIds];
+            $rootIds = \is_array($rootIds) ? $rootIds : [$rootIds];
             $defaultTable = $container->getParameter('huh.fieldpalette.table');
             $controller = $framework->getAdapter(Controller::class);
 
@@ -445,7 +445,7 @@ class FieldPaletteWizard extends Widget
                 $href = $value['href'] ?: '&amp;act=move';
 
                 if ('up' === $dir) {
-                    if (is_numeric($previous) && (!in_array($rowModel->id, $rootIds, true)
+                    if (is_numeric($previous) && (!\in_array($rowModel->id, $rootIds, true)
                             || empty($this->dca['list']['sorting']['root']))) {
                         $return .= '<a href="'.$controller->addToUrl($href.'&amp;id='.$rowModel->id)
                             .'&amp;sid='.(int) $previous.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$label.'</a> ';
@@ -456,7 +456,7 @@ class FieldPaletteWizard extends Widget
                 }
 
                 if (is_numeric($next)
-                    && (!in_array($rowModel->id, $rootIds, true)
+                    && (!\in_array($rowModel->id, $rootIds, true)
                         || empty($this->dca['list']['sorting']['root']))) {
                     $return .= '<a href="'.$controller->addToUrl($href.'&amp;id='.$rowModel->id)
                         .'&amp;sid='.(int) $next.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$label.'</a> ';
@@ -534,13 +534,13 @@ class FieldPaletteWizard extends Widget
         $new_records = $container->get('session')->get('new_records') ?: null;
 
         // HOOK: add custom logic
-        if (isset($GLOBALS['TL_HOOKS']['reviseTable']) && is_array($GLOBALS['TL_HOOKS']['reviseTable'])) {
+        if (isset($GLOBALS['TL_HOOKS']['reviseTable']) && \is_array($GLOBALS['TL_HOOKS']['reviseTable'])) {
             foreach ($GLOBALS['TL_HOOKS']['reviseTable'] as $callback) {
                 $status = false;
 
-                if (is_array($callback) && count($callback) >= 2) {
+                if (\is_array($callback) && \count($callback) >= 2) {
                     $status = $system->importStatic($callback[0])->{$callback[1]}($this->strTable, $new_records[$this->strTable], $ptable, $ctable);
-                } elseif (is_callable($callback)) {
+                } elseif (\is_callable($callback)) {
                     $status = $callback($this->strTable, $new_records[$this->strTable], $ptable, $ctable);
                 }
 
@@ -551,7 +551,7 @@ class FieldPaletteWizard extends Widget
         }
 
         // Delete all new but incomplete fieldpalette records (tstamp=0)
-        if (!empty($new_records[$this->paletteTable]) && is_array($new_records[$this->paletteTable])) {
+        if (!empty($new_records[$this->paletteTable]) && \is_array($new_records[$this->paletteTable])) {
             $result = $framework->createInstance(Database::class)->prepare(
                 'DELETE FROM '.$this->paletteTable.' WHERE id IN('.implode(
                     ',',
@@ -587,9 +587,9 @@ class FieldPaletteWizard extends Widget
         }
 
         // Delete all records of the child table that are not related to the current table
-        if (!empty($ctable) && is_array($ctable)) {
+        if (!empty($ctable) && \is_array($ctable)) {
             foreach ($ctable as $v) {
-                if (is_string($v) && !empty($v)) {
+                if (\is_string($v) && !empty($v)) {
                     // Load the DCA configuration so we can check for "dynamicPtable"
                     if (!isset($GLOBALS['loadDataContainer'][$v])) {
                         $controller->loadDataContainer($v);

@@ -105,7 +105,7 @@ class ButtonElement
 
         $attributes = '';
 
-        if (is_array($this->options['attributes'])) {
+        if (\is_array($this->options['attributes'])) {
             foreach ($this->options['attributes'] as $key => $arrValues) {
                 $attributes .= implode(' ', $this->options['attributes']);
             }

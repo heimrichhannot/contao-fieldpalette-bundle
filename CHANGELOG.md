@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.9] - 2019-03-29
+
+#### Fixed
+* drop async static flags for all js files in backend mode in order to maintain js order (this fixes jquery not defined error)
+
 ## [0.4.8] - 2019-01-23
 
 #### Fixed
