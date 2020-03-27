@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2019 Heimrich & Hannot GmbH
+ * Copyright (c) 2020 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -11,7 +11,6 @@ namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\DataContainer;
-use Contao\Environment;
 use Contao\Input;
 use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor;
@@ -124,24 +123,6 @@ class HookListener
     }
 
     /**
-     * Add fieldpalette fields to tl_fieldpalette.
-     *
-     * @param string $table
-     *
-     * @throws \Exception
-     */
-    public function loadDataContainerHook($table)
-    {
-        $environment = $this->framework->getAdapter(Environment::class);
-        $input = $this->framework->getAdapter(Input::class);
-
-        if (preg_match('/(contao\/install)/', $environment->get('request')) || 'group' === $input->get('do')) {
-            $this->extractTableFields($table);
-        }
-        $this->dcaHandler->registerFieldPalette($table);
-    }
-
-    /**
      * Modify the tl_fieldpalette dca sql, afterwards all loadDataContainer Hooks has been run
      * This is required, fields within all dca tables needs to be added to the database.
      *
@@ -165,31 +146,5 @@ class HookListener
         }
 
         return $dcaSqlExtract;
-    }
-
-    /**
-     * Extract table fields sql.
-     *
-     * @param string $tables The field palette table name
-     *
-     * @throws \Exception
-     */
-    protected function extractTableFields($tables)
-    {
-        $dcaFields = $GLOBALS['TL_DCA'][$tables]['fields'];
-        $palettes = [];
-        if (!empty($dcaFields)) {
-            $palettes = $this->dcaHandler->extractFieldPaletteFields($tables, $dcaFields);
-        }
-        foreach ($palettes as $paletteTable => $fields) {
-            if (!isset($GLOBALS['loadDataContainer'][$paletteTable])) {
-                $this->framework->getAdapter(Controller::class)->loadDataContainer($paletteTable);
-            }
-
-            $GLOBALS['TL_DCA'][$paletteTable]['fields'] = array_merge(
-                \is_array($GLOBALS['TL_DCA'][$paletteTable]['fields']) ? $GLOBALS['TL_DCA'][$paletteTable]['fields'] : [],
-                \is_array($fields) ? $fields : []
-            );
-        }
     }
 }

@@ -22,7 +22,7 @@ $GLOBALS['BE_FFL'][\HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard:
 /**
  * Hooks
  */
-$GLOBALS['TL_HOOKS']['loadDataContainer']['fieldPalette']  = ['huh.fieldpalette.listener.hook', 'loadDataContainerHook'];
+$GLOBALS['TL_HOOKS']['loadDataContainer']['fieldPalette']  = [\HeimrichHannot\FieldpaletteBundle\EventListener\LoadDataContainerListener::class, 'onLoadDataContainer'];
 $GLOBALS['TL_HOOKS']['initializeSystem']['fieldPalette']   = ['huh.fieldpalette.listener.hook', 'initializeSystemHook'];
 $GLOBALS['TL_HOOKS']['executePostActions']['fieldPalette'] = ['huh.fieldpalette.listener.hook', 'executePostActionsHook'];
 $GLOBALS['TL_HOOKS']['sqlGetFromDca']['fieldPalette']      = ['huh.fieldpalette.listener.hook', 'sqlGetFromDcaHook'];

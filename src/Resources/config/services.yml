@@ -51,3 +51,4 @@ services:
       - '@huh.fieldpalette.registry'
   # Symfony 4 autowire convention fix (ambiguous namespace alias)
   HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager: '@huh.fieldpalette.manager'
+  HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler: '@huh.fieldpalette.dca.handler'

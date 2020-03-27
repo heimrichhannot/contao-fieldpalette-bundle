@@ -1,0 +1,9 @@
+services:
+  _defaults:
+    autowire: true
+
+  HeimrichHannot\FieldpaletteBundle\EventListener\LoadDataContainerListener:
+    public: true
+
+  HeimrichHannot\FieldpaletteBundle\EventListener\CacheClearListener:
+    tags: [kernel.cache_clearer]
