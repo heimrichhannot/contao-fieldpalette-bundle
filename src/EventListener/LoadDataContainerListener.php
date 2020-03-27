@@ -45,18 +45,17 @@ class LoadDataContainerListener
             $cache->save($item);
         }
         $palettes = $item->get();
-        if (empty($palettes)) {
-            return;
-        }
-        foreach ($palettes as $paletteTable => $fields) {
-            if (!isset($GLOBALS['loadDataContainer'][$paletteTable])) {
-                Controller::loadDataContainer($paletteTable);
-            }
+        if (!empty($palettes)) {
+            foreach ($palettes as $paletteTable => $fields) {
+                if (!isset($GLOBALS['loadDataContainer'][$paletteTable])) {
+                    Controller::loadDataContainer($paletteTable);
+                }
 
-            $GLOBALS['TL_DCA'][$paletteTable]['fields'] = array_merge(
-                \is_array($GLOBALS['TL_DCA'][$paletteTable]['fields']) ? $GLOBALS['TL_DCA'][$paletteTable]['fields'] : [],
-                \is_array($fields) ? $fields : []
-            );
+                $GLOBALS['TL_DCA'][$paletteTable]['fields'] = array_merge(
+                    \is_array($GLOBALS['TL_DCA'][$paletteTable]['fields']) ? $GLOBALS['TL_DCA'][$paletteTable]['fields'] : [],
+                    \is_array($fields) ? $fields : []
+                );
+            }
         }
         $this->dcaHandler->registerFieldPalette($table);
     }

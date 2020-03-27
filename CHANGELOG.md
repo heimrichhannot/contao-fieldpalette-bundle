@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.1] - 2020-03-27
+- fixed an issue where field registration was not called
+
 ## [0.5.0] - 2020-03-27
 - changed dca field update implementation to better work with contao 4.9
 - updated composer.json
