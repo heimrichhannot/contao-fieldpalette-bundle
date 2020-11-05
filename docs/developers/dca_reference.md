@@ -1,11 +1,37 @@
 # Dca reference
 
-The most attributes listed in the [DCA Reference](https://docs.contao.org/books/api/dca/reference.html) are supported. Additional attributes will be listed here.
+The most attributes listed in the [DCA Reference](https://docs.contao.org/dev/reference/dca/) are supported. Additional attributes will be listed here.
 
-#### Listing records
+## Config
 
-##### Sorting
+```php
+$dca['fields']['additionalAddresses']['fieldpalette']['config'] = [
+    //...
+];
+```
 
   Key    | Value               | Description
----------| ------------------  | ---
-viewMode | View mode (integer) | **0** Table (default) <br /> **1** List 
+---------| ------------------  | -----------
+hidePublished | bool (default: false) | Hide published palette (added by default)
+
+
+
+## Listing records
+
+```php
+$dca['fields']['additionalAddresses']['fieldpalette']['list'] = [
+    //...
+];
+```
+
+### Sorting
+
+```php
+$dca['fields']['additionalAddresses']['fieldpalette']['list']['sorting'] = [
+    //...
+];
+```
+
+  Key    | Value               | Description
+---------| ------------------  | -----------
+viewMode | int (default: 0)  | View mode <br />**0** Table <br /> **1** List 
