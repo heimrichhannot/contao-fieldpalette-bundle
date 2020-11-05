@@ -13,6 +13,7 @@ $dca['fields']['additionalAddresses']['fieldpalette']['config'] = [
   Key    | Value               | Description
 ---------| ------------------  | -----------
 hidePublished | bool (default: false) | Hide published palette (added by default)
+table | string | Use a custom table instead of the fieldpalette default table.
 
 
 
