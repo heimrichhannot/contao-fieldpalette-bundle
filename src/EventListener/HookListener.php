@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2020 Heimrich & Hannot GmbH
+ * Copyright (c) 2021 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -15,7 +15,6 @@ use Contao\Input;
 use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
-use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class HookListener
@@ -32,55 +31,16 @@ class HookListener
      * @var ContaoFramework
      */
     private $framework;
-    /**
-     * @var DcaHandler
-     */
-    private $dcaHandler;
-    /**
-     * @var FieldPaletteModelManager
-     */
-    private $modelManager;
 
-    public function __construct(DcaExtractor $dcaExtractor, ContainerInterface $container, ContaoFramework $framework, DcaHandler $dcaHandler, FieldPaletteModelManager $modelManager)
+    public function __construct(DcaExtractor $dcaExtractor, ContainerInterface $container, ContaoFramework $framework)
     {
         $this->dcaExtractor = $dcaExtractor;
         $this->container = $container;
         $this->framework = $framework;
-        $this->dcaHandler = $dcaHandler;
-        $this->modelManager = $modelManager;
     }
 
     /**
-     * Adjust back end module to allow fieldpalette table access.
-     *
-     * Note: Do never execute Controller::loadDataContainer() inside this function as no BackendUser is available inside initializeSystem Hook.
-     */
-    public function initializeSystemHook()
-    {
-        $table = $this->framework->getAdapter(Input::class)->get(DcaHandler::TableRequestKey);
-
-        if (empty($table)) {
-            return;
-        }
-
-        foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup) {
-            if (!\is_array($arrGroup)) {
-                continue;
-            }
-
-            foreach ($arrGroup as $strModule => $arrModule) {
-                if (!\is_array($arrModule) && !\is_array($arrModule['tables'])) {
-                    continue;
-                }
-
-                $GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'][] = $table;
-            }
-        }
-    }
-
-    /**
-     * @param string        $action
-     * @param DataContainer $dc
+     * @param string $action
      */
     public function executePostActionsHook($action, DataContainer $dc)
     {
@@ -94,7 +54,7 @@ class HookListener
                 // Die if the field does not exist
                 if (!\is_array($field)) {
                     header('HTTP/1.1 400 Bad Request');
-                    die('Bad Request');
+                    exit('Bad Request');
                 }
 
                 /** @var Widget $class */
@@ -117,7 +77,7 @@ class HookListener
                     $data['autoSubmit'] = $dc->table;
                 }
 
-                die(json_encode($data));
+                exit(json_encode($data));
             }
         }
     }

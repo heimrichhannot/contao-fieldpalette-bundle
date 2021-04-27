@@ -1,7 +1,10 @@
-parameters:
-  huh.fieldpalette.table: tl_fieldpalette
-
 services:
+
+  HeimrichHannot\FieldpaletteBundle\EventListener\Contao\:
+    resource: '../../EventListener/Contao/*'
+    autowire: true
+    public: true
+
   huh.fieldpalette.listener.hook:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\HookListener
     public: true
@@ -9,8 +12,6 @@ services:
       - '@huh.fieldpalette.dca.extractor'
       - '@service_container'
       - '@contao.framework'
-      - '@huh.fieldpalette.dca.handler'
-      - '@huh.fieldpalette.manager'
   huh.fieldpalette.listener.callback:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
     public: true
