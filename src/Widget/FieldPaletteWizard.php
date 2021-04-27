@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2020 Heimrich & Hannot GmbH
+ * Copyright (c) 2021 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -136,8 +136,6 @@ class FieldPaletteWizard extends Widget
     /**
      * Returns a new FieldPaletteModel instance.
      *
-     * @param string $table
-     *
      * @return FieldPaletteModel
      *
      * @codeCoverageIgnore
@@ -155,9 +153,6 @@ class FieldPaletteWizard extends Widget
     /**
      * Create a new DC_Table instance.
      *
-     * @param string $table
-     * @param array  $module
-     *
      * @return DC_Table
      *
      * @codeCoverageIgnore
@@ -168,8 +163,6 @@ class FieldPaletteWizard extends Widget
     }
 
     /**
-     * @param string $type
-     *
      * @return string
      */
     protected function getViewTemplate(string $type)
@@ -224,8 +217,7 @@ class FieldPaletteWizard extends Widget
     }
 
     /**
-     * @param FieldPaletteModel $model
-     * @param int               $index
+     * @param int $index
      *
      * @throws \Twig_Error_Loader
      * @throws \Twig_Error_Runtime
@@ -319,12 +311,9 @@ class FieldPaletteWizard extends Widget
     /**
      * Compile buttons from the table configuration array and return them as HTML.
      *
-     * @param FieldPaletteModel $rowModel
-     * @param array             $rootIds
-     * @param bool              $circularReference
-     * @param array|null        $childRecordIds
-     * @param string|null       $previous
-     * @param string|null       $next
+     * @param array|null  $childRecordIds
+     * @param string|null $previous
+     * @param string|null $next
      *
      * @return string
      */
@@ -367,8 +356,9 @@ class FieldPaletteWizard extends Widget
             $value = \is_array($value) ? $value : [$value];
             $id = StringUtil::specialchars(rawurldecode($rowModel->id));
 
-            $label = $value['label'][0] ?: $key;
-            $title = sprintf($value['label'][1] ?: $key, $id);
+            $label = isset($value['label']) ? (\is_string($value['label']) ? $value['label'] : (isset($value['label'][0]) ? $value['label'][0] : $key)) : $key;
+
+            $title = sprintf($label, $id);
 
             $attributes = (isset($value['attributes']) && !empty($value['attributes'])) ? ltrim(sprintf($value['attributes'], $id, $id)) : '';
 
