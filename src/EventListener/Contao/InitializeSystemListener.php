@@ -55,6 +55,17 @@ class InitializeSystemListener
                     continue;
                 }
 
+                if (isset($GLOBALS['BE_MOD'][$strGroup][$strModule]['tables']) && !\is_array($GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'])) {
+                    trigger_error(
+                        'Invalid backend module configuration. $GLOBALS[\'BE_MOD\'][\''.$strGroup.'\'][\''.$strModule.'\'][\'tables\'] must be an array.',
+                        E_USER_WARNING
+                    );
+                    if (\is_string($GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'])) {
+                        $GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'] = [$GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'], $table];
+                    }
+                    continue;
+                }
+
                 $GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'][] = $table;
             }
         }
