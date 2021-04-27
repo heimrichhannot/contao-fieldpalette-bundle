@@ -5,6 +5,10 @@
 [![Build Status](https://travis-ci.org/heimrichhannot/contao-fieldpalette-bundle.svg?branch=master)](https://travis-ci.org/heimrichhannot/contao-fieldpalette-bundle)
 [![Coverage Status](https://coveralls.io/repos/github/heimrichhannot/contao-fieldpalette-bundle/badge.svg?branch=master)](https://coveralls.io/github/heimrichhannot/contao-fieldpalette-bundle?branch=master)
 
+> If you're in search of an multi column input field and the storage of values in another table is an explicit requirement, we recommend to use [Multi Column Editor Bundle] instead, as it has less possible sideeffects and is more often updated due it's higher usage.
+
+> Known Issue: There is a problem with this bundle that may lead to issues with the contao picker input type.
+
 FieldPalette is a contao widget similar to [MultiColumnWizard](https://github.com/menatwork/MultiColumnWizard).
 Unlike MultiColumnWizard, fields are stored flatly into `tl_fieldpalette` table and synced with its parent field.
 
@@ -37,7 +41,9 @@ FieldPalette comes with an custom input type `fieldpalette`. The configuration f
 This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That (shortend) example is available within the module [Contao News Leisure Bundle](https://github.com/heimrichhannot/contao-news-leisure-bundle).
 
 ```php
-// src/Ressource/contao/dca/tl_news.php
+// src/Resource/contao/dca/tl_news.php (Bundle)
+// app/Resource/contao/dca/tl_news.php (Contao 4.4 Projekt)
+// contao/dca/tl_news.php (Contao 4.9 Projekt)
 
 $dc = &$GLOBALS['TL_DCA']['tl_news'];
 
@@ -114,7 +120,6 @@ $fields = array
 
 $dc['fields'] = array_merge($dc['fields'], $fields);
 ```
-
 
 
 ## Developers

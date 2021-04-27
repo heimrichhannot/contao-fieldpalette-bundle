@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.2] - 2021-04-27
+- refactored initializeSystem hook
+- catch invalid backend module configuration in initializeSystem hook (see [#12])
+- backend assets now added from initializeSystem hook
+- removed saveNclose button from modals (see [#9])
+- fixed titles on table actions (see [#10])
+
 ## [0.5.1] - 2020-03-27
 - fixed an issue where field registration was not called
 
@@ -134,3 +141,7 @@ All notable changes to this project will be documented in this file.
 ## [0.1] - 2018-03-21 
 
 Refactored fieldpalette module to bundle structure.
+
+[#12]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/12
+[#10]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/10
+[#9]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/9
