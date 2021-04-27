@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2020 Heimrich & Hannot GmbH
+ * Copyright (c) 2021 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -231,6 +231,7 @@ class ButtonElement
             'act' => $this->act,
             'pid' => $this->pid,
             'id' => $this->id,
+            'nb' => 1, //don't show saveNclose button
             $this->fieldpaletteKey => $this->fieldpalette,
             'popup' => $this->popup,
         ];
@@ -239,7 +240,7 @@ class ButtonElement
 
         switch ($act) {
             case 'create':
-                $allowed = ['do', 'ptable', 'table', 'act', 'pid', 'fieldpalette', 'popup', 'popupReferer'];
+                $allowed = ['do', 'ptable', 'table', 'act', 'pid', 'fieldpalette', 'popup', 'popupReferer', 'nb'];
 
                 // nested fieldpalettes
                 if (
@@ -254,7 +255,7 @@ class ButtonElement
                 $parameters['id'] = $this->pid;
                 break;
             case 'edit':
-                $allowed = ['do', 'table', 'act', 'id', 'popup', 'popupReferer'];
+                $allowed = ['do', 'table', 'act', 'id', 'popup', 'popupReferer', 'nb'];
                 break;
             case 'copy':
                 $allowed = ['do', 'table', 'act', 'id', 'popup', 'popupReferer'];
