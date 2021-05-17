@@ -72,6 +72,9 @@ class InitializeSystemListener
      */
     protected function adjustBackenModules(): void
     {
+        if (Input::get('picker')) {
+            return;
+        }
         $table = $this->contaoFramework->getAdapter(Input::class)->get(DcaHandler::TableRequestKey);
 
         if (empty($table)) {

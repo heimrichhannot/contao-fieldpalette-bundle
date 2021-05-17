@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.3] - 2021-05-17
+- fixed issue with contao picker
+
 ## [0.5.2] - 2021-04-27
 - refactored initializeSystem hook
 - catch invalid backend module configuration in initializeSystem hook (see [#12])

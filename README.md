@@ -5,9 +5,7 @@
 [![Build Status](https://travis-ci.org/heimrichhannot/contao-fieldpalette-bundle.svg?branch=master)](https://travis-ci.org/heimrichhannot/contao-fieldpalette-bundle)
 [![Coverage Status](https://coveralls.io/repos/github/heimrichhannot/contao-fieldpalette-bundle/badge.svg?branch=master)](https://coveralls.io/github/heimrichhannot/contao-fieldpalette-bundle?branch=master)
 
-> If you're in search of an multi column input field and the storage of values in another table isn't an explicit requirement, we recommend to use [Multi Column Editor Bundle](https://github.com/heimrichhannot/contao-multi-column-editor-bundle) instead, as it has less possible sideeffects and is more often updated due it's higher usage.
-
-> Known Issue: There is a problem with this bundle that may lead to issues with the contao picker input type.
+> If you're in search of an multi column input field and the storage of values in another table isn't an explicit requirement, we recommend to use [Multi Column Editor Bundle](https://github.com/heimrichhannot/contao-multi-column-editor-bundle) instead, as it has less possible side effects and is more often updated due it's higher usage.
 
 FieldPalette is a contao widget similar to [MultiColumnWizard](https://github.com/menatwork/MultiColumnWizard).
 Unlike MultiColumnWizard, fields are stored flatly into `tl_fieldpalette` table and synced with its parent field.
