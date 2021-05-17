@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.4] - 2021-05-17
+- allow php 8
+
 ## [0.5.3] - 2021-05-17
 - fixed issue with contao picker
 
