@@ -274,7 +274,10 @@ class FieldPaletteWizard extends Widget
                     }
                 }
             }
-            $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, ['_dcaOverride' => $this->dca['fields'][$fieldName]]);
+            $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, [
+                '_dcaOverride' => $this->dca['fields'][$fieldName],
+                'skipReplaceInsertTags' => true
+            ]);
         }
 
         $label = vsprintf(
