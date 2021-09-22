@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.6] - 2021-09-22
+
+- Changed: skip replace insert tag for backend item labels (`FieldPaletteWizard::generateItemLabel()`) only in backend context
+
 ## [0.5.5] - 2021-09-22
 
 - Changed: skip replace insert tag for backend item labels (`FieldPaletteWizard::generateItemLabel()`) -> see https://github.com/heimrichhannot/contao-utils-bundle/issues/34

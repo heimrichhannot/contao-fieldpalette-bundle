@@ -20,6 +20,8 @@ use Contao\System;
 use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
+use HeimrichHannot\UtilsBundle\Form\FormUtil;
+use HeimrichHannot\UtilsBundle\Util\Utils;
 use Patchwork\Utf8;
 
 class FieldPaletteWizard extends Widget
@@ -248,7 +250,8 @@ class FieldPaletteWizard extends Widget
          * @var System
          */
         $system = System::getContainer()->get('contao.framework')->getAdapter(System::class);
-        $formUtil = System::getContainer()->get('huh.utils.form');
+        $formUtil = System::getContainer()->get(FormUtil::class);
+        $utils = System::getContainer()->get(Utils::class);
 
         $protected = false;
 
@@ -276,7 +279,7 @@ class FieldPaletteWizard extends Widget
             }
             $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, [
                 '_dcaOverride' => $this->dca['fields'][$fieldName],
-                'skipReplaceInsertTags' => true
+                'skipReplaceInsertTags' => $utils->container()->isBackend()
             ]);
         }
 
