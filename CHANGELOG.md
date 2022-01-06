@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.7] - 2022-01-06
+- Fixed: fieldpalette bundle not always loaded after fieldpalette module 
+
 ## [0.5.6] - 2021-09-22
 
 - Changed: skip replace insert tag for backend item labels (`FieldPaletteWizard::generateItemLabel()`) only in backend context

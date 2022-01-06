@@ -29,6 +29,7 @@ class Plugin implements BundlePluginInterface
         return [
             BundleConfig::create(HeimrichHannotContaoFieldpaletteBundle::class)->setLoadAfter([
                 ContaoCoreBundle::class,
+                'fieldpalette',
             ]),
         ];
     }
