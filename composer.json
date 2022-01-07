@@ -37,6 +37,9 @@
         "php-coveralls/php-coveralls": "^2.0",
         "symfony/phpunit-bridge": "^3.2"
     },
+    "replace": {
+        "heimrichhannot/contao-fieldpalette": "*"
+    },
     "autoload": {
         "psr-4": {
             "HeimrichHannot\\FieldpaletteBundle\\": "src/"

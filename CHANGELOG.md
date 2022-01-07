@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2022-01-07
+- Changed: this bundle now replaces the fieldpalette module
+
 ## [0.5.7] - 2022-01-06
 - Fixed: fieldpalette bundle not always loaded after fieldpalette module 
 
