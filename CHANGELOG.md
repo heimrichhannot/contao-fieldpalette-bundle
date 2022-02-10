@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.1] - 2022-02-10
+
+- Removed: usage of Utf8 bundle functions
+
 ## [0.6.0] - 2022-01-07
 - Changed: this bundle now replaces the fieldpalette module
 

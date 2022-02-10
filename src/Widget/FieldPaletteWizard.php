@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2021 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -22,7 +22,6 @@ use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Form\FormUtil;
 use HeimrichHannot\UtilsBundle\Util\Utils;
-use Patchwork\Utf8;
 
 class FieldPaletteWizard extends Widget
 {
@@ -279,7 +278,7 @@ class FieldPaletteWizard extends Widget
             }
             $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, [
                 '_dcaOverride' => $this->dca['fields'][$fieldName],
-                'skipReplaceInsertTags' => $utils->container()->isBackend()
+                'skipReplaceInsertTags' => $utils->container()->isBackend(),
             ]);
         }
 
@@ -291,7 +290,7 @@ class FieldPaletteWizard extends Widget
         // Shorten the label if it is too long
         if (isset($this->dca['list']['label']['maxCharacters'])
             && $this->dca['list']['label']['maxCharacters'] > 0
-            && $this->dca['list']['label']['maxCharacters'] < Utf8::strlen(
+            && $this->dca['list']['label']['maxCharacters'] < mb_strlen(
                 strip_tags($label)
             )
         ) {
