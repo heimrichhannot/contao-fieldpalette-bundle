@@ -95,7 +95,7 @@ class DcaHandler
                 $paletteTable = $this->fieldPaletteTable;
             }
 
-            if ($field['fieldpalette']['config']['table'] && $field['fieldpalette']['config']['table'] !== $paletteTable) {
+            if (isset($field['fieldpalette']['config']['table']) && $field['fieldpalette']['config']['table'] !== $paletteTable) {
                 $paletteTable = $field['fieldpalette']['config']['table'];
 
                 $this->framework->getAdapter(Controller::class)->loadDataContainer($paletteTable);
