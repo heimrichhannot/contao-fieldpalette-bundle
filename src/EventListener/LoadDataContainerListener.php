@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2020 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -66,11 +66,13 @@ class LoadDataContainerListener
      * @param string $tables The field palette table name
      *
      * @throws \Exception
-     *
-     * @return array
      */
     protected function extractTableFields($tables): array
     {
+        if (!isset($GLOBALS['TL_DCA'][$tables]['fields'])) {
+            return [];
+        }
+
         $dcaFields = $GLOBALS['TL_DCA'][$tables]['fields'];
         $palettes = [];
         if (!empty($dcaFields)) {

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2020 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -70,13 +70,9 @@ class DcaHandler
     }
 
     /**
-     * @param string $table
-     * @param array  $fields
      * @param string $paletteTable
      *
      * @throws \Exception
-     *
-     * @return array
      */
     public function extractFieldPaletteFields(string $table, array $fields = [], $paletteTable = null): array
     {
@@ -91,7 +87,7 @@ class DcaHandler
         }
 
         foreach ($fields as $name => $field) {
-            if ('fieldpalette' !== $field['inputType']) {
+            if (!isset($field['inputType']) || 'fieldpalette' !== $field['inputType']) {
                 continue;
             }
 
@@ -111,11 +107,11 @@ class DcaHandler
             }
 
             $extract[$paletteTable] = array_merge(
-                \is_array($extract[$paletteTable]) ? $extract[$paletteTable] : [],
-                \is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []
+                isset($extract[$paletteTable]) && \is_array($extract[$paletteTable]) ? $extract[$paletteTable] : [],
+                isset($field['fieldpalette']['fields']) && \is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []
             );
 
-            $extract = array_merge_recursive($extract, $this->extractFieldPaletteFields($table, \is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []));
+            $extract = array_merge_recursive($extract, $this->extractFieldPaletteFields($table, isset($field['fieldpalette']['fields']) && \is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []));
         }
 
         return $extract;
@@ -123,7 +119,6 @@ class DcaHandler
 
     /**
      * @param string|null $act
-     * @param string      $table
      * @param string|null $parentTable
      *
      * @throws \Exception
@@ -194,8 +189,6 @@ class DcaHandler
     }
 
     /**
-     * @param string $table
-     *
      * @throws \Exception
      *
      * @return bool
@@ -249,9 +242,6 @@ class DcaHandler
     }
 
     /**
-     * @param array $palettes
-     * @param array $fields
-     *
      * @return array|bool
      */
     public function findNestedFieldPaletteFields(array $palettes, array $fields)
@@ -293,12 +283,8 @@ class DcaHandler
 
     /**
      * @param $dc
-     * @param string $table
-     * @param string $parentTable
-     * @param string $rootTable
      * @param $palette
-     * @param array $fields
-     * @param bool  $blnFound
+     * @param bool $blnFound
      *
      * @return bool
      */
@@ -381,10 +367,6 @@ class DcaHandler
     }
 
     /**
-     * @param FieldPaletteModel $model
-     * @param int               $id
-     * @param array             $palette
-     *
      * @throws \Exception
      *
      * @return array
@@ -415,11 +397,6 @@ class DcaHandler
     }
 
     /**
-     * @param string $rootTable
-     * @param string $parentTable
-     * @param string $field
-     * @param array  $palette
-     *
      * @return array
      */
     public function getDca(string $rootTable, string $parentTable, string $field, array $palette = [])
@@ -483,9 +460,6 @@ class DcaHandler
         return $data;
     }
 
-    /**
-     * @param string $table
-     */
     public function refuseFromBackendModuleByTable(string $table)
     {
         foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup) {
