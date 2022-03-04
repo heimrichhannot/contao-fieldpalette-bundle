@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.4] - 2022-02-14
+
+- Added: handling Terminal42 Multilingual instance
+
 ## [0.6.3] - 2022-02-14
 
 - Fixed: array index issues in php 8+

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2020 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -30,6 +30,7 @@ use HeimrichHannot\UtilsBundle\Url\UrlUtil;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Terminal42\DcMultilingualBundle\Model\Multilingual;
 
 class CallbackListener
 {
@@ -87,7 +88,6 @@ class CallbackListener
     }
 
     /**
-     * @param string $table
      * @param $insertID
      * @param $set
      *
@@ -130,8 +130,6 @@ class CallbackListener
     /**
      * Use this method as an oncopy_callback.
      * Support recursive copying fieldpalette records by copying their parent record.
-     *
-     * @param int $newId
      */
     public function copyFieldPaletteRecords(int $newId)
     {
@@ -201,14 +199,6 @@ class CallbackListener
     /**
      * Return the "toggle visibility" button.
      *
-     * @param array  $row
-     * @param string $href
-     * @param string $label
-     * @param string $title
-     * @param string $icon
-     * @param string $attributes
-     * @param string $table
-     *
      * @return string
      */
     public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table)
@@ -248,8 +238,6 @@ class CallbackListener
     /**
      * Disable/enable a user group.
      *
-     * @param int           $id
-     * @param bool          $visible
      * @param DataContainer $dc
      */
     public function toggleVisibility(int $id, bool $visible, DataContainer $dc = null)
@@ -338,9 +326,6 @@ class CallbackListener
     /**
      * Update the parent field with its tl_fieldpalette item ids.
      *
-     * @param FieldPaletteModel $currentRecord
-     * @param int               $deleteIds
-     *
      * @return bool
      */
     public function updateParentField(FieldPaletteModel $currentRecord, int $deleteIds = 0)
@@ -359,6 +344,17 @@ class CallbackListener
 
         if (null === $parentModel) {
             return false;
+        }
+
+        if ($parentModel instanceof Multilingual) {
+            $langPidField = array_search('langPid', $GLOBALS['TL_DCA'][$ptable]['config'], true);
+
+            if ($parentModel->$langPidField === '0') {
+                // Clone obj to be able to save
+                $parentModel = clone $parentModel;
+            } else {
+                throw new \RuntimeException('The model instance Multilingual is not supported and cannot be saved');
+            }
         }
 
         $objItems = $this->modelManager->createModel()->findByPidAndTableAndField(
