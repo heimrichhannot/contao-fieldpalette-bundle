@@ -73,6 +73,8 @@ class DcaHandler
      * @param string $paletteTable
      *
      * @throws \Exception
+     *
+     * @deprecated Use DcaProcessor::getFieldpaletteFields instead
      */
     public function extractFieldPaletteFields(string $table, array $fields = [], $paletteTable = null): array
     {
@@ -102,7 +104,6 @@ class DcaHandler
 
                 if (!isset($GLOBALS['TL_DCA'][$paletteTable])) {
                     throw new \Exception('Custom fieldpalette table '.$paletteTable.' does not exist.');
-                    continue;
                 }
             }
 

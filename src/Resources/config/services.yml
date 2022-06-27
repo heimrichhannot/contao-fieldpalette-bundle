@@ -1,5 +1,9 @@
 services:
 
+  HeimrichHannot\FieldpaletteBundle\Dca\:
+    resource: '../../Dca/*'
+    autowire: true
+
   HeimrichHannot\FieldpaletteBundle\EventListener\Contao\:
     resource: '../../EventListener/Contao/*'
     autowire: true

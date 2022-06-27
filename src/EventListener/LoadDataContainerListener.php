@@ -9,6 +9,7 @@
 namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
 use Contao\Controller;
+use HeimrichHannot\FieldpaletteBundle\Dca\DcaProcessor;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
@@ -23,12 +24,24 @@ class LoadDataContainerListener
      */
     private $dcaHandler;
 
+    /** @var array */
+    private $fieldCache = [];
+
+    /** @var array */
+    private $processedTables = [];
+
+    /**
+     * @var DcaProcessor
+     */
+    private $dcaProcessor;
+
     /**
      * LoadDataContainerListener constructor.
      */
-    public function __construct(DcaHandler $dcaHandler)
+    public function __construct(DcaHandler $dcaHandler, DcaProcessor $dcaProcessor)
     {
         $this->dcaHandler = $dcaHandler;
+        $this->dcaProcessor = $dcaProcessor;
     }
 
     /**
@@ -36,49 +49,63 @@ class LoadDataContainerListener
      */
     public function onLoadDataContainer(string $table): void
     {
+        $fieldpaletteTables = $this->extractTableFields($table);
+        $this->updateTable($table);
+
+        foreach ($fieldpaletteTables as $table) {
+            if (!\in_array($table, $this->processedTables, true)) {
+                Controller::loadDataContainer($table);
+            }
+        }
+
+        $this->processedTables[] = $table;
+        unset($this->fieldCache[$table]);
+
+        $this->dcaHandler->registerFieldPalette($table);
+    }
+
+    public function extractTableFields(string $table): array
+    {
         $cache = new TagAwareAdapter(new FilesystemAdapter(static::CACHE_NAMESPACE));
         /** @var CacheItem $item */
         $item = $cache->getItem('extract_'.$table);
         if (!$item->isHit()) {
-            $item->set($this->extractTableFields($table));
-            $item->tag('dca');
+            $dca = &$GLOBALS['TL_DCA'][$table];
+            $item->set($this->dcaProcessor->getFieldpaletteFields($dca));
+            $item->tag(['dca', 'contao.db.'.$table]);
             $cache->save($item);
         }
-        $palettes = $item->get();
-        if (!empty($palettes)) {
-            foreach ($palettes as $paletteTable => $fields) {
-                if (!isset($GLOBALS['loadDataContainer'][$paletteTable])) {
-                    Controller::loadDataContainer($paletteTable);
-                }
+        $extract = $item->get();
 
-                $GLOBALS['TL_DCA'][$paletteTable]['fields'] = array_merge(
-                    \is_array($GLOBALS['TL_DCA'][$paletteTable]['fields']) ? $GLOBALS['TL_DCA'][$paletteTable]['fields'] : [],
-                    \is_array($fields) ? $fields : []
-                );
-            }
-        }
-        $this->dcaHandler->registerFieldPalette($table);
-    }
-
-    /**
-     * Extract table fields sql.
-     *
-     * @param string $tables The field palette table name
-     *
-     * @throws \Exception
-     */
-    protected function extractTableFields($tables): array
-    {
-        if (!isset($GLOBALS['TL_DCA'][$tables]['fields'])) {
+        if (empty($extract)) {
             return [];
         }
 
-        $dcaFields = $GLOBALS['TL_DCA'][$tables]['fields'];
-        $palettes = [];
-        if (!empty($dcaFields)) {
-            $palettes = $this->dcaHandler->extractFieldPaletteFields($tables, $dcaFields);
+        foreach ($extract as $fieldpaletteTable => $fields) {
+            if (\in_array($fieldpaletteTable, $this->processedTables, true)) {
+                $this->dcaProcessor->updateFieldpaletteTable($fieldpaletteTable, $fields);
+            } else {
+                if (!isset($this->fieldCache[$fieldpaletteTable])) {
+                    $this->fieldCache[$fieldpaletteTable] = [];
+                }
+                $this->fieldCache[$fieldpaletteTable] = array_merge(
+                    $this->fieldCache[$fieldpaletteTable],
+                    $fields
+                );
+            }
         }
 
-        return $palettes;
+        return array_keys($extract);
+    }
+
+    private function updateTable(string $table): void
+    {
+        if (!isset($this->fieldCache[$table])) {
+            return;
+        }
+
+        foreach ($this->fieldCache[$table] as $fields) {
+            $this->dcaProcessor->updateFieldpaletteTable($table, $fields);
+        }
     }
 }

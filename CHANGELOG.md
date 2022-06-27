@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.5] - 2022-06-27
+- Changed: some refactoring to fix issues with custom fieldpalette dca's 
+
 ## [0.6.4] - 2022-02-14
 
 - Added: handling Terminal42 Multilingual instance
