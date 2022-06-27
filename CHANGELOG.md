@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.6] - 2022-06-27
+- Fixed: exception if dca is empty
+
 ## [0.6.5] - 2022-06-27
 - Changed: some refactoring to fix issues with custom fieldpalette dca's 
 

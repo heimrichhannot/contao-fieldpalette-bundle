@@ -66,6 +66,9 @@ class LoadDataContainerListener
 
     public function extractTableFields(string $table): array
     {
+        if (!isset($GLOBALS['TL_DCA'][$table])) {
+            return [];
+        }
         $cache = new TagAwareAdapter(new FilesystemAdapter(static::CACHE_NAMESPACE));
         /** @var CacheItem $item */
         $item = $cache->getItem('extract_'.$table);
