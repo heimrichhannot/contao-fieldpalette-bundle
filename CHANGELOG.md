@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.7] - 2022-06-28
+- Fixed: fields not correctly registered
+- 
 ## [0.6.6] - 2022-06-27
 - Fixed: exception if dca is empty
 

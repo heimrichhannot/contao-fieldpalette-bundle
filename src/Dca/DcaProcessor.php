@@ -45,11 +45,11 @@ class DcaProcessor
         }
 
         foreach ($fields as $field) {
-            if (!isset($field['fields'])) {
+            if (!isset($field['fieldpalette']['fields'])) {
                 continue;
             }
 
-            foreach ($field['fields'] as $fieldpaletteFieldName => $fieldpaletteField) {
+            foreach ($field['fieldpalette']['fields'] as $fieldpaletteFieldName => $fieldpaletteField) {
                 $GLOBALS['TL_DCA'][$table]['fields'][$fieldpaletteFieldName] = $fieldpaletteField;
             }
         }
