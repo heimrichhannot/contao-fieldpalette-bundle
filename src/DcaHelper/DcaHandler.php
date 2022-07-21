@@ -301,9 +301,10 @@ class DcaHandler
             }
 
             $dc['fields'] = array_merge(
-                \is_array($dc['fields']) ? $dc['fields'] : [],
-                \is_array($fieldData['fieldpalette']['fields']) ? $fieldData['fieldpalette']['fields'] : [],
-                \is_array($GLOBALS['TL_DCA'][$table]['fields']) ? $GLOBALS['TL_DCA'][$table]['fields'] : []);
+                $dc['fields'] ?? [],
+                $fieldData['fieldpalette']['fields'] ?? [],
+                $GLOBALS['TL_DCA'][$table]['fields'] ?? []
+            );
 
             $this->registry->set($rootTable, $field, $dc);
 
