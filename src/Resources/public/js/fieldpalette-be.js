@@ -95,41 +95,6 @@ FieldPaletteBackend.openModalIframe = function (options) {
         'title': opt.title,
         'contents': '<iframe src="' + opt.url + '" width="100%" height="' + opt.height + '" frameborder="0" id="fieldPaletteContent"></iframe>'
     });
-
-    // save and close handling within tl_content editing
-    document.getElementById('fieldPaletteContent').onload = function () {
-
-        var form = (this.contentDocument.body || this.contentWindow.document.body).getElementById('tl_fieldpalette'),
-            container = (this.contentDocument.body || this.contentWindow.document.body).getElementById('container');
-
-        if (container != null) {
-            container.classList.add("fieldpalette-form-container");
-        }
-
-        // fallback if something went wrong within contao referrer session handling
-        if (form == null) {
-            return false;
-        }
-
-        var hasError = form.querySelectorAll('.tl_error').length > 0;
-
-        var url = form.getAttribute('action'),
-            closeModal = UtilsBundle.url.getParameterByName('closeModal', url);
-
-        if (closeModal && !hasError) {
-            M.hide();
-        }
-        else {
-            url = UtilsBundle.url.removeParameterFromUri(url, 'closeModal');
-            form.setAttribute('action', url);
-        }
-
-        form.getElementById('saveNclose').addEventListener("click", function () {
-            url = UtilsBundle.url.addParameterToUri(url, 'closeModal', 1);
-            form.setAttribute('action', url);
-        });
-
-    };
 };
 
 

@@ -1,7 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.6.8] - 2022-08-21
+## [0.6.9] - 2022-07-27
+- Changed: removed unnecassary and buggy saveNclose js code
+
+## [0.6.8] - 2022-07-21
 - Fixed: php 8 array index issues
 
 ## [0.6.7] - 2022-06-28
