@@ -84,7 +84,7 @@ class FieldPaletteWizard extends Widget
 
         $this->import('Database');
         $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
-        $this->viewMode = $this->dca['list']['viewMode'] ?: 0;
+        $this->viewMode = $this->dca['list']['viewMode'] ?? 0;
         $this->paletteTable = $this->dca['config']['table'] ?: $container->getParameter('huh.fieldpalette.table');
 
         // load custom table labels
@@ -534,7 +534,7 @@ class FieldPaletteWizard extends Widget
                 $status = false;
 
                 if (\is_array($callback) && \count($callback) >= 2) {
-                    $status = $system->importStatic($callback[0])->{$callback[1]}($this->strTable, $new_records[$this->strTable], $ptable, $ctable);
+                    $status = $system->importStatic($callback[0])->{$callback[1]}($this->strTable, $new_records[$this->strTable] ?? null, $ptable, $ctable);
                 } elseif (\is_callable($callback)) {
                     $status = $callback($this->strTable, $new_records[$this->strTable], $ptable, $ctable);
                 }

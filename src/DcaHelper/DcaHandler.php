@@ -445,9 +445,9 @@ class DcaHandler
         $backendUser = $this->framework->createInstance(BackendUser::class);
 
         // Include all excluded fields which are allowed for the current user
-        if ($data['fields']) {
+        if ($data['fields'] ?? false) {
             foreach ($data['fields'] as $k => $v) {
-                if ($v['exclude']) {
+                if ($v['exclude'] ?? false) {
                     if ($backendUser->hasAccess($paletteTable.'::'.$k, 'alexf')) {
                         if ('tl_user_group' === $this->fieldPaletteTable) {
                             $data['fields'][$k]['orig_exclude'] = $data['fields'][$k]['exclude'];

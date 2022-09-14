@@ -37,6 +37,7 @@ $GLOBALS['TL_DCA']['tl_fieldpalette'] = [
             ['huh.fieldpalette.listener.callback', 'updateParentFieldonDelete'],
         ],
     ],
+
     'list' => [
         'label' => [
             'fields' => ['pid', 'ptable', 'pfield'],
@@ -66,6 +67,10 @@ $GLOBALS['TL_DCA']['tl_fieldpalette'] = [
                 'href' => 'act=show',
                 'icon' => 'show.gif',
             ],
+        ],
+        'sorting' => [
+            'mode' => 1,
+            'fields' => ['sorting'],
         ],
     ],
     'palettes' => [
