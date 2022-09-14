@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.10] - 2022-09-14
+- Fixed: fixed field not registered correct
+- Fixed: array index issues with php 8
+- Removed: sqlGetFromDcaHook listener
+
 ## [0.6.9] - 2022-07-27
 - Changed: removed unnecassary and buggy saveNclose js code
 

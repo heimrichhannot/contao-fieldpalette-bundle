@@ -107,8 +107,6 @@ class LoadDataContainerListener
             return;
         }
 
-        foreach ($this->fieldCache[$table] as $fields) {
-            $this->dcaProcessor->updateFieldpaletteTable($table, $fields);
-        }
+        $this->dcaProcessor->updateFieldpaletteTable($table, $this->fieldCache[$table]);
     }
 }

@@ -26,12 +26,12 @@ class DcaProcessor
                 continue;
             }
 
-            $fieldpaletteTable = $field['config']['table'] ?? $this->defaultTable;
+            $fieldpaletteTable = $field['fieldpalette']['config']['table'] ?? $this->defaultTable;
 
             $fieldpaletteFields[$fieldpaletteTable][$fieldName] = $field;
 
-            if (isset($field['fields'])) {
-                $fieldpaletteFields = array_merge_recursive($fieldpaletteFields, $this->getFieldpaletteFields($field));
+            if (isset($field['fieldpalette']['fields'])) {
+                $fieldpaletteFields = array_merge_recursive($fieldpaletteFields, $this->getFieldpaletteFields($field['fieldpalette']));
             }
         }
 
