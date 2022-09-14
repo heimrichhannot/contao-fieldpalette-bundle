@@ -9,13 +9,6 @@ services:
     autowire: true
     public: true
 
-  huh.fieldpalette.listener.hook:
-    class: HeimrichHannot\FieldpaletteBundle\EventListener\HookListener
-    public: true
-    arguments:
-      - '@huh.fieldpalette.dca.extractor'
-      - '@service_container'
-      - '@contao.framework'
   huh.fieldpalette.listener.callback:
     class: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
     public: true

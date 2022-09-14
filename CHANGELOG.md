@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.11] - 2022-09-14
+- Fixed: backend widget not working
+
 ## [0.6.10] - 2022-09-14
 - Fixed: fixed field not registered correct
 - Fixed: array index issues with php 8
