@@ -432,7 +432,7 @@ class DcaHandler
             $data[$key] = array_replace_recursive(($defauts[$key] ?? []), ($custom[$key] ?? []));
         }
 
-        $data['fields'] = array_merge(($defauts['field'] ?? []), $custom['fields'] ?? []);
+        $data['fields'] = array_merge(($defauts['fields'] ?? []), ($custom['fields'] ?? []));
 
         // replace tl_fieldpalette with custom config
 //        $data = @array_replace_recursive($defauts, $custom); // supress warning, as long as references may exist in both arrays
