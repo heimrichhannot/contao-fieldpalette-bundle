@@ -1,7 +1,7 @@
 services:
 
-  HeimrichHannot\FieldpaletteBundle\Dca\:
-    resource: '../../Dca/*'
+  HeimrichHannot\FieldpaletteBundle\:
+    resource: '../../{Dca}/*'
     autowire: true
 
   HeimrichHannot\FieldpaletteBundle\EventListener\Contao\:
@@ -47,6 +47,8 @@ services:
       - '@huh.fieldpalette.manager'
       - '@request_stack'
       - '@huh.fieldpalette.registry'
+
   # Symfony 4 autowire convention fix (ambiguous namespace alias)
   HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager: '@huh.fieldpalette.manager'
   HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler: '@huh.fieldpalette.dca.handler'
+  HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry: '@huh.fieldpalette.registry'

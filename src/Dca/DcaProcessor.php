@@ -8,21 +8,22 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Dca;
 
+use HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard;
+
 class DcaProcessor
 {
     /** @var string */
     private $defaultTable = 'tl_fieldpalette';
 
+    /**
+     * Scan the dca for fieldpalette fields and return them ordered by their fieldpalette table.
+     */
     public function getFieldpaletteFields(array $dca): array
     {
         $fieldpaletteFields = [];
 
-        if (!isset($dca['fields'])) {
-            return $fieldpaletteFields;
-        }
-
-        foreach ($dca['fields'] as $fieldName => $field) {
-            if (!isset($field['inputType']) || 'fieldpalette' !== $field['inputType']) {
+        foreach (($dca['fields'] ?? []) as $fieldName => $field) {
+            if (FieldPaletteWizard::TYPE !== ($field['inputType'] ?? '') || empty($field['fieldpalette']['fields'])) {
                 continue;
             }
 
@@ -30,19 +31,23 @@ class DcaProcessor
 
             $fieldpaletteFields[$fieldpaletteTable][$fieldName] = $field;
 
-            if (isset($field['fieldpalette']['fields'])) {
-                $fieldpaletteFields = array_merge_recursive($fieldpaletteFields, $this->getFieldpaletteFields($field['fieldpalette']));
-            }
+            // Check for nested fieldpalette fields
+            $fieldpaletteFields = array_merge_recursive($fieldpaletteFields, $this->getFieldpaletteFields($field['fieldpalette']));
         }
 
         return $fieldpaletteFields;
     }
 
+    /**
+     * Apply field to the fieldpalette table.
+     */
     public function updateFieldpaletteTable(string $table, array $fields): void
     {
         if (!isset($GLOBALS['TL_DCA'][$table])) {
             throw new \Exception('Table must be loaded before applying fieldpalette fields!');
         }
+
+        $dca = &$GLOBALS['TL_DCA'][$table];
 
         foreach ($fields as $field) {
             if (!isset($field['fieldpalette']['fields'])) {
@@ -50,7 +55,7 @@ class DcaProcessor
             }
 
             foreach ($field['fieldpalette']['fields'] as $fieldpaletteFieldName => $fieldpaletteField) {
-                $GLOBALS['TL_DCA'][$table]['fields'][$fieldpaletteFieldName] = $fieldpaletteField;
+                $dca['fields'][$fieldpaletteFieldName] = $fieldpaletteField;
             }
         }
     }

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2021 Heimrich & Hannot GmbH
+ * Copyright (c) 2022 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -9,9 +9,10 @@
 namespace HeimrichHannot\FieldpaletteBundle\EventListener\Contao;
 
 use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\CoreBundle\Routing\ScopeMatcher;
 use Contao\Input;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
-use HeimrichHannot\UtilsBundle\Container\ContainerUtil;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class InitializeSystemListener
 {
@@ -20,17 +21,22 @@ class InitializeSystemListener
      */
     protected $contaoFramework;
     /**
-     * @var ContainerUtil
+     * @var ScopeMatcher
      */
-    protected $containerUtil;
+    private $scopeMatcher;
+    /**
+     * @var RequestStack
+     */
+    private $requestStack;
 
     /**
      * InitializeSystemListener constructor.
      */
-    public function __construct(ContaoFramework $contaoFramework, ContainerUtil $containerUtil)
+    public function __construct(ContaoFramework $contaoFramework, ScopeMatcher $scopeMatcher, RequestStack $requestStack)
     {
         $this->contaoFramework = $contaoFramework;
-        $this->containerUtil = $containerUtil;
+        $this->scopeMatcher = $scopeMatcher;
+        $this->requestStack = $requestStack;
     }
 
     public function __invoke(): void
@@ -41,7 +47,7 @@ class InitializeSystemListener
 
     public function addBackendAssets(): void
     {
-        if (!$this->containerUtil->isBackend()) {
+        if (!$this->requestStack->getCurrentRequest() || !$this->scopeMatcher->isBackendRequest($this->requestStack->getCurrentRequest())) {
             return;
         }
 
@@ -52,7 +58,7 @@ class InitializeSystemListener
         }
         $GLOBALS['TL_JAVASCRIPT'] = array_merge(
             ['jquery' => $jquery],
-            \is_array($GLOBALS['TL_JAVASCRIPT']) ? $GLOBALS['TL_JAVASCRIPT'] : []
+            $GLOBALS['TL_JAVASCRIPT'] ?? []
         );
         $GLOBALS['TL_JAVASCRIPT']['datatables-i18n'] = 'assets/datatables-additional/datatables-i18n/datatables-i18n.min.js';
         $GLOBALS['TL_JAVASCRIPT']['datatables-core'] = 'assets/datatables/datatables/media/js/jquery.dataTables.min.js';
@@ -72,9 +78,12 @@ class InitializeSystemListener
      */
     protected function adjustBackenModules(): void
     {
-        if (Input::get('picker')) {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (!$request || $request->query->has('picker')) {
             return;
         }
+
         $table = $this->contaoFramework->getAdapter(Input::class)->get(DcaHandler::TableRequestKey);
 
         if (empty($table)) {
@@ -94,7 +103,7 @@ class InitializeSystemListener
                 if (isset($GLOBALS['BE_MOD'][$strGroup][$strModule]['tables']) && !\is_array($GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'])) {
                     trigger_error(
                         'Invalid backend module configuration. $GLOBALS[\'BE_MOD\'][\''.$strGroup.'\'][\''.$strModule.'\'][\'tables\'] must be an array.',
-                        E_USER_WARNING
+                        \E_USER_WARNING
                     );
                     if (\is_string($GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'])) {
                         $GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'] = [$GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'], $table];
