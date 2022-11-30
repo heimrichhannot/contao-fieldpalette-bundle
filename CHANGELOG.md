@@ -1,7 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.6.12] - 2022-09-14
+## [0.6.12] - 2022-11-30
+- Added: DcaGenerator class (to avoid issues with [custom tables](docs/developers/custom_table.md))
+- Changed: raised contao dependency to 4.9
+- Changed: raised util bundle dependency
+- Changed: some refactoring to CallbackListener
+- Fixed: missing support for MultilingualTrait
+- Fixed: exception in toggle callback
+
 ## [0.6.11] - 2022-09-14
 - Fixed: backend widget not working
 

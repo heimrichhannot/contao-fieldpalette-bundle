@@ -1,16 +1,16 @@
 # Set up a custom table
 
-In order to use Fieldpalette with your own table, create a Data Container Array that extends from `$GLOBALS['TL_DCA']['tl_fieldpalette']`, as the following example with `tl_member_address` describes.
+To setup a custom fieldpalette table, use the `DcaGenerator` class to create the base setup:
 
-```
-// src/Ressources/contao/dca/tl_member_address.php 
+```php
+// contao/dca/tl_member_address.php 
 
-\Contao\Controller::loadLanguageFile('tl_fieldpalette');
-\Contao\Controller::loadDataContainer('tl_fieldpalette');
-\Contao\Controller::loadDataContainer('tl_member');
+use Contao\Controller;
+use HeimrichHannot\FieldpaletteBundle\Dca\DcaGenerator;
 
-$GLOBALS['TL_DCA']['tl_member_address'] = $GLOBALS['TL_DCA']['tl_fieldpalette'];
-$dca                                    = &$GLOBALS['TL_DCA']['tl_member_address'];
+$GLOBALS['TL_DCA']['tl_member_address'] = DcaGenerator::generateFieldpaletteBaseDca();
+
+Controller::loadDataContainer('tl_member');
 
 $fields = [
     'company'     => $GLOBALS['TL_DCA']['tl_member']['fields']['company'],
@@ -26,9 +26,12 @@ $fields = [
 ];
 
 $dca['fields'] = array_merge($dca['fields'], $fields);
+
+
 ```
 
-Than add the following fieldpalette input to your parent table (e.g. `tl_member`).
+
+Then add the following fieldpalette input to your parent table (e.g. `tl_member`).
 
 ```
 // src/Ressources/contao/dca/tl_member.php
