@@ -1,6 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.12] - 2022-09-14
 ## [0.6.11] - 2022-09-14
 - Fixed: backend widget not working
 

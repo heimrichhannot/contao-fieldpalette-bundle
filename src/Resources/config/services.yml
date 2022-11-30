@@ -9,18 +9,16 @@ services:
     autowire: true
     public: true
 
-  huh.fieldpalette.listener.callback:
-    class: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
+  HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener:
+    autowire: true
+    autoconfigure: true
     public: true
-    arguments:
-       - '@contao.framework'
-       - '@huh.fieldpalette.manager'
-       - '@huh.fieldpalette.dca.handler'
-       - '@request_stack'
-       - '@huh.utils.container'
-       - '@huh.utils.url'
-       - '@huh.utils.routing'
-       - '@monolog.logger.contao'
+
+  huh.fieldpalette.listener.callback:
+    alias: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
+    public: true
+    deprecated: The "%alias_id%" service is deprecated since heimrichhannot/contao-fieldpalette-bundle 0.6.12 and will be removed in 1.0.
+
   huh.fieldpalette.element.button:
     class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
     public: true

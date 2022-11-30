@@ -10,7 +10,7 @@ namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
 use Contao\BackendUser;
 use Contao\Controller;
-use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
+use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Monolog\ContaoContext;
 use Contao\Database;
 use Contao\DataContainer;
@@ -18,19 +18,20 @@ use Contao\Environment;
 use Contao\Image;
 use Contao\Input;
 use Contao\Model;
+use Contao\StringUtil;
 use Contao\System;
 use Contao\Versions;
 use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Container\ContainerUtil;
-use HeimrichHannot\UtilsBundle\Routing\RoutingUtil;
 use HeimrichHannot\UtilsBundle\Url\UrlUtil;
+use HeimrichHannot\UtilsBundle\Util\Utils;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Terminal42\DcMultilingualBundle\Model\Multilingual;
+use Terminal42\DcMultilingualBundle\Model\MultilingualTrait;
 
 class CallbackListener
 {
@@ -43,13 +44,9 @@ class CallbackListener
      */
     private $dcaHandler;
     /**
-     * @var ContaoFrameworkInterface
+     * @var ContaoFramework
      */
     private $framework;
-    /**
-     * @var ContainerUtil
-     */
-    private $containerUtil;
     /**
      * @var RequestStack
      */
@@ -63,28 +60,26 @@ class CallbackListener
      */
     private $logger;
     /**
-     * @var RoutingUtil
+     * @var Utils
      */
-    private $routingUtil;
+    private $utils;
 
     public function __construct(
-        ContaoFrameworkInterface $framework,
+        ContaoFramework $framework,
+        Utils $utils,
         FieldPaletteModelManager $modelManager,
         DcaHandler $dcaHandler,
         RequestStack $requestStack,
-        ContainerUtil $containerUtil,
         UrlUtil $urlUtil,
-        RoutingUtil $routingUtil,
         LoggerInterface $logger
     ) {
         $this->modelManager = $modelManager;
         $this->dcaHandler = $dcaHandler;
         $this->framework = $framework;
-        $this->containerUtil = $containerUtil;
         $this->requestStack = $requestStack;
         $this->urlUtil = $urlUtil;
         $this->logger = $logger;
-        $this->routingUtil = $routingUtil;
+        $this->utils = $utils;
     }
 
     /**
@@ -133,7 +128,7 @@ class CallbackListener
      */
     public function copyFieldPaletteRecords(int $newId)
     {
-        if (!$this->containerUtil->isBackend()) {
+        if (!$this->utils->container()->isBackend()) {
             return;
         }
 
@@ -157,7 +152,7 @@ class CallbackListener
             return;
         }
         $key = null;
-        if ($this->containerUtil->isBackend()) {
+        if ($this->utils->container()->isBackend()) {
             $key = $this->framework->getAdapter(Input::class)->get('popup') ? 'popupReferer' : 'referer';
         }
 
@@ -232,7 +227,7 @@ class CallbackListener
             'data-state="'.($row['published'] ? 1 : 0).'"'
         );
 
-        return '<a href="'.$href.'" title="'.specialchars($title).'"'.$attributes.'>'.$image.'</a> ';
+        return '<a href="'.$href.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$image.'</a> ';
     }
 
     /**
@@ -261,7 +256,7 @@ class CallbackListener
                 ['contao' => new ContaoContext(__METHOD__, TL_ERROR)]
             );
             $this->framework->getAdapter(Controller::class)
-                ->redirect($this->routingUtil->generateBackendRoute(['act' => 'error'], false, false));
+                ->redirect($this->utils->routing()->generateBackendRoute(['act' => 'error'], false, false));
         }
 
         $objVersions = $this->framework->createInstance(Versions::class, [$dc->table, $id]);
@@ -285,10 +280,11 @@ class CallbackListener
 
         $objVersions->create();
 
-        $parentEntries = $this->framework->getAdapter(Controller::class)->getParentEntries(
-            $dc->table,
-            $id
-        );
+        $parentEntries = '';
+        if ($record = $dc->activeRecord) {
+            $parentEntries = '(parent records: '.$record->ptable.'.id='.$record->pid.')';
+        }
+
         $this->logger->log(
             LogLevel::INFO,
             'A new version of record "'.$dc->table.'.id='.$id.'" has been created'.$parentEntries,
@@ -346,7 +342,7 @@ class CallbackListener
             return false;
         }
 
-        if ($parentModel instanceof Multilingual) {
+        if ($parentModel instanceof Multilingual || \in_array(MultilingualTrait::class, class_uses($parentModel), true)) {
             $langPidField = array_search('langPid', $GLOBALS['TL_DCA'][$ptable]['config'], true);
 
             if ($parentModel->$langPidField === '0') {
