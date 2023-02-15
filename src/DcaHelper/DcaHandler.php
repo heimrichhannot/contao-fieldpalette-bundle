@@ -139,7 +139,6 @@ class DcaHandler
 
         switch ($act) {
             case 'create':
-                $parentTable = $this->getParentTableFromRequest();
                 $strRootTable = $parentTable;
 
                 // determine root table from parent entity tree, if requested parent table = tl_fieldpalette -> nested fieldpalette
@@ -407,7 +406,7 @@ class DcaHandler
         $controller->loadDataContainer($rootTable);
 
         // custom table support
-        $paletteTable = $GLOBALS['TL_DCA'][$rootTable]['fields'][$field]['fieldpalette']['config']['table'] ?: $this->fieldPaletteTable;
+        $paletteTable = $GLOBALS['TL_DCA'][$rootTable]['fields'][$field]['fieldpalette']['config']['table'] ?? $this->fieldPaletteTable;
 
         $controller->loadDataContainer($paletteTable);
 
@@ -429,8 +428,14 @@ class DcaHandler
             return $data;
         }
 
+        foreach (['config', 'list', 'palettes', 'subpalettes'] as $key) {
+            $data[$key] = array_replace_recursive(($defauts[$key] ?? []), ($custom[$key] ?? []));
+        }
+
+        $data['fields'] = array_merge(($defauts['fields'] ?? []), ($custom['fields'] ?? []));
+
         // replace tl_fieldpalette with custom config
-        $data = @array_replace_recursive($defauts, $custom); // supress warning, as long as references may exist in both arrays
+//        $data = @array_replace_recursive($defauts, $custom); // supress warning, as long as references may exist in both arrays
         $data['config']['ptable'] = $parentTable;
 
         if ($data['config']['hidePublished']) {

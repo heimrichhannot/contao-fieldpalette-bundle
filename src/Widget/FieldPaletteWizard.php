@@ -85,7 +85,7 @@ class FieldPaletteWizard extends Widget
         $this->import('Database');
         $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
         $this->viewMode = $this->dca['list']['viewMode'] ?? 0;
-        $this->paletteTable = $this->dca['config']['table'] ?: $container->getParameter('huh.fieldpalette.table');
+        $this->paletteTable = $this->dca['config']['table'] ?? $container->getParameter('huh.fieldpalette.table');
 
         // load custom table labels
         $controller->loadLanguageFile($this->paletteTable);
