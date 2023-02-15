@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.13-DEV] - 2022-11-30
+- Fixed: recursion (Issue: [#16], PR: [#17])
+
 ## [0.6.12] - 2022-11-30
 - Added: DcaGenerator class (to avoid issues with [custom tables](docs/developers/custom_table.md))
 - Changed: raised contao dependency to 4.9
@@ -209,6 +212,8 @@ All notable changes to this project will be documented in this file.
 
 Refactored fieldpalette module to bundle structure.
 
+[#17]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/17
+[#16]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/16
 [#12]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/12
 [#10]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/10
 [#9]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/9
