@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2022 Heimrich & Hannot GmbH
+ * Copyright (c) 2023 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -44,7 +44,7 @@ class DcaProcessor
     public function updateFieldpaletteTable(string $table, array $fields): void
     {
         if (!isset($GLOBALS['TL_DCA'][$table])) {
-            throw new \Exception('Table must be loaded before applying fieldpalette fields!');
+            throw new \Exception("Table $table must be loaded before applying fieldpalette fields!");
         }
 
         $dca = &$GLOBALS['TL_DCA'][$table];
