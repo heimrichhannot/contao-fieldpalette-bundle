@@ -1,8 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.6.13-DEV] - 2022-11-30
+## [0.6.13] - 2022-11-30
+- Changed: better error message
 - Fixed: recursion (Issue: [#16], PR: [#17])
+- Fixed: warnings with php 8
+- Fixed: exception on ajax requests ([#19])
 
 ## [0.6.12] - 2022-11-30
 - Added: DcaGenerator class (to avoid issues with [custom tables](docs/developers/custom_table.md))
@@ -212,6 +215,7 @@ All notable changes to this project will be documented in this file.
 
 Refactored fieldpalette module to bundle structure.
 
+[#19]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/19
 [#17]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/17
 [#16]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/16
 [#12]: https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues/12
