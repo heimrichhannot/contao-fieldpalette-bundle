@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2022 Heimrich & Hannot GmbH
+ * Copyright (c) 2023 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -42,7 +42,7 @@ class ExecutePostActionsListener
                     exit('Bad Request');
                 }
 
-                /** @var Widget|string $class */
+                /** @var class-string<Widget> $class */
                 $class = $GLOBALS['BE_FFL'][$field['inputType']];
 
                 // Die if the class is not defined or inputType is not fieldpalette
@@ -50,7 +50,8 @@ class ExecutePostActionsListener
                     return;
                 }
 
-                $attributes = $this->contaoFramework->getAdapter(Widget::class)->getAttributesFromDca($field, $name, $dc->activeRecord->{$name}, $name, $dc->table, $dc);
+                $attributes = $this->contaoFramework->getAdapter(Widget::class)
+                    ->getAttributesFromDca($field, $name, ($dc->activeRecord->{$name} ?? null), $name, $dc->table, $dc);
 
                 /** @var Widget $widget */
                 $widget = new $class($attributes);

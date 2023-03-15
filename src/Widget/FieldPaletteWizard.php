@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2022 Heimrich & Hannot GmbH
+ * Copyright (c) 2023 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -473,7 +473,7 @@ class FieldPaletteWizard extends Widget
                 DcaHandler::PaletteRequestKey => $this->strName,
             ], true, false);
 
-            $title = sprintf($GLOBALS['TL_LANG'][$this->strTable]['cut'][1], $rowModel->id);
+            $title = sprintf(($GLOBALS['TL_LANG'][$this->strTable]['cut'][1] ?? 'Cut'), $rowModel->id);
             $return .= ' '.$image->getHtml(
                     'drag.gif',
                     '',
