@@ -1,12 +1,14 @@
 services:
 
   HeimrichHannot\FieldpaletteBundle\:
-    resource: '../../{Dca}/*'
+    resource: '../../{Dca,Registry}/*'
     autowire: true
+    autoconfigure: true
 
   HeimrichHannot\FieldpaletteBundle\EventListener\Contao\:
     resource: '../../EventListener/Contao/*'
     autowire: true
+    autoconfigure: true
     public: true
 
   HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener:
@@ -28,8 +30,6 @@ services:
       - '@twig'
       - '@huh.utils.routing'
       - '@huh.fieldpalette.dca.handler'
-  huh.fieldpalette.registry:
-    class: HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry
   huh.fieldpalette.manager:
     class: HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager
     public: true
@@ -44,9 +44,8 @@ services:
       - '@contao.framework'
       - '@huh.fieldpalette.manager'
       - '@request_stack'
-      - '@huh.fieldpalette.registry'
+      - '@HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry'
 
   # Symfony 4 autowire convention fix (ambiguous namespace alias)
   HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager: '@huh.fieldpalette.manager'
   HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler: '@huh.fieldpalette.dca.handler'
-  HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry: '@huh.fieldpalette.registry'

@@ -21,7 +21,7 @@
         "issues": "https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues"
     },
     "require": {
-        "php": "~7.1|^8.0",
+        "php": "^7.4 || ^8.0",
         "contao/core-bundle": "~4.9",
         "heimrichhannot/contao-utils-bundle": "^2.233.0",
         "heimrichhannot/datatables": "^1.10",
