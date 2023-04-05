@@ -25,6 +25,8 @@ class SqlGetFromDcaListener
 
     public function __invoke(array $sql): array
     {
+        return $sql;
+
         $this->registry->storeResults();
         foreach ($this->registry->getFields() as $field) {
             if (
