@@ -8,12 +8,21 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Dca;
 
+use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 use HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard;
 
 class DcaProcessor
 {
-    /** @var string */
-    private $defaultTable = 'tl_fieldpalette';
+    private FieldPaletteRegistry $registry;
+
+    public function __construct(FieldPaletteRegistry $registry)
+    {
+        $this->registry = $registry;
+    }
+
+    public function prepareTargetDca(array $field): void
+    {
+    }
 
     /**
      * Scan the dca for fieldpalette fields and return them ordered by their fieldpalette table.
