@@ -9,6 +9,7 @@
 namespace HeimrichHannot\FieldpaletteBundle\EventListener\Contao;
 
 use Contao\CoreBundle\ServiceAnnotation\Hook;
+use HeimrichHannot\FieldpaletteBundle\EventListener\Callback\LoadFieldsListener;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 
 /**
@@ -32,8 +33,14 @@ class LoadDataContainerListener
             static fn (array $definition): bool => 'fieldpalette' === ($definition['inputType'] ?? null)
         );
 
+        $dca['config']['onload_callback'] = [LoadFieldsListener::class, 'onLoadCallback'];
+
         if (empty($parentFields)) {
             return;
+        }
+
+        if ($this->registry->isFullyLoaded()) {
+            trigger_error('Fieldpalette fields can only be added from dca files.');
         }
 
         foreach ($parentFields as $parentFieldName => $parentFieldData) {

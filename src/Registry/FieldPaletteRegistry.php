@@ -86,6 +86,38 @@ class FieldPaletteRegistry
         $this->fullyLoaded = true;
     }
 
+    public function isFullyLoaded(): bool
+    {
+        return $this->fullyLoaded;
+    }
+
+    public function hasTargetFields(string $table): bool
+    {
+        if (!$this->fullyLoaded) {
+            $this->restoreResults();
+        }
+
+        return !empty($this->targetFields[$table]);
+    }
+
+    public function getTargetFields(string $table): array
+    {
+        if (!$this->fullyLoaded) {
+            $this->restoreResults();
+        }
+        $targetFields = $this->targetFields[$table] ?? [];
+        if (empty($targetFields)) {
+            return [];
+        }
+
+        $return = [];
+        foreach ($targetFields as $field) {
+            $return[$field] = $this->fields[$field];
+        }
+
+        return $return;
+    }
+
     protected function getCache(): TagAwareAdapter
     {
         if (!isset($this->cache)) {
@@ -103,12 +135,12 @@ class FieldPaletteRegistry
 
         if (!$item->isHit()) {
             $this->createResults();
-            $this->fullyLoaded = true;
         } else {
             $fields = $item->get();
             $this->fields = $fields;
-            $this->fullyLoaded = true;
         }
+
+        $this->fullyLoaded = true;
     }
 
     protected function createResults(): void
