@@ -8,30 +8,33 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Registry;
 
+use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\Database\Installer;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\Cache\Adapter\TagAwareAdapter;
+use Symfony\Contracts\Cache\CacheInterface;
 
 class FieldPaletteRegistry
 {
     public const CACHE_REGISTRY = 'huh.fieldpalette.registry';
 
     protected ContaoFramework $framework;
-    protected TagAwareAdapter $cache;
 
     protected array $fields = [];
     protected array $targetFields = [];
+    protected array $sourceFields = [];
 
     protected $registriy;
+    private CacheInterface $cache;
     /**
      * @var true
      */
-    private bool $fullyLoaded = false;
+    private bool           $fullyLoaded = false;
 
-    public function __construct(ContaoFramework $framework)
+    public function __construct(ContaoFramework $framework, CacheInterface $cache)
     {
         $this->framework = $framework;
+        $this->cache = $cache;
     }
 
     public function set(string $table, string $field, array $dca)
@@ -48,19 +51,23 @@ class FieldPaletteRegistry
         return $this->registriy[$table];
     }
 
-    public function addField(string $fieldName, string $parentFieldName, array $fieldData, string $sourceTable, string $targetTable = 'tl_fieldpalette'): void
+    public function addField(string $fieldName, string $parentFieldName, string $sourceTable, string $targetTable = 'tl_fieldpalette'): void
     {
-        $internalName = implode('_', [$sourceTable, $parentFieldName, $fieldName]);
+        $internalName = $this->getInternalName($sourceTable, $parentFieldName, $fieldName);
 
         $this->fields[$internalName] = [
             'fieldName' => $fieldName,
             'parentFieldName' => $parentFieldName,
-            'fieldData' => $fieldData,
             'sourceTable' => $sourceTable,
             'targetTable' => $targetTable,
         ];
 
-        $this->targetFields[$fieldName] = $internalName;
+        $this->indexField($targetTable, $sourceTable, $internalName);
+    }
+
+    public function hasField(string $fieldName, string $parentFieldName, string $sourceTable): bool
+    {
+        return isset($this->fields[$this->getInternalName($sourceTable, $parentFieldName, $fieldName)]);
     }
 
     /**
@@ -68,21 +75,26 @@ class FieldPaletteRegistry
      */
     public function getFields(): array
     {
-        if (!$this->fullyLoaded) {
+        if (!$this->isFullyLoaded()) {
             $this->restoreResults();
         }
 
         return $this->fields;
     }
 
+    public function getFieldData(array $field): ?array
+    {
+        Controller::loadDataContainer($field['sourceTable']);
+
+        return $GLOBALS['TL_DCA'][$field['sourceTable']]['fields'][$field['parentFieldName']]['fieldpalette']['fields'][$field['fieldName']] ?? null;
+    }
+
     public function storeResults(): void
     {
-        $cache = $this->getCache();
-
-        $item = $cache->getItem('fields');
+        $cachePool = new FilesystemAdapter(static::CACHE_REGISTRY);
+        $item = $cachePool->getItem(static::CACHE_REGISTRY);
         $item->set($this->fields);
-        $cache->save($item);
-
+        $cachePool->save($item);
         $this->fullyLoaded = true;
     }
 
@@ -93,19 +105,47 @@ class FieldPaletteRegistry
 
     public function hasTargetFields(string $table): bool
     {
-        if (!$this->fullyLoaded) {
-            $this->restoreResults();
-        }
-
-        return !empty($this->targetFields[$table]);
+        return $this->hasTableFields($table, $this->targetFields);
     }
 
     public function getTargetFields(string $table): array
     {
-        if (!$this->fullyLoaded) {
+        return $this->getTableFields($table, $this->targetFields);
+    }
+
+    public function hasSourceFields(string $table): bool
+    {
+        return $this->hasTableFields($table, $this->sourceFields);
+    }
+
+    public function getSourceFields(string $table): array
+    {
+        return $this->getTableFields($table, $this->sourceFields);
+    }
+
+    public function refresh(): void
+    {
+        /** @var Installer $installer */
+        $installer = $this->framework->createInstance(Installer::class);
+        $installer->getFromDca();
+    }
+
+    protected function hasTableFields(string $table, array $fields): bool
+    {
+        if (!$this->isFullyLoaded()) {
             $this->restoreResults();
         }
-        $targetFields = $this->targetFields[$table] ?? [];
+
+        return !empty($fields[$table]);
+    }
+
+    protected function getTableFields(string $table, array $fields): array
+    {
+        if (!$this->isFullyLoaded()) {
+            $this->restoreResults();
+        }
+
+        $targetFields = $fields[$table] ?? [];
         if (empty($targetFields)) {
             return [];
         }
@@ -118,35 +158,36 @@ class FieldPaletteRegistry
         return $return;
     }
 
-    protected function getCache(): TagAwareAdapter
-    {
-        if (!isset($this->cache)) {
-            $this->cache = new TagAwareAdapter(new FilesystemAdapter(static::CACHE_REGISTRY));
-        }
-
-        return $this->cache;
-    }
-
     protected function restoreResults(): void
     {
-        $cache = $this->getCache();
-
-        $item = $cache->getItem('fields');
-
-        if (!$item->isHit()) {
-            $this->createResults();
+        $cachePool = new FilesystemAdapter(static::CACHE_REGISTRY);
+        $item = $cachePool->getItem(static::CACHE_REGISTRY);
+        if ($item->isHit() && \is_array($item->get())) {
+            $this->fields = $item->get();
+            foreach ($this->fields as $internalName => $field) {
+                $this->indexField($field['targetTable'], $field['sourceTable'], $internalName);
+            }
+            $this->fullyLoaded = true;
         } else {
-            $fields = $item->get();
-            $this->fields = $fields;
+            $this->refresh();
         }
-
-        $this->fullyLoaded = true;
     }
 
-    protected function createResults(): void
+    protected function indexField(string $targetTable, string $sourceTable, string $internalName): void
     {
-        /** @var Installer $installer */
-        $installer = $this->framework->createInstance(Installer::class);
-        $installer->getFromDca();
+        if (!isset($this->targetFields[$targetTable])) {
+            $this->targetFields[$targetTable] = [];
+        }
+        if (!isset($this->sourceFields[$sourceTable])) {
+            $this->sourceFields[$sourceTable] = [];
+        }
+
+        $this->targetFields[$targetTable][] = $internalName;
+        $this->sourceFields[$sourceTable][] = $internalName;
+    }
+
+    protected function getInternalName(string $sourceTable, string $parentFieldName, string $fieldName): string
+    {
+        return implode('_', [$sourceTable, $parentFieldName, $fieldName]);
     }
 }

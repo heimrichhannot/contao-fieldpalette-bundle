@@ -6,18 +6,6 @@ services:
     autoconfigure: true
     public: true
 
-  HeimrichHannot\FieldpaletteBundle\EventListener\:
-    resource: '../../EventListener/{CallbackListener.php,SchemaListener.php}'
-    autowire: true
-    autoconfigure: true
-    public: true
-
-  HeimrichHannot\FieldpaletteBundle\EventListener\Contao\:
-    resource: '../../EventListener/Contao/*'
-    autowire: true
-    autoconfigure: true
-    public: true
-
   huh.fieldpalette.element.button:
     class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
     public: true

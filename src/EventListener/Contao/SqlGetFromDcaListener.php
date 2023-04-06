@@ -8,6 +8,7 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\EventListener\Contao;
 
+use Contao\Controller;
 use Contao\CoreBundle\ServiceAnnotation\Hook;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 
@@ -25,14 +26,19 @@ class SqlGetFromDcaListener
 
     public function __invoke(array $sql): array
     {
+        foreach ($sql as $table => $value) {
+            Controller::loadDataContainer($table);
+        }
+
         $this->registry->storeResults();
         foreach ($this->registry->getFields() as $field) {
+            $fieldData = $this->registry->getFieldData($field);
             if (
                 !isset($sql[$field['targetTable']]['TABLE_FIELDS'][$field['fieldName']])
-                && isset($field['fieldData']['sql'])
+                && isset($fieldData['sql'])
             ) {
                 $sql[$field['targetTable']]['TABLE_FIELDS'][$field['fieldName']] =
-                    '`'.$field['fieldName'].'` '.$field['fieldData']['sql'];
+                    '`'.$field['fieldName'].'` '.$fieldData['sql'];
             }
         }
 
