@@ -64,7 +64,7 @@ class LoadDataContainerListener
 
         if ($this->registry->isFullyLoaded() && $changes) {
             $this->registry->refresh();
-            storeResults();
+            $this->registry->storeResults();
         }
     }
 }

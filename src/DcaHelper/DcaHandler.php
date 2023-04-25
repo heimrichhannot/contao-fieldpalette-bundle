@@ -197,7 +197,11 @@ class DcaHandler
     {
         $parentTable = $this->getParentTableFromRequest();
 
-        list($palette, $rootTable, $parentTable) = $this->loadDynamicPaletteByParentTable($this->framework->getAdapter(Input::class)->get('act'), $table, $parentTable);
+        list($palette, $rootTable, $parentTable) = $this->loadDynamicPaletteByParentTable(
+            $this->framework->getAdapter(Input::class)->get('act'),
+            $table,
+            $parentTable
+        );
 
         if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$parentTable || !$palette) {
             return false;
@@ -321,7 +325,7 @@ class DcaHandler
 
     public function isActive(string $rootTable, string $parentTable, string $table, string $field)
     {
-//        $registry = $this->registry->get($rootTable);
+        $registry = $this->registry->get($rootTable);
 
         if (!isset($registry[$field])) {
             return false;
