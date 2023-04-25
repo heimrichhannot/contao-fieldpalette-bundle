@@ -8,20 +8,32 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Dca;
 
+use Contao\Controller;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 use HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class DcaProcessor
 {
     private FieldPaletteRegistry $registry;
+    private RequestStack         $requestStack;
 
-    public function __construct(FieldPaletteRegistry $registry)
+    public function __construct(FieldPaletteRegistry $registry, RequestStack $requestStack)
     {
         $this->registry = $registry;
+        $this->requestStack = $requestStack;
     }
 
     public function prepareTargetDca(array $field): void
     {
+        $request = $this->requestStack->getCurrentRequest();
+
+        Controller::loadDataContainer($field['sourceTable']);
+        $sourceField = $GLOBALS['TL_DCA'][$field['sourceTable']]['fields'][$field['parentFieldName']] ?? null;
+
+        if (!$sourceField || !isset($sourceField['fieldpalette']) || !$request) {
+            return;
+        }
     }
 
     /**
