@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2022 Heimrich & Hannot GmbH
+ * Copyright (c) 2023 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -197,7 +197,11 @@ class DcaHandler
     {
         $parentTable = $this->getParentTableFromRequest();
 
-        list($palette, $rootTable, $parentTable) = $this->loadDynamicPaletteByParentTable($this->framework->getAdapter(Input::class)->get('act'), $table, $parentTable);
+        list($palette, $rootTable, $parentTable) = $this->loadDynamicPaletteByParentTable(
+            $this->framework->getAdapter(Input::class)->get('act'),
+            $table,
+            $parentTable
+        );
 
         if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$parentTable || !$palette) {
             return false;

@@ -17,10 +17,7 @@ use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 
 class ExecutePostActionsListener
 {
-    /**
-     * @var ContaoFramework
-     */
-    private $contaoFramework;
+    private ContaoFramework $contaoFramework;
 
     public function __construct(ContaoFramework $contaoFramework)
     {
