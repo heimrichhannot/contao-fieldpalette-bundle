@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.14] - 2023-11-29
+- Fixed: warning
+
 ## [0.6.13] - 2022-11-30
 - Changed: better error message
 - Fixed: recursion (Issue: [#16], PR: [#17])

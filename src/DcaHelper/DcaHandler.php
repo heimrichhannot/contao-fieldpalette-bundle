@@ -295,7 +295,7 @@ class DcaHandler
         }
 
         foreach ($fields as $field => $fieldData) {
-            if (!\is_array($fieldData) || !\is_array($fieldData['fieldpalette'])) {
+            if (!\is_array($fieldData) || !\is_array($fieldData['fieldpalette'] ?? null)) {
                 continue;
             }
 
