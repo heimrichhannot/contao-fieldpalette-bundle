@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.15] - 2023-12-01
+- Fixed: warning
+
 ## [0.6.14] - 2023-11-29
 - Fixed: warning
 

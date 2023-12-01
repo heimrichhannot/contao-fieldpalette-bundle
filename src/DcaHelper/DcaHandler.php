@@ -475,7 +475,7 @@ class DcaHandler
             }
 
             foreach ($arrGroup as $strModule => $arrModule) {
-                if (!\is_array($arrModule) || !\is_array($arrModule['tables'])) {
+                if (!\is_array($arrModule) || !\is_array($arrModule['tables'] ?? null)) {
                     continue;
                 }
 
