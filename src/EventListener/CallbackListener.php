@@ -342,10 +342,12 @@ class CallbackListener
             return false;
         }
 
-        if ($parentModel instanceof Multilingual || \in_array(MultilingualTrait::class, class_uses($parentModel), true)) {
+        if ($parentModel instanceof Multilingual
+            || $this->utils->class()->classImplementsTrait($parentModel, MultilingualTrait::class)
+        ) {
             $langPidField = array_search('langPid', $GLOBALS['TL_DCA'][$ptable]['config'], true);
 
-            if ($parentModel->$langPidField === '0') {
+            if ((int)$parentModel->$langPidField === 0) {
                 // Clone obj to be able to save
                 $parentModel = clone $parentModel;
             } else {

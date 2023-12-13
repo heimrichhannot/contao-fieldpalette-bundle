@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.16] - 2023-12-13
+- Fixed: issues with DC_Multilingual detection
+
 ## [0.6.15] - 2023-12-01
 - Fixed: warning
 
