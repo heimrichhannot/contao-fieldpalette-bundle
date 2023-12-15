@@ -22,6 +22,7 @@ use Contao\StringUtil;
 use Contao\System;
 use Contao\Versions;
 use Contao\Widget;
+use Doctrine\DBAL\Connection;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
@@ -63,6 +64,7 @@ class CallbackListener
      * @var Utils
      */
     private $utils;
+    private Connection $connection;
 
     public function __construct(
         ContaoFramework $framework,
@@ -71,7 +73,8 @@ class CallbackListener
         DcaHandler $dcaHandler,
         RequestStack $requestStack,
         UrlUtil $urlUtil,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        Connection $connection,
     ) {
         $this->modelManager = $modelManager;
         $this->dcaHandler = $dcaHandler;
@@ -80,6 +83,7 @@ class CallbackListener
         $this->urlUtil = $urlUtil;
         $this->logger = $logger;
         $this->utils = $utils;
+        $this->connection = $connection;
     }
 
     /**
@@ -336,23 +340,8 @@ class CallbackListener
         }
 
         /** @var Model $modelClass */
-        $parentModel = $modelClass::findByPk($currentRecord->pid);
-
-        if (null === $parentModel) {
+        if (null === $modelClass::findByPk($currentRecord->pid)) {
             return false;
-        }
-
-        if ($parentModel instanceof Multilingual
-            || $this->utils->class()->classImplementsTrait($parentModel, MultilingualTrait::class)
-        ) {
-            $langPidField = array_search('langPid', $GLOBALS['TL_DCA'][$ptable]['config'], true);
-
-            if ((int)$parentModel->$langPidField === 0) {
-                // Clone obj to be able to save
-                $parentModel = clone $parentModel;
-            } else {
-                throw new \RuntimeException('The model instance Multilingual is not supported and cannot be saved');
-            }
         }
 
         $objItems = $this->modelManager->createModel()->findByPidAndTableAndField(
@@ -382,7 +371,6 @@ class CallbackListener
             }
         }
 
-        $parentModel->{$currentRecord->pfield} = $varValue;
-        $parentModel->save();
+        $this->connection->update($currentRecord->ptable, [$currentRecord->pfield => serialize($varValue)], ['id' => $currentRecord->pid]);
     }
 }
