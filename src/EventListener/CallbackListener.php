@@ -64,7 +64,10 @@ class CallbackListener
      * @var Utils
      */
     private $utils;
-    private Connection $connection;
+    /**
+     * @var Connection
+     */
+    private $connection;
 
     public function __construct(
         ContaoFramework $framework,
@@ -74,7 +77,7 @@ class CallbackListener
         RequestStack $requestStack,
         UrlUtil $urlUtil,
         LoggerInterface $logger,
-        Connection $connection,
+        Connection $connection
     ) {
         $this->modelManager = $modelManager;
         $this->dcaHandler = $dcaHandler;
