@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.6.18] - 2023-12-22
+- Fixed: php8 syntax incompatible with php7
+
 ## [0.6.17] - 2023-12-14
 - Fixed: issues with updating fieldpalette fields (DC_Multilingual detection removed)
 
