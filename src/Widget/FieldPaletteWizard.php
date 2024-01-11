@@ -25,7 +25,7 @@ use HeimrichHannot\UtilsBundle\Util\Utils;
 
 class FieldPaletteWizard extends Widget
 {
-    const TYPE = 'fieldpalette';
+    public const TYPE = 'fieldpalette';
 
     /**
      * Submit user input.
@@ -465,7 +465,7 @@ class FieldPaletteWizard extends Widget
 
         // Sort elements
         if (!isset($this->dca['config']['notSortable']) || !$this->dca['config']['notSortable']) {
-            $href = $container->get('huh.utils.routing')->generateBackendRoute([
+            $href = $container->get(Utils::class)->routing()->generateBackendRoute([
                 'do' => $do,
                 'table' => $this->paletteTable,
                 'id' => $rowModel->id,

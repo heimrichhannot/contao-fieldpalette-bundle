@@ -39,7 +39,7 @@ class LoadDataContainerListener
             return;
         }
 
-        $changes = false;
+        $hasChanges = false;
         foreach ($parentFields as $parentFieldName => $parentFieldData) {
             if (!isset($parentFieldData['fieldpalette']['fields'])) {
                 continue;
@@ -48,7 +48,7 @@ class LoadDataContainerListener
             $targetTable = $parentFieldData['config']['table'] ?? 'tl_fieldpalette';
 
             foreach (array_filter($parentFieldData['fieldpalette']['fields']) as $fieldName => $fieldData) {
-                if (!$this->registry->hasField($fieldName, $parentFieldName, $table)) {
+                if ($this->registry->hasField($fieldName, $parentFieldName, $table)) {
                     continue;
                 }
 
@@ -58,11 +58,11 @@ class LoadDataContainerListener
                     $table,
                     $targetTable
                 );
-                $changes = true;
+                $hasChanges = true;
             }
         }
 
-        if ($this->registry->isFullyLoaded() && $changes) {
+        if ($this->registry->isFullyLoaded() && $hasChanges) {
             $this->registry->refresh();
             $this->registry->storeResults();
         }

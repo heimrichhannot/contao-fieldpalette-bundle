@@ -10,6 +10,7 @@ namespace HeimrichHannot\FieldpaletteBundle\Dca;
 
 use Contao\Controller;
 use Contao\DC_Table;
+use HeimrichHannot\FieldpaletteBundle\EventListener\Callback\BaseDcaListener;
 use HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener;
 
 class DcaGenerator
@@ -27,6 +28,7 @@ class DcaGenerator
                 'enableVersioning' => true,
                 'notCopyable' => true,
                 'onload_callback' => [
+                    [BaseDcaListener::class, 'onLoadCallback'],
                     'setReferrerOnSaveAndClose' => [CallbackListener::class, 'setReferrerOnSaveAndClose'],
                 ],
                 'sql' => [
