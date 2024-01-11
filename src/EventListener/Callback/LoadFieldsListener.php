@@ -9,7 +9,6 @@
 namespace HeimrichHannot\FieldpaletteBundle\EventListener\Callback;
 
 use Contao\DataContainer;
-use HeimrichHannot\FieldpaletteBundle\Dca\DcaProcessor;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 
@@ -17,32 +16,29 @@ class LoadFieldsListener
 {
     private FieldPaletteRegistry $registry;
     private DcaHandler           $dcaHandler;
-    private DcaProcessor         $dcaProcessor;
 
-    public function __construct(FieldPaletteRegistry $registry, DcaHandler $dcaHandler, DcaProcessor $dcaProcessor)
+    public function __construct(FieldPaletteRegistry $registry, DcaHandler $dcaHandler)
     {
         $this->registry = $registry;
         $this->dcaHandler = $dcaHandler;
-        $this->dcaProcessor = $dcaProcessor;
     }
 
     public function onLoadCallback(DataContainer $dc = null): void
     {
-        if (!$dc || !$dc->table || !$this->registry->hasTargetFields($dc->table)) {
+        $table = $dc->table;
+        if (!$dc || !$table || !$this->registry->hasTargetFields($table)) {
             return;
         }
 
-        $fields = $this->registry->getTargetFields($dc->table);
+        $fields = $this->registry->getTargetFields($table);
         foreach ($fields as $field) {
             $fieldData = $this->registry->getFieldData($field);
             if (!$fieldData) {
                 continue;
             }
-            $GLOBALS['TL_DCA'][$dc->table]['fields'][$field['fieldName']] = $field['fieldData'];
+            $GLOBALS['TL_DCA'][$table]['fields'][$field['fieldName']] = $fieldData;
 
-            $this->dcaProcessor->prepareTargetDca($field);
-
-            $this->dcaHandler->registerFieldPalette($dc->table);
+            $this->dcaHandler->registerFieldPalette($table);
         }
     }
 }

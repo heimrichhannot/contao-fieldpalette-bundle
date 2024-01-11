@@ -105,17 +105,29 @@ class FieldPaletteRegistry
 
     public function hasTargetFields(string $table): bool
     {
-        return $this->hasTableFields($table, $this->targetFields);
+        if (!$this->isFullyLoaded()) {
+            $this->restoreResults();
+        }
+
+        return !empty($this->targetFields[$table]);
     }
 
     public function getTargetFields(string $table): array
     {
+        if (!$this->isFullyLoaded()) {
+            $this->restoreResults();
+        }
+
         return $this->getTableFields($table, $this->targetFields);
     }
 
     public function hasSourceFields(string $table): bool
     {
-        return $this->hasTableFields($table, $this->sourceFields);
+        if (!$this->isFullyLoaded()) {
+            $this->restoreResults();
+        }
+
+        return !empty($this->sourceFields[$table]);
     }
 
     public function getSourceFields(string $table): array
@@ -130,21 +142,8 @@ class FieldPaletteRegistry
         $installer->getFromDca();
     }
 
-    protected function hasTableFields(string $table, array $fields): bool
-    {
-        if (!$this->isFullyLoaded()) {
-            $this->restoreResults();
-        }
-
-        return !empty($fields[$table]);
-    }
-
     protected function getTableFields(string $table, array $fields): array
     {
-        if (!$this->isFullyLoaded()) {
-            $this->restoreResults();
-        }
-
         $targetFields = $fields[$table] ?? [];
         if (empty($targetFields)) {
             return [];
