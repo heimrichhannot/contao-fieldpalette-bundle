@@ -21,6 +21,7 @@ use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Form\FormUtil;
+use HeimrichHannot\UtilsBundle\Util\Routing\RoutingUtil;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 
 class FieldPaletteWizard extends Widget
@@ -465,7 +466,7 @@ class FieldPaletteWizard extends Widget
 
         // Sort elements
         if (!isset($this->dca['config']['notSortable']) || !$this->dca['config']['notSortable']) {
-            $href = $container->get('huh.utils.routing')->generateBackendRoute([
+            $href = $container->get(RoutingUtil::class)->generateBackendRoute([
                 'do' => $do,
                 'table' => $this->paletteTable,
                 'id' => $rowModel->id,
