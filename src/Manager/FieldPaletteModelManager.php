@@ -24,7 +24,7 @@ class FieldPaletteModelManager
      *
      * @codeCoverageIgnore
      */
-    public function createModel()
+    public function createModel(): FieldPaletteModel
     {
         return new FieldPaletteModel();
     }
@@ -34,7 +34,7 @@ class FieldPaletteModelManager
      *
      * @return FieldPaletteModel
      */
-    public function getInstance()
+    public function getInstance(): FieldPaletteModel
     {
         if (!$this->modelInstance) {
             $this->modelInstance = $this->createModel();
@@ -54,7 +54,7 @@ class FieldPaletteModelManager
      * @return FieldPaletteModel
      * @codeCoverageIgnore
      */
-    public function createModelByTable(string $table)
+    public function createModelByTable(string $table): FieldPaletteModel
     {
         $model = $this->createModel();
         if (!empty($table)) {

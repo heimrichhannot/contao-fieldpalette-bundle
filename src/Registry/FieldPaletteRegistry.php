@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2020 Heimrich & Hannot GmbH
+ * Copyright (c) 2024 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -10,19 +10,19 @@ namespace HeimrichHannot\FieldpaletteBundle\Registry;
 
 class FieldPaletteRegistry
 {
-    protected $registriy;
+    protected array $registry = [];
 
-    public function set(string $table, string $field, array $dca)
+    public function set(string $table, string $field, array $dca): void
     {
-        $this->registriy[$table][$field] = $dca;
+        $this->registry[$table][$field] = $dca;
     }
 
     public function get(string $table)
     {
-        if (!isset($this->registriy[$table])) {
+        if (!isset($this->registry[$table])) {
             return null;
         }
 
-        return $this->registriy[$table];
+        return $this->registry[$table];
     }
 }

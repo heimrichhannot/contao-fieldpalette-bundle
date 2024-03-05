@@ -1,8 +1,15 @@
 services:
 
   HeimrichHannot\FieldpaletteBundle\:
-    resource: '../../{Dca}/*'
+    resource: '../../{Dca,Util}/*'
     autowire: true
+
+  HeimrichHannot\FieldpaletteBundle\Util\FormUtilPolyfill:
+    autowire: true
+    autoconfigure: true
+    public: true
+    bind:
+      $kernelBundles: '%kernel.bundles%'
 
   HeimrichHannot\FieldpaletteBundle\EventListener\Contao\:
     resource: '../../EventListener/Contao/*'

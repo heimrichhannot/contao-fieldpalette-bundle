@@ -20,8 +20,7 @@ use Contao\System;
 use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Form\FormUtil;
-use HeimrichHannot\UtilsBundle\Util\Routing\RoutingUtil;
+use HeimrichHannot\FieldpaletteBundle\Util\FormUtilPolyfill;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 
 class FieldPaletteWizard extends Widget
@@ -29,11 +28,9 @@ class FieldPaletteWizard extends Widget
     const TYPE = 'fieldpalette';
 
     /**
-     * Submit user input.
-     *
-     * @var bool
+     * Submit user input
      */
-    protected $submitInput = true;
+    protected bool $submitInput = true;
 
     /**
      * Template.
@@ -42,27 +39,27 @@ class FieldPaletteWizard extends Widget
      */
     protected $strTemplate = 'be_fieldpalette';
 
-    protected $dca = [];
+    protected array $dca = [];
 
     /**
      * @var Collection|FieldPaletteModel|null
      */
-    protected $models = null;
+    protected mixed $models = null;
 
-    protected $buttonDefaults = [];
+    protected array $buttonDefaults = [];
 
-    protected $viewMode = 0;
+    protected mixed $viewMode = 0;
 
     /**
      * Palette table (tl_fieldpalette or custom table).
      *
      * @var mixed|null
      */
-    protected $paletteTable;
+    protected mixed $paletteTable;
     /**
      * @var \HeimrichHannot\FieldpaletteBundle\Element\ButtonElement|object
      */
-    protected $buttonGenerator;
+    protected mixed $buttonGenerator;
 
     /**
      * FieldPaletteWizard constructor.
@@ -94,14 +91,8 @@ class FieldPaletteWizard extends Widget
 
     /**
      * Generate the widget and return it as string.
-     *
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     *
-     * @return string
      */
-    public function generate()
+    public function generate(): string
     {
         $this->reviseTable();
 
@@ -138,11 +129,9 @@ class FieldPaletteWizard extends Widget
     /**
      * Returns a new FieldPaletteModel instance.
      *
-     * @return FieldPaletteModel
-     *
      * @codeCoverageIgnore
      */
-    public function getModelInstance(string $table = '')
+    public function getModelInstance(string $table = ''): FieldPaletteModel
     {
         $model = new FieldPaletteModel();
         if (!empty($table)) {
@@ -155,11 +144,9 @@ class FieldPaletteWizard extends Widget
     /**
      * Create a new DC_Table instance.
      *
-     * @return DC_Table
-     *
      * @codeCoverageIgnore
      */
-    public function getDcTableInstance(string $table, array $module = [])
+    public function getDcTableInstance(string $table, array $module = []): DC_Table
     {
         return new DC_Table($table, $module);
     }
@@ -167,7 +154,7 @@ class FieldPaletteWizard extends Widget
     /**
      * @return string
      */
-    protected function getViewTemplate(string $type)
+    protected function getViewTemplate(string $type): string
     {
         switch ($this->viewMode) {
             default:
@@ -183,13 +170,9 @@ class FieldPaletteWizard extends Widget
     }
 
     /**
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     *
      * @return string
      */
-    protected function generateListView()
+    protected function generateListView(): string
     {
         $image = System::getContainer()->get('contao.framework')->getAdapter(Image::class);
         $items = [];
@@ -218,17 +201,10 @@ class FieldPaletteWizard extends Widget
         ]);
     }
 
-    /**
-     * @param int $index
-     *
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     *
-     * @return string
-     */
-    protected function generateListItem(FieldPaletteModel $model, $index)
+    protected function generateListItem(FieldPaletteModel $model, int|string $index): string
     {
+        $index = intval($index);
+
         return System::getContainer()->get('twig')->render($this->getViewTemplate('item'), [
             'id' => sprintf('%s_%s_%s', $model->ptable, $model->pfield, $model->id),
             'index' => $index,
@@ -240,17 +216,17 @@ class FieldPaletteWizard extends Widget
 
     /**
      * @param FieldPaletteModel $model
-     * @param string            $folderAttribute
+     * @param string $folderAttribute
      *
      * @return string
      */
-    protected function generateItemLabel($model, $folderAttribute)
+    protected function generateItemLabel(FieldPaletteModel $model, string $folderAttribute): string
     {
         /**
          * @var System
          */
         $system = System::getContainer()->get('contao.framework')->getAdapter(System::class);
-        $formUtil = System::getContainer()->get(FormUtil::class);
+        $formUtil = System::getContainer()->get(FormUtilPolyfill::class);
         $utils = System::getContainer()->get(Utils::class);
 
         $protected = false;
@@ -263,6 +239,8 @@ class FieldPaletteWizard extends Widget
         $dc = $this->getDcTableInstance($this->paletteTable);
         $dc->id = $model->id;
         $dc->activeRecord = $model;
+
+        $args = [];
 
         foreach ($showFields as $key => $fieldName) {
             $value = $model->{$fieldName};
@@ -317,7 +295,7 @@ class FieldPaletteWizard extends Widget
     /**
      * Compile buttons from the table configuration array and return them as HTML.
      *
-     * @param array|null  $childRecordIds
+     * @param array|null $childRecordIds
      * @param string|null $previous
      * @param string|null $next
      *
@@ -325,17 +303,13 @@ class FieldPaletteWizard extends Widget
      */
     protected function generateButtons(
         FieldPaletteModel $rowModel,
-        array $rootIds = [],
-        bool $circularReference = false,
-        $childRecordIds = null,
-        $previous = null,
-        $next = null
-    ) {
-        if (empty($this->dca['list']['operations'])) {
-            return '';
-        }
-
-        $operations = $this->dca['list']['operations'];
+        array             $rootIds = [],
+        bool              $circularReference = false,
+        array             $childRecordIds = null,
+        string            $previous = null,
+        string            $next = null
+    ): string {
+        $operations = $this->dca['list']['operations'] ?? null;
         if (!\is_array($operations)) {
             return '';
         }
@@ -362,11 +336,14 @@ class FieldPaletteWizard extends Widget
             $value = \is_array($value) ? $value : [$value];
             $id = StringUtil::specialchars(rawurldecode($rowModel->id));
 
-            $label = isset($value['label']) ? (\is_string($value['label']) ? $value['label'] : (isset($value['label'][0]) ? $value['label'][0] : $key)) : $key;
+            $label = $value['label'] ?? $key;
+            if (!is_string($label)) {
+                $label = $label[0] ?? $key;
+            }
 
             $title = sprintf($label, $id);
 
-            $attributes = (isset($value['attributes']) && !empty($value['attributes'])) ? ltrim(sprintf($value['attributes'], $id, $id)) : '';
+            $attributes = !empty($value['attributes']) ? ltrim(sprintf($value['attributes'], $id, $id)) : '';
 
             $button = $buttonGenerator;
             $button->addOptions($this->buttonDefaults);
@@ -434,8 +411,8 @@ class FieldPaletteWizard extends Widget
             $controller = $framework->getAdapter(Controller::class);
 
             foreach ($arrDirections as $dir) {
-                $label = isset($GLOBALS['TL_LANG'][$defaultTable][$dir][0]) ? $GLOBALS['TL_LANG'][$defaultTable][$dir][0] : $dir;
-                $title = isset($GLOBALS['TL_LANG'][$defaultTable][$dir][1]) ? $GLOBALS['TL_LANG'][$defaultTable][$dir][1] : $dir;
+                $label = $GLOBALS['TL_LANG'][$defaultTable][$dir][0] ?? $dir;
+                $title = $GLOBALS['TL_LANG'][$defaultTable][$dir][1] ?? $dir;
 
                 $label = $image->getHtml($dir.'.gif', $label);
                 $href = $value['href'] ?: '&amp;act=move';
@@ -466,7 +443,7 @@ class FieldPaletteWizard extends Widget
 
         // Sort elements
         if (!isset($this->dca['config']['notSortable']) || !$this->dca['config']['notSortable']) {
-            $href = $container->get(RoutingUtil::class)->generateBackendRoute([
+            $href = $container->get(Utils::class)->routing()->generateBackendRoute([
                 'do' => $do,
                 'table' => $this->paletteTable,
                 'id' => $rowModel->id,
@@ -509,7 +486,7 @@ class FieldPaletteWizard extends Widget
     /**
      * Delete all incomplete and unrelated records.
      */
-    protected function reviseTable()
+    protected function reviseTable(): ?bool
     {
         $container = System::getContainer();
         $framework = $container->get('contao.framework');
@@ -524,10 +501,10 @@ class FieldPaletteWizard extends Widget
         $system = $framework->getAdapter(System::class);
 
         $reload = false;
-        $ptable = isset($this->dca['config']['ptable']) ? $this->dca['config']['ptable'] : null;
-        $ctable = isset($this->dca['config']['ctable']) ? $this->dca['config']['ctable'] : null;
+        $ptable = $this->dca['config']['ptable'] ?? null;
+        $ctable = $this->dca['config']['ctable'] ?? null;
 
-        $new_records = $container->get('session')->get('new_records') ?: null;
+        $new_records = $container->get('request_stack')->getSession()->get('new_records') ?: null;
 
         // HOOK: add custom logic
         if (isset($GLOBALS['TL_HOOKS']['reviseTable']) && \is_array($GLOBALS['TL_HOOKS']['reviseTable'])) {
@@ -617,7 +594,8 @@ class FieldPaletteWizard extends Widget
                 return true;
             }
 
-            return $controller->reload();
+            $controller->reload();
+            return true;
         }
 
         return false;

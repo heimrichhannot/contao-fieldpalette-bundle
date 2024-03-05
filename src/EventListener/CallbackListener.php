@@ -23,16 +23,14 @@ use Contao\System;
 use Contao\Versions;
 use Contao\Widget;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Url\UrlUtil;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Terminal42\DcMultilingualBundle\Model\Multilingual;
-use Terminal42\DcMultilingualBundle\Model\MultilingualTrait;
 
 class CallbackListener
 {
@@ -53,10 +51,6 @@ class CallbackListener
      */
     private $requestStack;
     /**
-     * @var UrlUtil
-     */
-    private $urlUtil;
-    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -75,7 +69,6 @@ class CallbackListener
         FieldPaletteModelManager $modelManager,
         DcaHandler $dcaHandler,
         RequestStack $requestStack,
-        UrlUtil $urlUtil,
         LoggerInterface $logger,
         Connection $connection
     ) {
@@ -83,19 +76,12 @@ class CallbackListener
         $this->dcaHandler = $dcaHandler;
         $this->framework = $framework;
         $this->requestStack = $requestStack;
-        $this->urlUtil = $urlUtil;
         $this->logger = $logger;
         $this->utils = $utils;
         $this->connection = $connection;
     }
 
-    /**
-     * @param $insertID
-     * @param $set
-     *
-     * @return bool
-     */
-    public function setTable(string $table, int $insertID, array $set)
+    public function setTable(string $table, int $insertID, array $set): bool
     {
         $this->framework->getAdapter(Controller::class)->loadDataContainer($table);
 
@@ -112,7 +98,7 @@ class CallbackListener
             return false;
         }
 
-        // if are within nested fieldpalettes set parent item tstamp
+        // if are within nested field palettes set parent item tstamp
         if (isset($set['ptable']) && 'tl_fieldpalette' === $set['ptable']) {
             $parent = $parentModel->findByPk($parentModel->pid);
 
@@ -133,7 +119,7 @@ class CallbackListener
      * Use this method as an oncopy_callback.
      * Support recursive copying fieldpalette records by copying their parent record.
      */
-    public function copyFieldPaletteRecords(int $newId)
+    public function copyFieldPaletteRecords(int $newId): void
     {
         if (!$this->utils->container()->isBackend()) {
             return;
@@ -153,7 +139,7 @@ class CallbackListener
         $this->dcaHandler->recursivelyCopyFieldPaletteRecords($id, $newId, $table, $dcaFields);
     }
 
-    public function setReferrerOnSaveAndClose(DataContainer $dc)
+    public function setReferrerOnSaveAndClose(DataContainer $dc): void
     {
         if (!isset($_POST['saveNclose'])) {
             return;
@@ -189,7 +175,8 @@ class CallbackListener
                 $sessionData[$key][$referer] = end($sessionData[$key]);
             }
 
-            $strUrl = substr($this->framework->getAdapter(Environment::class)->get('requestUri'), \strlen(TL_PATH) + 1);
+            $requestPath = $this->requestStack->getCurrentRequest()->getBasePath();
+            $strUrl = substr($this->framework->getAdapter(Environment::class)->get('requestUri'), \strlen($requestPath) + 1);
 
             $sessionData[$key][$referer]['current'] = $strUrl;
             $sessionData[$key][$referer]['last'] = $strUrl;
@@ -199,11 +186,9 @@ class CallbackListener
     }
 
     /**
-     * Return the "toggle visibility" button.
-     *
-     * @return string
+     * @return string The "toggle visibility" button.
      */
-    public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table)
+    public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table): string
     {
         $tid = $this->framework->getAdapter(Input::class)->get('tid');
         if ($tid) {
@@ -221,8 +206,8 @@ class CallbackListener
             return '';
         }
 
-        $href = $this->urlUtil->addQueryString('tid='.$row['id'], $href);
-        $href = $this->urlUtil->addQueryString('state='.($row['published'] ? '' : 1), $href);
+        $href = $this->utils->url()->addQueryStringParameterToUrl('tid='.$row['id'], $href);
+        $href = $this->utils->url()->addQueryStringParameterToUrl('state='.($row['published'] ? '' : 1), $href);
 
         if (!$row['published']) {
             $icon = 'invisible.gif';
@@ -234,7 +219,13 @@ class CallbackListener
             'data-state="'.($row['published'] ? 1 : 0).'"'
         );
 
-        return '<a href="'.$href.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$image.'</a> ';
+        return sprintf(
+            '<a href="%s" title="%s"%s>%s</a> ',
+            $href,
+            StringUtil::specialchars($title),
+            $attributes,
+            $image
+        );
     }
 
     /**
@@ -242,7 +233,7 @@ class CallbackListener
      *
      * @param DataContainer $dc
      */
-    public function toggleVisibility(int $id, bool $visible, DataContainer $dc = null)
+    public function toggleVisibility(int $id, bool $visible, DataContainer $dc = null): void
     {
         // Set the ID and action
         $this->framework->getAdapter(Input::class)->setGet('id', $id);
@@ -260,10 +251,10 @@ class CallbackListener
             $this->logger->log(
                 LogLevel::ERROR,
                 'Not enough permissions to publish/unpublish fieldpalette item ID "'.$id.'"',
-                ['contao' => new ContaoContext(__METHOD__, TL_ERROR)]
+                ['contao' => new ContaoContext(__METHOD__, 'ERROR')]
             );
-            $this->framework->getAdapter(Controller::class)
-                ->redirect($this->utils->routing()->generateBackendRoute(['act' => 'error'], false, false));
+            $beRoute = $this->utils->routing()->generateBackendRoute(['act' => 'error'], false, false);
+            $this->framework->getAdapter(Controller::class)->redirect($beRoute);
         }
 
         $objVersions = $this->framework->createInstance(Versions::class, [$dc->table, $id]);
@@ -295,43 +286,53 @@ class CallbackListener
         $this->logger->log(
             LogLevel::INFO,
             'A new version of record "'.$dc->table.'.id='.$id.'" has been created'.$parentEntries,
-            ['contao' => new ContaoContext(__METHOD__, TL_GENERAL)]
+            ['contao' => new ContaoContext(__METHOD__, 'GENERAL')]
         );
     }
 
-    public function updateParentFieldOnSubmit(DataContainer $dc)
+    /**
+     * @throws Exception
+     */
+    public function updateParentFieldOnSubmit(DataContainer $dc): bool
     {
         $currentRecord = $this->modelManager->createModel()->findByPk($dc->id);
         if (!$currentRecord) {
             return false;
         }
-        $this->updateParentField($currentRecord);
+        return $this->updateParentField($currentRecord);
     }
 
-    public function updateParentFieldOnCut(DataContainer $dc)
+    /**
+     * @throws Exception
+     */
+    public function updateParentFieldOnCut(DataContainer $dc): bool
     {
         $currentRecord = $this->modelManager->createModel()->findByPk($dc->id);
         if (!$currentRecord) {
             return false;
         }
-        $this->updateParentField($currentRecord);
+        return $this->updateParentField($currentRecord);
     }
 
-    public function updateParentFieldOnDelete(DataContainer $dc, $undoID)
+    /**
+     * @throws Exception
+     */
+    public function updateParentFieldOnDelete(DataContainer $dc, $undoID): bool
     {
         $currentRecord = $this->modelManager->createModel()->findByPk($dc->id);
         if (!$currentRecord) {
             return false;
         }
-        $this->updateParentField($currentRecord, $currentRecord->id);
+        return $this->updateParentField($currentRecord, $currentRecord->id);
     }
 
     /**
      * Update the parent field with its tl_fieldpalette item ids.
      *
      * @return bool
+     * @throws Exception
      */
-    public function updateParentField(FieldPaletteModel $currentRecord, int $deleteIds = 0)
+    public function updateParentField(FieldPaletteModel $currentRecord, int $deleteIds = 0): bool
     {
         $ptable = $currentRecord->ptable;
         if ($ptable) {
@@ -374,6 +375,12 @@ class CallbackListener
             }
         }
 
-        $this->connection->update($currentRecord->ptable, [$currentRecord->pfield => serialize($varValue)], ['id' => $currentRecord->pid]);
+        $this->connection->update(
+            $currentRecord->ptable,
+            [$currentRecord->pfield => serialize($varValue)],
+            ['id' => $currentRecord->pid]
+        );
+
+        return true;
     }
 }
