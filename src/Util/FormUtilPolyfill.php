@@ -19,7 +19,6 @@ use Contao\StringUtil;
 use Contao\System;
 use Contao\Validator;
 use Contao\Widget;
-use HeimrichHannot\UtilsBundle\Request\RequestCleanerPolyfill;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 
 /**

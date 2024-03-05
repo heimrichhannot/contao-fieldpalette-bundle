@@ -6,7 +6,7 @@
  * @license LGPL-3.0-or-later
  */
 
-namespace HeimrichHannot\UtilsBundle\Request;
+namespace HeimrichHannot\FieldpaletteBundle\Util;
 
 use Contao\Input;
 use Contao\StringUtil;
