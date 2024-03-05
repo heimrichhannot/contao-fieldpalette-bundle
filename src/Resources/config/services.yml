@@ -24,7 +24,10 @@ services:
   huh.fieldpalette.listener.callback:
     alias: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
     public: true
-    deprecated: The "%alias_id%" service is deprecated since heimrichhannot/contao-fieldpalette-bundle 0.6.12 and will be removed in 1.0.
+    deprecated:
+      version: 0.6.12
+      package: heimrichhannot/contao-fieldpalette-bundle
+      message: The "%alias_id%" service is deprecated since heimrichhannot/contao-fieldpalette-bundle 0.6.12 and will be removed in 1.0.
 
   huh.fieldpalette.element.button:
     class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
