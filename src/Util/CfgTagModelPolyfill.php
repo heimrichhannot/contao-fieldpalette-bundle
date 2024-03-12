@@ -15,29 +15,24 @@ use Contao\Model;
 use Contao\Model\Collection;
 use Contao\System;
 
-if (class_exists(TagModel::class)) {
-    class TagModelBase extends TagModel {}
-} else {
-    class TagModelBase extends Model {}
-}
-
-class CfgTagModelPolyfill extends TagModelBase
+class CfgTagModelPolyfill extends TagModel
 {
     protected static $strTable = 'tl_cfg_tag';
 
-    public function findAllBySource($source, array $arrOptions = []): Collection|static|null
+    public function findAllBySource(TagModel $model, $source, array $arrOptions = []): Collection|static|null
     {
         /** @var CfgTagModelPolyfill $adapter */
         $adapter = System::getContainer()->get('contao.framework')->getAdapter(self::class);
         return $adapter?->findBy('source', $source, $arrOptions);
     }
 
-    public static function getSourcesAsOptions(DataContainer $dc): array
+    public static function getSourcesAsOptions(object $model, DataContainer $dc): array
     {
         $options = [];
         $tags = Database::getInstance()->prepare('SELECT source FROM tl_cfg_tag GROUP BY source')->execute();
 
-        if (null !== $tags && $tags->numRows) {
+        if (null !== $tags && $tags->numRows)
+        {
             $options = $tags->fetchEach('source');
             asort($options);
         }

@@ -21,6 +21,7 @@ use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\FieldpaletteBundle\Util\FormUtilPolyfill;
+use HeimrichHannot\UtilsBundle\Util\FormatterUtil;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 
 class FieldPaletteWizard extends Widget
@@ -222,11 +223,6 @@ class FieldPaletteWizard extends Widget
      */
     protected function generateItemLabel(FieldPaletteModel $model, string $folderAttribute): string
     {
-        /**
-         * @var System
-         */
-        $system = System::getContainer()->get('contao.framework')->getAdapter(System::class);
-        $formUtil = System::getContainer()->get(FormUtilPolyfill::class);
         $utils = System::getContainer()->get(Utils::class);
 
         $protected = false;
@@ -248,17 +244,15 @@ class FieldPaletteWizard extends Widget
             // Call load_callback
             if (isset($this->dca['fields'][$fieldName]['load_callback'])) {
                 foreach ($this->dca['fields'][$fieldName]['load_callback'] as $callback) {
-                    if (\is_array($callback)) {
-                        $value = $system->importStatic($callback[0])->{$callback[1]}($value, $dc);
+                    if (is_array($callback)) {
+                        $value = System::importStatic($callback[0])->{$callback[1]}($value, $dc);
                     } elseif (\is_callable($callback)) {
                         $value = $callback($value, $dc);
                     }
                 }
             }
-            $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, [
-                '_dcaOverride' => $this->dca['fields'][$fieldName],
-                'skipReplaceInsertTags' => $utils->container()->isBackend(),
-            ]);
+
+            $args[$key] = $utils->formatter()->formatDcaFieldValue($dc, $fieldName, $value, FormatterUtil::OPTION_SKIP_REPLACE_INSERT_TAGS, dcaOverride: $this->dca['fields'][$fieldName]);;
         }
 
         $label = vsprintf(
@@ -283,7 +277,7 @@ class FieldPaletteWizard extends Widget
                 $strClass = $callback[0];
                 $strMethod = $callback[1];
 
-                $label = $system->importStatic($strClass)->{$strMethod}($model->row(), $label, $this, $folderAttribute, false, $protected);
+                $label = System::importStatic($strClass)->{$strMethod}($model->row(), $label, $this, $folderAttribute, false, $protected);
             } elseif (\is_callable($callback)) {
                 $label = $callback($model->row(), $label, $this, $folderAttribute, false, $protected);
             }
@@ -333,7 +327,7 @@ class FieldPaletteWizard extends Widget
         $dc->activeRecord = $rowModel;
 
         foreach ($operations as $key => $value) {
-            $value = \is_array($value) ? $value : [$value];
+            $value = is_array($value) ? $value : [$value];
             $id = StringUtil::specialchars(rawurldecode($rowModel->id));
 
             $label = $value['label'] ?? $key;
