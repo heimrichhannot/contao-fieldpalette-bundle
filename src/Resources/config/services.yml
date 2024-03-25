@@ -1,4 +1,7 @@
 services:
+  _defaults:
+    bind:
+      $fieldPaletteTable: '%huh.fieldpalette.table%'
 
   HeimrichHannot\FieldpaletteBundle\:
     resource: '../../{Dca,Util}/*'

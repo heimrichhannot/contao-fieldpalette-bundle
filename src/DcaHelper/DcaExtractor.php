@@ -10,23 +10,18 @@ namespace HeimrichHannot\FieldpaletteBundle\DcaHelper;
 
 use Contao\DcaExtractor as ContaoDcaExtractor;
 use Exception;
-use Symfony\Component\DependencyInjection\Container;
 
-/**
- * @fixme please: Parent constructor call is missing. This class might not be functional.
- * @experimental This class is missing the parent constructor call and might therefore not be functional.
- */
 class DcaExtractor extends ContaoDcaExtractor
 {
-    protected Container $container;
+    private string $fieldPaletteTable;
 
     /**
      * FieldPaletteDcaExtractor is required to disable usage of cached dca file
      * if internal contao cache is active, as fields get added dynamically.
      */
-    public function __construct(Container $container)
+    public function __construct(string $fieldPaletteTable)
     {
-        $this->container = $container;
+        $this->fieldPaletteTable = $fieldPaletteTable;
     }
 
     /**
@@ -36,17 +31,17 @@ class DcaExtractor extends ContaoDcaExtractor
      *@throws Exception
      *
      */
-    public function getExtract($table)
+    public function getExtract(string $table): ContaoDcaExtractor
     {
         if (empty($table)) {
             throw new Exception('The table name must not be empty');
         }
 
-        if ($table !== $this->container->getParameter('huh.fieldpalette.table')) {
+        if ($table !== $this->fieldPaletteTable) {
             return new parent($table);
         }
 
-        $this->strTable = $this->container->getParameter('huh.fieldpalette.table');
+        $this->strTable = $this->fieldPaletteTable;
 
         // prevent caching for fieldpalette
         $this->createExtract();

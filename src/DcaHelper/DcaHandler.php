@@ -9,11 +9,9 @@
 namespace HeimrichHannot\FieldpaletteBundle\DcaHelper;
 
 use Contao\BackendUser;
-use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\Input;
-use Contao\Session;
 use Contao\StringUtil;
 use Contao\System;
 use Exception;
