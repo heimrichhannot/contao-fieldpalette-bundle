@@ -11,13 +11,6 @@ services:
     bind:
       $fieldPaletteTable: '%huh.fieldpalette.table%'
 
-  HeimrichHannot\FieldpaletteBundle\Util\FormUtilPolyfill:
-    autowire: true
-    autoconfigure: true
-    public: true
-    bind:
-      $kernelBundles: '%kernel.bundles%'
-
   HeimrichHannot\FieldpaletteBundle\EventListener\Contao\:
     resource: '../../EventListener/Contao/*'
     autowire: true
