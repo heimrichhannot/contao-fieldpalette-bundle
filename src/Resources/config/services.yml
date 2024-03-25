@@ -1,11 +1,15 @@
 services:
-  _defaults:
-    bind:
-      $fieldPaletteTable: '%huh.fieldpalette.table%'
 
   HeimrichHannot\FieldpaletteBundle\:
     resource: '../../{Dca,Util}/*'
     autowire: true
+
+  HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor:
+    autowire: true
+    autoconfigure: true
+    public: true
+    bind:
+      $fieldPaletteTable: '%huh.fieldpalette.table%'
 
   HeimrichHannot\FieldpaletteBundle\Util\FormUtilPolyfill:
     autowire: true
@@ -48,7 +52,6 @@ services:
     public: true
   huh.fieldpalette.dca.extractor:
     class: HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor
-    arguments: ['@service_container']
   huh.fieldpalette.dca.handler:
     class: HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler
     public: true
