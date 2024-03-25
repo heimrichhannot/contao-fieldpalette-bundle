@@ -20,8 +20,7 @@ use Contao\System;
 use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\FieldpaletteBundle\Util\FormUtilPolyfill;
-use HeimrichHannot\UtilsBundle\Util\FormatterUtil;
+use HeimrichHannot\UtilsBundle\Util\FormatterUtil\FormatDcaFieldValueOptions;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 
 class FieldPaletteWizard extends Widget
@@ -252,7 +251,11 @@ class FieldPaletteWizard extends Widget
                 }
             }
 
-            $args[$key] = $utils->formatter()->formatDcaFieldValue($dc, $fieldName, $value, FormatterUtil::OPTION_SKIP_REPLACE_INSERT_TAGS, dcaOverride: $this->dca['fields'][$fieldName]);;
+            $options = FormatDcaFieldValueOptions::create()
+                ->setReplaceInsertTags(false);
+
+            $args[$key] = $utils->formatter()
+                ->formatDcaFieldValue($dc, $fieldName, $value, $options, $this->dca['fields'][$fieldName] ?? null);
         }
 
         $label = vsprintf(
