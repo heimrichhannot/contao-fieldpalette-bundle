@@ -9,8 +9,11 @@
 namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
 use Contao\Controller;
+use Exception;
 use HeimrichHannot\FieldpaletteBundle\Dca\DcaProcessor;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
+use Psr\Cache\CacheException;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\Cache\CacheItem;
@@ -46,6 +49,10 @@ class LoadDataContainerListener
 
     /**
      * Hook("loadDataContainer").
+     *
+     * @throws InvalidArgumentException
+     * @throws CacheException
+     * @throws Exception
      */
     public function onLoadDataContainer(string $table): void
     {
@@ -64,6 +71,11 @@ class LoadDataContainerListener
         $this->dcaHandler->registerFieldPalette($table);
     }
 
+    /**
+     * @throws CacheException
+     * @throws InvalidArgumentException
+     * @throws Exception
+     */
     public function extractTableFields(string $table): array
     {
         if (!isset($GLOBALS['TL_DCA'][$table])) {
@@ -101,6 +113,9 @@ class LoadDataContainerListener
         return array_keys($extract);
     }
 
+    /**
+     * @throws Exception
+     */
     private function updateTable(string $table): void
     {
         if (!isset($this->fieldCache[$table])) {

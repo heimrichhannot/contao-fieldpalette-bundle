@@ -71,12 +71,8 @@ class FieldPaletteModel extends Model
 
     /**
      * Check if instance has the correct table.
-     *
-     * @param string $table
-     *
-     * @return bool
      */
-    public function hasTable(string $table = self::TABLE)
+    public function hasTable(string $table = self::TABLE): bool
     {
         if (static::$strTable === $table) {
             return true;
@@ -188,16 +184,16 @@ class FieldPaletteModel extends Model
     {
         $t = static::$strTable;
 
-        $querys = ["$t.pid=? AND $t.ptable=? AND $t.pfield=?"];
+        $queries = ["$t.pid=? AND $t.ptable=? AND $t.pfield=?"];
 
         if (!isset($options['order'])) {
             $options['order'] = "$t.sorting";
         }
 
-        $querys = array_merge($querys, $columns);
+        $queries = array_merge($queries, $columns);
         $values = array_merge([$pid, $parentTable, $parentField], $values);
 
-        return $this->dynamicFindBy($querys, $values, $options);
+        return $this->dynamicFindBy($queries, $values, $options);
     }
 
     /**

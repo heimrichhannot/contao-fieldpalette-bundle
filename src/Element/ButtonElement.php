@@ -9,9 +9,13 @@
 namespace HeimrichHannot\FieldpaletteBundle\Element;
 
 use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\StringUtil;
+use Exception;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Routing\RoutingUtil;
+use HeimrichHannot\UtilsBundle\Util\Utils;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Twig\Environment;
 
 class ButtonElement
@@ -42,12 +46,12 @@ class ButtonElement
      */
     private $dcaHandler;
 
-    public function __construct(ContaoFramework $framework, string $table, Environment $twig, RoutingUtil $routeUtil, DcaHandler $dcaHandler)
+    public function __construct(ContaoFramework $framework, string $table, Environment $twig, Utils $utils, DcaHandler $dcaHandler)
     {
         $this->framework = $framework;
         $this->defaultTable = $table;
         $this->twig = $twig;
-        $this->routeUtil = $routeUtil;
+        $this->routeUtil = $utils->routing();
         $this->dcaHandler = $dcaHandler;
     }
 
@@ -185,16 +189,25 @@ class ButtonElement
         return $this;
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function getHref()
     {
         return $this->generateHref();
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws Exception
+     */
     protected function generateHref()
     {
         $parameter = $this->prepareParameter($this->act);
 
-        // for nested fielpalettes, fieldpalette must always be dca context
+        // for nested fiel palettes, fieldpalette must always be dca context
         if ($parameter['table'] !== $this->table) {
             $parameter['table'] = $this->table;
         }
@@ -203,7 +216,7 @@ class ButtonElement
             $parameter['popup'] = 1;
             $this->options['attributes']['onclick'] =
                 'onclick="FieldPaletteBackend.openModalIframe({\'action\':\''.DcaHandler::FieldpaletteRefreshAction.'\',\'syncId\':\''.$this->syncId
-                .'\',\'width\':768,\'title\':\''.specialchars(sprintf($this->modalTitle, $this->id)).'\',\'url\':this.href});return false;"';
+                .'\',\'width\':768,\'title\':\''.StringUtil::specialchars(sprintf($this->modalTitle, $this->id)).'\',\'url\':this.href});return false;"';
         }
 
         // TODO: DC_TABLE : 2097 - catch POST and Cookie from saveNClose and do not redirect and just close modal
@@ -216,13 +229,10 @@ class ButtonElement
     }
 
     /**
-     * @param $act
-     *
-     * @throws \Exception
-     *
-     * @return array
+     * @throws Exception
+     * @noinspection PhpDuplicateSwitchCaseBodyInspection
      */
-    protected function prepareParameter($act)
+    protected function prepareParameter($act): array
     {
         $parameters = [
             'do' => $this->do,
@@ -242,7 +252,7 @@ class ButtonElement
             case 'create':
                 $allowed = ['do', 'ptable', 'table', 'act', 'pid', 'fieldpalette', 'popup', 'popupReferer', 'nb'];
 
-                // nested fieldpalettes
+                // nested field palettes
                 if (
                     $this->ptable === $this->defaultTable &&
                     ($model = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($this->pid))

@@ -9,13 +9,12 @@
 namespace HeimrichHannot\FieldpaletteBundle\DcaHelper;
 
 use Contao\BackendUser;
-use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\Input;
-use Contao\Session;
 use Contao\StringUtil;
 use Contao\System;
+use Exception;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
@@ -23,44 +22,23 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class DcaHandler
 {
-    /**
-     * @var string
-     */
     const TableRequestKey = 'table';
-    /**
-     * @var string
-     */
     const ParentTableRequestKey = 'ptable';
-    /**
-     * @var string
-     */
     const PaletteRequestKey = 'fieldpalette';
-    /**
-     * @var string
-     */
     const FieldpaletteRefreshAction = 'refreshFieldPaletteField';
-    /**
-     * @var ContaoFramework
-     */
-    private $framework;
-    /**
-     * @var string
-     */
-    private $fieldPaletteTable;
-    /**
-     * @var FieldPaletteModelManager
-     */
-    private $modelManager;
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
-    /**
-     * @var FieldPaletteRegistry
-     */
-    private $registry;
+    private ContaoFramework $framework;
+    private string $fieldPaletteTable;
+    private FieldPaletteModelManager $modelManager;
+    private RequestStack $requestStack;
+    private FieldPaletteRegistry $registry;
 
-    public function __construct(string $table, ContaoFramework $framework, FieldPaletteModelManager $modelManager, RequestStack $requestStack, FieldPaletteRegistry $registry)
+    public function __construct(
+        string                   $table,
+        ContaoFramework          $framework,
+        FieldPaletteModelManager $modelManager,
+        RequestStack             $requestStack,
+        FieldPaletteRegistry     $registry
+    )
     {
         $this->fieldPaletteTable = $table;
         $this->framework = $framework;
@@ -70,13 +48,10 @@ class DcaHandler
     }
 
     /**
-     * @param string $paletteTable
-     *
-     * @throws \Exception
-     *
+     * @throws Exception
      * @deprecated Use DcaProcessor::getFieldpaletteFields instead
      */
-    public function extractFieldPaletteFields(string $table, array $fields = [], $paletteTable = null): array
+    public function extractFieldPaletteFields(string $table, array $fields = [], ?string $paletteTable = null): array
     {
         $extract = [];
 
@@ -103,7 +78,7 @@ class DcaHandler
                 $this->framework->getAdapter(Controller::class)->loadDataContainer($paletteTable);
 
                 if (!isset($GLOBALS['TL_DCA'][$paletteTable])) {
-                    throw new \Exception('Custom fieldpalette table '.$paletteTable.' does not exist.');
+                    throw new Exception('Custom fieldpalette table '.$paletteTable.' does not exist.');
                 }
             }
 
@@ -119,14 +94,9 @@ class DcaHandler
     }
 
     /**
-     * @param string|null $act
-     * @param string|null $parentTable
-     *
-     * @throws \Exception
-     *
-     * @return array|bool
+     * @throws Exception
      */
-    public function loadDynamicPaletteByParentTable($act, string $table, $parentTable)
+    public function loadDynamicPaletteByParentTable(?string $act, string $table, ?string $parentTable): bool|array
     {
         $input = $this->framework->getAdapter(Input::class);
 
@@ -146,7 +116,7 @@ class DcaHandler
                     $objParent = $this->modelManager->createModelByTable($parentTable)->findByPk($intPid);
 
                     if (null !== $objParent) {
-                        list($strRootTable, $varPalette) = $this->getParentTable($objParent, $objParent->id);
+                        [$strRootTable, $varPalette] = $this->getParentTable($objParent, $objParent->id);
                     }
                 }
 
@@ -166,16 +136,16 @@ class DcaHandler
                     break;
                 }
 
-                list($strRootTable, $varPalette) = $this->getParentTable($objModel, $objModel->id);
+                [$strRootTable, $varPalette] = $this->getParentTable($objModel, $objModel->id);
                 $parentTable = $objModel->ptable;
 
                 // set back link from request
                 if ($input->get('popup') && $input->get('popupReferer')) {
-                    /** @var Session $session */
-                    $session = $this->framework->createInstance(Session::class)->getData();
+                    $session = $this->requestStack->getSession();
                     $refererId = $this->requestStack->getCurrentRequest()->get('_contao_referer_id');
-                    $session['popupReferer'][$refererId]['current'] = StringUtil::decodeEntities(rawurldecode($input->get('popupReferer')));
-                    $session->setData($session);
+                    $sessionData = $session->all();
+                    $sessionData['popupReferer'][$refererId]['current'] = StringUtil::decodeEntities(rawurldecode($input->get('popupReferer')));
+                    $session->replace($sessionData);
                 }
 
                 break;
@@ -189,15 +159,14 @@ class DcaHandler
     }
 
     /**
-     * @throws \Exception
-     *
-     * @return bool
+     * @throws Exception
      */
-    public function registerFieldPalette(string $table)
+    public function registerFieldPalette(string $table): bool
     {
         $parentTable = $this->getParentTableFromRequest();
 
-        list($palette, $rootTable, $parentTable) = $this->loadDynamicPaletteByParentTable($this->framework->getAdapter(Input::class)->get('act'), $table, $parentTable);
+        $input = $this->framework->getAdapter(Input::class);
+        [$palette, $rootTable, $parentTable] = $this->loadDynamicPaletteByParentTable($input->get('act'), $table, $parentTable);
 
         if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$parentTable || !$palette) {
             return false;
@@ -212,10 +181,6 @@ class DcaHandler
         $fields = $arrDCA['fields'];
 
         if (!\is_array($fields)) {
-            return false;
-        }
-
-        if (!$palette) {
             return false;
         }
 
@@ -239,12 +204,11 @@ class DcaHandler
         if (!$blnFound) {
             $this->refuseFromBackendModuleByTable($table);
         }
+
+        return true;
     }
 
-    /**
-     * @return array|bool
-     */
-    public function findNestedFieldPaletteFields(array $palettes, array $fields)
+    public function findNestedFieldPaletteFields(array $palettes, array $fields): array|false
     {
         if (1 === \count($palettes)) {
             $palette = $palettes[0];
@@ -279,16 +243,11 @@ class DcaHandler
 
             return $this->findNestedFieldPaletteFields($childPalettes, $fields[$fieldPalette]['fieldpalette']['fields']);
         }
+
+        return false;
     }
 
-    /**
-     * @param $dc
-     * @param $palette
-     * @param bool $blnFound
-     *
-     * @return bool
-     */
-    public function registerFieldPaletteFields(&$dc, string $table, string $parentTable, string $rootTable, $palette, array $fields, $blnFound = false)
+    public function registerFieldPaletteFields(&$dc, string $table, string $parentTable, string $rootTable, $palette, array $fields, bool $blnFound = false): bool
     {
         if (!\is_array($fields)) {
             return false;
@@ -319,7 +278,7 @@ class DcaHandler
         return $blnFound;
     }
 
-    public function isActive(string $rootTable, string $parentTable, string $table, string $field)
+    public function isActive(string $rootTable, string $parentTable, string $table, string $field): bool
     {
         $registry = $this->registry->get($rootTable);
 
@@ -368,11 +327,9 @@ class DcaHandler
     }
 
     /**
-     * @throws \Exception
-     *
-     * @return array
+     * @throws Exception
      */
-    public function getParentTable(FieldPaletteModel $model, int $id, array $palette = [])
+    public function getParentTable(FieldPaletteModel $model, int $id, array $palette = []): array
     {
         // always store current pfield
         if (empty($palette)) {
@@ -397,10 +354,7 @@ class DcaHandler
         return [$model->ptable, array_reverse($palette)];
     }
 
-    /**
-     * @return array
-     */
-    public function getDca(string $rootTable, string $parentTable, string $field, array $palette = [])
+    public function getDca(string $rootTable, string $parentTable, string $field, array $palette = []): array
     {
         $controller = $this->framework->getAdapter(Controller::class);
         $controller->loadDataContainer($rootTable);
@@ -412,7 +366,7 @@ class DcaHandler
 
         $data = [];
 
-        $defauts = $GLOBALS['TL_DCA'][$paletteTable];
+        $defaults = $GLOBALS['TL_DCA'][$paletteTable];
         $custom = $GLOBALS['TL_DCA'][$rootTable]['fields'][$field]['fieldpalette'];
 
         if (\is_array($palette)) {
@@ -424,18 +378,18 @@ class DcaHandler
             }
         }
 
-        if (!\is_array($defauts) || !\is_array($custom)) {
+        if (!\is_array($defaults) || !\is_array($custom)) {
             return $data;
         }
 
         foreach (['config', 'list', 'palettes', 'subpalettes'] as $key) {
-            $data[$key] = array_replace_recursive(($defauts[$key] ?? []), ($custom[$key] ?? []));
+            $data[$key] = array_replace_recursive(($defaults[$key] ?? []), ($custom[$key] ?? []));
         }
 
-        $data['fields'] = array_merge(($defauts['fields'] ?? []), ($custom['fields'] ?? []));
+        $data['fields'] = array_merge(($defaults['fields'] ?? []), ($custom['fields'] ?? []));
 
         // replace tl_fieldpalette with custom config
-//        $data = @array_replace_recursive($defauts, $custom); // supress warning, as long as references may exist in both arrays
+//        $data = @array_replace_recursive($defaults, $custom); // suppress warning, as long as references may exist in both arrays
         $data['config']['ptable'] = $parentTable;
 
         if ($data['config']['hidePublished']) {
@@ -467,7 +421,7 @@ class DcaHandler
         return $data;
     }
 
-    public function refuseFromBackendModuleByTable(string $table)
+    public function refuseFromBackendModuleByTable(string $table): void
     {
         foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup) {
             if (!\is_array($arrGroup)) {
@@ -496,7 +450,7 @@ class DcaHandler
      * @param string $table     The parent table
      * @param array  $dcaFields A dca array of fields
      */
-    public function recursivelyCopyFieldPaletteRecords(int $pid, int $newId, string $table, array $dcaFields)
+    public function recursivelyCopyFieldPaletteRecords(int $pid, int $newId, string $table, array $dcaFields): void
     {
         foreach ($dcaFields as $field => $fieldData) {
             if ('fieldpalette' === $fieldData['inputType']) {
