@@ -32,8 +32,11 @@ class InitializeSystemListener
     /**
      * InitializeSystemListener constructor.
      */
-    public function __construct(ContaoFramework $contaoFramework, ScopeMatcher $scopeMatcher, RequestStack $requestStack)
-    {
+    public function __construct(
+        ContaoFramework $contaoFramework,
+        ScopeMatcher    $scopeMatcher,
+        RequestStack    $requestStack
+    ) {
         $this->contaoFramework = $contaoFramework;
         $this->scopeMatcher = $scopeMatcher;
         $this->requestStack = $requestStack;
