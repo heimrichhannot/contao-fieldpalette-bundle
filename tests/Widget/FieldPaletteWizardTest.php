@@ -36,7 +36,7 @@ class FieldPaletteWizardTest extends ContaoTestCase
     protected $affectedRows = 0;
     protected $table = [];
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $container = $this->mockContainer();

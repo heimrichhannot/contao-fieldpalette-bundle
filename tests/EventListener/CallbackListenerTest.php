@@ -31,7 +31,7 @@ class CallbackListenerTest extends ContaoTestCase
     protected $inputCountGet = 0;
     protected $mockedMethodResult = 0;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->testCounter = 0;

@@ -9,45 +9,35 @@
 namespace HeimrichHannot\FieldpaletteBundle\Element;
 
 use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\StringUtil;
+use Exception;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Routing\RoutingUtil;
-use Twig\Environment;
+use HeimrichHannot\UtilsBundle\Util\Utils;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Twig\Environment as TwigEnvironment;
 
 class ButtonElement
 {
-    /**
-     * @var Environment
-     */
-    protected $twig;
+    protected array $options = [];
+    protected string $defaultTable;
+    protected ContaoFramework $framework;
+    protected TwigEnvironment $twig;
+    protected Utils $utils;
+    protected DcaHandler $dcaHandler;
 
-    /**
-     * @var array
-     */
-    protected $options = [];
-    /**
-     * @var ContaoFramework
-     */
-    private $framework;
-    /**
-     * @var string
-     */
-    private $defaultTable;
-    /**
-     * @var RoutingUtil
-     */
-    private $routeUtil;
-    /**
-     * @var DcaHandler
-     */
-    private $dcaHandler;
-
-    public function __construct(ContaoFramework $framework, string $table, Environment $twig, RoutingUtil $routeUtil, DcaHandler $dcaHandler)
-    {
+    public function __construct(
+        string          $table,
+        ContaoFramework $framework,
+        TwigEnvironment $twig,
+        Utils           $utils,
+        DcaHandler      $dcaHandler
+    ) {
         $this->framework = $framework;
         $this->defaultTable = $table;
         $this->twig = $twig;
-        $this->routeUtil = $routeUtil;
+        $this->utils = $utils;
         $this->dcaHandler = $dcaHandler;
     }
 
@@ -119,7 +109,7 @@ class ButtonElement
         );
     }
 
-    public function setType($strType)
+    public function setType($strType): void
     {
         $this->act = $strType;
         $this->cssClass = $strType;
@@ -131,70 +121,79 @@ class ButtonElement
         }
     }
 
-    public function setModalTitle($varValue)
+    public function setModalTitle($varValue): static
     {
         $this->options['modalTitle'] = $varValue;
 
         return $this;
     }
 
-    public function setHref($varValue)
+    public function setHref($varValue): static
     {
         $this->options['href'] = $varValue;
 
         return $this;
     }
 
-    public function setTitle($varValue)
+    public function setTitle($varValue): static
     {
         $this->options['title'] = $varValue;
 
         return $this;
     }
 
-    public function setLabel($varValue)
+    public function setLabel($varValue): static
     {
         $this->options['label'] = $varValue;
 
         return $this;
     }
 
-    public function setId($varValue)
+    public function setId($varValue): static
     {
         $this->options['id'] = $varValue;
 
         return $this;
     }
 
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
 
-    public function addOptions(array $arrOptions = [])
+    public function addOptions(array $arrOptions = []): static
     {
         $this->options = array_merge($this->options, $arrOptions);
 
         return $this;
     }
 
-    public function setAttributes(array $attributes)
+    public function setAttributes(array $attributes): static
     {
         $this->options['attributes'] = $attributes;
 
         return $this;
     }
 
-    public function getHref()
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function getHref(): string
     {
         return $this->generateHref();
     }
 
-    protected function generateHref()
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws Exception
+     */
+    protected function generateHref(): string
     {
         $parameter = $this->prepareParameter($this->act);
 
-        // for nested fielpalettes, fieldpalette must always be dca context
+        // for nested fiel palettes, fieldpalette must always be dca context
         if ($parameter['table'] !== $this->table) {
             $parameter['table'] = $this->table;
         }
@@ -203,7 +202,7 @@ class ButtonElement
             $parameter['popup'] = 1;
             $this->options['attributes']['onclick'] =
                 'onclick="FieldPaletteBackend.openModalIframe({\'action\':\''.DcaHandler::FieldpaletteRefreshAction.'\',\'syncId\':\''.$this->syncId
-                .'\',\'width\':768,\'title\':\''.specialchars(sprintf($this->modalTitle, $this->id)).'\',\'url\':this.href});return false;"';
+                .'\',\'width\':768,\'title\':\''.StringUtil::specialchars(sprintf($this->modalTitle, $this->id)).'\',\'url\':this.href});return false;"';
         }
 
         // TODO: DC_TABLE : 2097 - catch POST and Cookie from saveNClose and do not redirect and just close modal
@@ -212,17 +211,14 @@ class ButtonElement
         // required by DC_TABLE::getNewPosition() within nested fieldpalettes
         $parameter['mode'] = 2;
 
-        return $this->routeUtil->generateBackendRoute($parameter, true);
+        return $this->utils->routing()->generateBackendRoute($parameter, true);
     }
 
     /**
-     * @param $act
-     *
-     * @throws \Exception
-     *
-     * @return array
+     * @throws Exception
+     * @noinspection PhpDuplicateSwitchCaseBodyInspection
      */
-    protected function prepareParameter($act)
+    protected function prepareParameter($act): array
     {
         $parameters = [
             'do' => $this->do,
@@ -242,7 +238,7 @@ class ButtonElement
             case 'create':
                 $allowed = ['do', 'ptable', 'table', 'act', 'pid', 'fieldpalette', 'popup', 'popupReferer', 'nb'];
 
-                // nested fieldpalettes
+                // nested field palettes
                 if (
                     $this->ptable === $this->defaultTable &&
                     ($model = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($this->pid))

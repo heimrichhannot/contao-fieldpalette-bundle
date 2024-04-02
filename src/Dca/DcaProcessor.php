@@ -13,7 +13,7 @@ use HeimrichHannot\FieldpaletteBundle\Widget\FieldPaletteWizard;
 class DcaProcessor
 {
     /** @var string */
-    private $defaultTable = 'tl_fieldpalette';
+    private string $defaultTable = 'tl_fieldpalette';
 
     /**
      * Scan the dca for fieldpalette fields and return them ordered by their fieldpalette table.

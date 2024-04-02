@@ -1,8 +1,15 @@
 services:
 
   HeimrichHannot\FieldpaletteBundle\:
-    resource: '../../{Dca}/*'
+    resource: '../../{Dca,Util}/*'
     autowire: true
+
+  HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor:
+    autowire: true
+    autoconfigure: true
+    public: true
+    bind:
+      $fieldPaletteTable: '%huh.fieldpalette.table%'
 
   HeimrichHannot\FieldpaletteBundle\EventListener\Contao\:
     resource: '../../EventListener/Contao/*'
@@ -17,7 +24,10 @@ services:
   huh.fieldpalette.listener.callback:
     alias: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
     public: true
-    deprecated: The "%alias_id%" service is deprecated since heimrichhannot/contao-fieldpalette-bundle 0.6.12 and will be removed in 1.0.
+    deprecated:
+      version: 0.6.12
+      package: heimrichhannot/contao-fieldpalette-bundle
+      message: The "%alias_id%" service is deprecated since heimrichhannot/contao-fieldpalette-bundle 0.6.12 and will be removed in 1.0.
 
   huh.fieldpalette.element.button:
     class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
@@ -26,7 +36,7 @@ services:
       - '@contao.framework'
       - '%huh.fieldpalette.table%'
       - '@twig'
-      - '@huh.utils.routing'
+      # - '@huh.utils.routing'
       - '@huh.fieldpalette.dca.handler'
   huh.fieldpalette.registry:
     class: HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry
@@ -35,7 +45,6 @@ services:
     public: true
   huh.fieldpalette.dca.extractor:
     class: HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaExtractor
-    arguments: ['@service_container']
   huh.fieldpalette.dca.handler:
     class: HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler
     public: true

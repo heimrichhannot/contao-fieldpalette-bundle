@@ -17,7 +17,7 @@ class CacheClearListener implements CacheClearerInterface
     /**
      * {@inheritdoc}
      */
-    public function clear($cacheDir)
+    public function clear($cacheDir): void
     {
         $cache = new TagAwareAdapter(new FilesystemAdapter(LoadDataContainerListener::CACHE_NAMESPACE));
         $cache->clear();

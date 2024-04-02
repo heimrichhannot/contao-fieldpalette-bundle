@@ -17,7 +17,7 @@ class HeimrichHannotContaoFieldpaletteExtensionTest extends TestCase
 {
     private $container;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->container = new ContainerBuilder(new ParameterBag(['kernel.debug' => false]));
