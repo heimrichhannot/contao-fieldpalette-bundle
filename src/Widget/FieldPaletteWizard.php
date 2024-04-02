@@ -75,6 +75,8 @@ class FieldPaletteWizard extends Widget
         $container = System::getContainer();
         $framework = $container->get('contao.framework');
         $dcaHandler = $container->get('huh.fieldpalette.dca.handler');
+
+        /** @var Controller $controller */
         $controller = $framework->getAdapter(Controller::class);
 
         $controller->loadLanguageFile($container->getParameter('huh.fieldpalette.table'));
@@ -174,6 +176,7 @@ class FieldPaletteWizard extends Widget
      */
     protected function generateListView(): string
     {
+        /** @var Image $image */
         $image = System::getContainer()->get('contao.framework')->getAdapter(Image::class);
         $items = [];
         $i = 0;
@@ -315,12 +318,10 @@ class FieldPaletteWizard extends Widget
         $framework = $container->get('contao.framework');
         $buttonGenerator = $container->get('huh.fieldpalette.element.button');
         /**
-         * @var Image
+         * @var Image $image
          */
         $image = $framework->getAdapter(Image::class);
-        /**
-         * @var System
-         */
+        /** @var System $system */
         $system = $framework->getAdapter(System::class);
 
         $return = '';
@@ -405,6 +406,7 @@ class FieldPaletteWizard extends Widget
             $arrDirections = ['up', 'down'];
             $rootIds = \is_array($rootIds) ? $rootIds : [$rootIds];
             $defaultTable = $container->getParameter('huh.fieldpalette.table');
+            /** @var Controller $controller */
             $controller = $framework->getAdapter(Controller::class);
 
             foreach ($arrDirections as $dir) {
@@ -436,7 +438,9 @@ class FieldPaletteWizard extends Widget
             }
         }
 
-        $do = $framework->getAdapter(Input::class)->get('do');
+        /** @var Input $input */
+        $input = $framework->getAdapter(Input::class);
+        $do = $input->get('do');
 
         // Sort elements
         if (!isset($this->dca['config']['notSortable']) || !$this->dca['config']['notSortable']) {
@@ -492,9 +496,7 @@ class FieldPaletteWizard extends Widget
         $controller = $framework->getAdapter(Controller::class);
         /** @var Environment $environment */
         $environment = $framework->getAdapter(Environment::class);
-        /**
-         * @var System
-         */
+        /** @var System $system */
         $system = $framework->getAdapter(System::class);
 
         $reload = false;

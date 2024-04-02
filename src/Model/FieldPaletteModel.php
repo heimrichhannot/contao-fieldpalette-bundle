@@ -47,13 +47,13 @@ class FieldPaletteModel extends Model
      *
      * @return FieldPaletteModel $this
      */
-    public function setTable($table)
+    public function setTable($table): static
     {
         static::$strTable = $table;
         $framework = System::getContainer()->get('contao.framework');
 
         /** @var Database $database */
-        $database = $framework->getAdapter(Database::class)->getInstance();
+        $database = $framework->createInstance(Database::class);
 
         if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$database->tableExists($table)) {
             static::$strTable = 'tl_fieldpalette';
