@@ -15,7 +15,7 @@ use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 
 class FieldPaletteModelTest extends ContaoTestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
