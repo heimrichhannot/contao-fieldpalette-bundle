@@ -31,8 +31,6 @@ use HeimrichHannot\UtilsBundle\Util\Utils;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Terminal42\DcMultilingualBundle\Model\Multilingual;
-use Terminal42\DcMultilingualBundle\Model\MultilingualTrait;
 
 class CallbackListener
 {
