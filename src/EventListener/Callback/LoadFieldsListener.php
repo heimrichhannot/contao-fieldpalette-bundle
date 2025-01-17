@@ -9,6 +9,7 @@
 namespace HeimrichHannot\FieldpaletteBundle\EventListener\Callback;
 
 use Contao\DataContainer;
+use Contao\Input;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 
@@ -31,6 +32,16 @@ class LoadFieldsListener
         }
 
         $fields = $this->registry->getTargetFields($table);
+        $ptable = Input::get('ptable');
+
+        if (!$ptable) {
+            return;
+        }
+
+        $fields = array_filter($fields, function ($field) use ($ptable) {
+            return $field['sourceTable'] === $ptable;
+        });
+
         foreach ($fields as $field) {
             $fieldData = $this->registry->getFieldData($field);
             if (!$fieldData) {

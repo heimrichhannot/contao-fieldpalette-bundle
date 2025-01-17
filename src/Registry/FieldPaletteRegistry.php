@@ -112,7 +112,7 @@ class FieldPaletteRegistry
         return !empty($this->targetFields[$table]);
     }
 
-    public function getTargetFields(string $table): array
+    public function getTargetFields(string $table, ): array
     {
         if (!$this->isFullyLoaded()) {
             $this->restoreResults();

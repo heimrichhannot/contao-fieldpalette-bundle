@@ -118,6 +118,9 @@ class DcaHandler
                 }
 
                 list($strRootTable, $varPalette) = $this->getParentTable($objModel, $objModel->id);
+                if (empty($objModel->ptable) && $objModel->tstamp === 0) {
+                    $objModel->ptable = $parentTable;
+                }
                 $parentTable = $objModel->ptable;
 
                 // set back link from request

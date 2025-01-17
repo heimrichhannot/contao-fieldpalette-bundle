@@ -17,8 +17,6 @@ class DcaGenerator
 {
     public static function generateFieldpaletteBaseDca(): array
     {
-        Controller::loadLanguageFile('tl_fieldpalette');
-
         return [
             'config' => [
                 'dataContainer' => DC_Table::class,
@@ -38,7 +36,7 @@ class DcaGenerator
                     ],
                 ],
                 'oncreate_callback' => [
-                    [CallbackListener::class, 'setTable'],
+                    [BaseDcaListener::class, 'onConfigCreateCallback'],
                 ],
                 'onsubmit_callback' => [
                     [CallbackListener::class, 'updateParentFieldOnSubmit'],
@@ -47,7 +45,7 @@ class DcaGenerator
                     [CallbackListener::class, 'updateParentFieldOnCut'],
                 ],
                 'ondelete_callback' => [
-                    [CallbackListener::class, 'updateParentFieldonDelete'],
+                    [CallbackListener::class, 'updateParentFieldOnDelete'],
                 ],
             ],
 
@@ -60,25 +58,26 @@ class DcaGenerator
                     'edit' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['edit'],
                         'href' => 'act=edit',
-                        'icon' => 'edit.gif',
+                        'icon' => 'edit.svg',
                     ],
                     'delete' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['delete'],
                         'href' => 'act=delete',
-                        'icon' => 'delete.gif',
+                        'icon' => 'delete.svg',
                         'attributes' => 'onclick="if(!confirm(\''.($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? null)
                             .'\'))return false;FieldPaletteBackend.deleteFieldPaletteEntry(this,%s);return false;"',
                     ],
                     'toggle' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['toggle'],
-                        'icon' => 'visible.gif',
-                        'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
-                        'button_callback' => [CallbackListener::class, 'toggleIcon'],
+                        'href' => 'act=toggle&amp;field=published',
+                        'icon' => 'visible.svg',
+//                        'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
+//                        'button_callback' => [CallbackListener::class, 'toggleIcon'],
                     ],
                     'show' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['show'],
                         'href' => 'act=show',
-                        'icon' => 'show.gif',
+                        'icon' => 'show.svg',
                     ],
                 ],
                 'sorting' => [
@@ -119,6 +118,7 @@ class DcaGenerator
                     'sql' => "int(10) unsigned NOT NULL default '0'",
                 ],
                 'published' => [
+                    'toggle' => true,
                     'exclude' => true,
                     'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['published'],
                     'inputType' => 'checkbox',

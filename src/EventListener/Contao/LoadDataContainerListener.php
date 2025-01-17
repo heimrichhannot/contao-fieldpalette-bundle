@@ -9,6 +9,7 @@
 namespace HeimrichHannot\FieldpaletteBundle\EventListener\Contao;
 
 use Contao\CoreBundle\ServiceAnnotation\Hook;
+use Contao\Input;
 use HeimrichHannot\FieldpaletteBundle\EventListener\Callback\LoadFieldsListener;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 
@@ -27,6 +28,8 @@ class LoadDataContainerListener
     public function __invoke(string $table): void
     {
         $dca = &$GLOBALS['TL_DCA'][$table];
+
+        $this->setDynamicParentTable($table);
 
         $parentFields = array_filter(
             array_filter($dca['fields'] ?? []),
@@ -66,5 +69,22 @@ class LoadDataContainerListener
             $this->registry->refresh();
             $this->registry->storeResults();
         }
+    }
+
+    /**
+     * Check if the table is a fieldpalette enabled table and set the dynamic parent table
+     */
+    private function setDynamicParentTable(string $table): void
+    {
+        if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette'])) {
+            return;
+        }
+
+        $ptable = Input::get('ptable');
+        if (!$ptable) {
+            return;
+        }
+
+        $GLOBALS['TL_DCA'][$table]['config']['ptable'] = $ptable;
     }
 }
