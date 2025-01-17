@@ -1,9 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [DEV] - 2023-04-06
-- Changed: refactored logic to load fieldpalette fields from dca and add to database
-- Removed: huh.fieldpalette.listener.callback service alias
+## [0.7.0] - 2025-01-17
+- Changed: refactored logic to load fieldpalette fields (**Please check if everything works as expected!**) ([#20](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/20))
+- Changed: require contao 4.13 ([#20](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/20))
+- Changed: require at least php 7.4 ([#20](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/20))
+- Changed: a lot of refactoring and modernization ([#20](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/20))
+- Removed: huh.fieldpalette.listener.callback service alias ([#20](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/20))
 
 ## [0.6.18] - 2023-12-22
 - Fixed: php8 syntax incompatible with php7
