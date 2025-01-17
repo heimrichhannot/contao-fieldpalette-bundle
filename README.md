@@ -2,8 +2,7 @@
 
 [![](https://img.shields.io/packagist/v/heimrichhannot/contao-fieldpalette-bundle.svg)](https://packagist.org/packages/heimrichhannot/contao-fieldpalette-bundle)
 [![](https://img.shields.io/packagist/dt/heimrichhannot/contao-fieldpalette-bundle.svg)](https://packagist.org/packages/heimrichhannot/contao-fieldpalette-bundle)
-[![Build Status](https://travis-ci.org/heimrichhannot/contao-fieldpalette-bundle.svg?branch=master)](https://travis-ci.org/heimrichhannot/contao-fieldpalette-bundle)
-[![Coverage Status](https://coveralls.io/repos/github/heimrichhannot/contao-fieldpalette-bundle/badge.svg?branch=master)](https://coveralls.io/github/heimrichhannot/contao-fieldpalette-bundle?branch=master)
+
 
 > If you're in search of an multi column input field and the storage of values in another table isn't an explicit requirement, we recommend to use [Multi Column Editor Bundle](https://github.com/heimrichhannot/contao-multi-column-editor-bundle) instead, as it has less possible side effects and is more often updated due it's higher usage.
 
@@ -39,84 +38,64 @@ FieldPalette comes with an custom input type `fieldpalette`. The configuration f
 This example shows the setup of an fieldpalette field within tl_news by using it within an subpalette. That (shortend) example is available within the module [Contao News Leisure Bundle](https://github.com/heimrichhannot/contao-news-leisure-bundle).
 
 ```php
-// src/Resource/contao/dca/tl_news.php (Bundle)
-// app/Resource/contao/dca/tl_news.php (Contao 4.4 Projekt)
-// contao/dca/tl_news.php (Contao 4.9 Projekt)
+# contao/dca/tl_news.php
 
-$dc = &$GLOBALS['TL_DCA']['tl_news'];
-
-$fields = array
-(
-	'venues'              => array
-	(
-		'label'        => &$GLOBALS['TL_LANG']['tl_news']['venues'],
-		'inputType'    => 'fieldpalette',
-		'foreignKey'   => 'tl_fieldpalette.id',
-		'relation'     => array('type' => 'hasMany', 'load' => 'eager'),
-		'sql'          => "blob NULL",
-		'fieldpalette' => array
-		(
-			'config' => array(
-				'hidePublished' => false
-			),
-			'list'     => array
-			(
-				'label' => array
-				(
-					'fields' => array('venueName', 'venueStreet', 'venuePostal', 'venueCity'),
-					'format' => '%s <span style="color:#b3b3b3;padding-left:3px">[%s, %s %s]</span>',
-				),
-			),
-			'palettes' => array
-			(
-				'default' => 'venueName,venueStreet,venuePostal,venueCity',
-			),
-			'fields'   => array
-			(
-				'venueName'         => array
-				(
-					'label'     => &$GLOBALS['TL_LANG']['tl_news']['venueName'],
-					'exclude'   => true,
-					'search'    => true,
-					'inputType' => 'text',
-					'eval'      => array('maxlength' => 255, 'tl_class' => 'long'),
-					'sql'       => "varchar(255) NOT NULL default ''",
-				),
-				'venueStreet'       => array
-				(
-					'label'     => &$GLOBALS['TL_LANG']['tl_news']['venueStreet'],
-					'exclude'   => true,
-					'search'    => true,
-					'inputType' => 'text',
-					'eval'      => array('maxlength' => 255, 'tl_class' => 'w50'),
-					'sql'       => "varchar(255) NOT NULL default ''",
-				),
-				'venuePostal'       => array
-				(
-					'label'     => &$GLOBALS['TL_LANG']['tl_news']['venuePostal'],
-					'exclude'   => true,
-					'search'    => true,
-					'inputType' => 'text',
-					'eval'      => array('maxlength' => 32, 'tl_class' => 'w50'),
-					'sql'       => "varchar(32) NOT NULL default ''",
-				),
-				'venueCity'         => array
-				(
-					'label'     => &$GLOBALS['TL_LANG']['tl_news']['venueCity'],
-					'exclude'   => true,
-					'filter'    => true,
-					'search'    => true,
-					'sorting'   => true,
-					'inputType' => 'text',
-					'eval'      => array('maxlength' => 255, 'tl_class' => 'w50'),
-					'sql'       => "varchar(255) NOT NULL default ''",
-				),
-			),
-		),
-	),
-);
-
-$dc['fields'] = array_merge($dc['fields'], $fields);
+$GLOBALS['TL_DCA']['tl_news']['fields']['venues'] = [
+    'inputType' => 'fieldpalette',
+    'foreignKey' => 'tl_fieldpalette.id',
+    'relation' => ['type' => 'hasMany', 'load' => 'eager'],
+    'sql' => "blob NULL",
+    'fieldpalette' => [
+        'config' => [
+            'hidePublished' => false
+        ],
+        'list' => [
+            'label' => [
+                'fields' => ['venueName', 'venueStreet', 'venuePostal', 'venueCity'],
+                'format' => '%s <span style="color:#b3b3b3;padding-left:3px">[%s, %s %s]</span>',
+            ],
+        ],
+        'palettes' => [
+            'default' => 'venueName,venueStreet,venuePostal,venueCity',
+        ],
+        'fields' => [
+            'venueName' => [
+                'label' => &$GLOBALS['TL_LANG']['tl_news']['venueName'],
+                'exclude' => true,
+                'search' => true,
+                'inputType' => 'text',
+                'eval' => ['maxlength' => 255, 'tl_class' => 'long'],
+                'sql' => "varchar(255) NOT NULL default ''",
+            ],
+            'venueStreet' => [
+                'label' => &$GLOBALS['TL_LANG']['tl_news']['venueStreet'],
+                'exclude' => true,
+                'search' => true,
+                'inputType' => 'text',
+                'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
+                'sql' => "varchar(255) NOT NULL default ''",
+            ],
+            'venuePostal' => [
+                'label' => &$GLOBALS['TL_LANG']['tl_news']['venuePostal'],
+                'exclude' => true,
+                'search' => true,
+                'inputType' => 'text',
+                'eval' => ['maxlength' => 32, 'tl_class' => 'w50'],
+                'sql' => "varchar(32) NOT NULL default ''",
+            ],
+            'venueCity' => [
+                'label' => &$GLOBALS['TL_LANG']['tl_news']['venueCity'],
+                'exclude' => true,
+                'filter' => true,
+                'search' => true,
+                'sorting' => true,
+                'inputType' => 'text',
+                'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
+                'sql' => "varchar(255) NOT NULL default ''",
+            ],
+        ],
+    ],
+];
 ```
 
 

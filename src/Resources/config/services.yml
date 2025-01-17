@@ -1,23 +1,10 @@
 services:
 
   HeimrichHannot\FieldpaletteBundle\:
-    resource: '../../{Dca}/*'
-    autowire: true
-
-  HeimrichHannot\FieldpaletteBundle\EventListener\Contao\:
-    resource: '../../EventListener/Contao/*'
-    autowire: true
-    public: true
-
-  HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener:
+    resource: '../../{Dca,Registry,EventListener}/*'
     autowire: true
     autoconfigure: true
     public: true
-
-  huh.fieldpalette.listener.callback:
-    alias: HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener
-    public: true
-    deprecated: The "%alias_id%" service is deprecated since heimrichhannot/contao-fieldpalette-bundle 0.6.12 and will be removed in 1.0.
 
   huh.fieldpalette.element.button:
     class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
@@ -28,8 +15,6 @@ services:
       - '@twig'
       - '@huh.utils.routing'
       - '@huh.fieldpalette.dca.handler'
-  huh.fieldpalette.registry:
-    class: HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry
   huh.fieldpalette.manager:
     class: HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager
     public: true
@@ -44,9 +29,8 @@ services:
       - '@contao.framework'
       - '@huh.fieldpalette.manager'
       - '@request_stack'
-      - '@huh.fieldpalette.registry'
+      - '@HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry'
 
   # Symfony 4 autowire convention fix (ambiguous namespace alias)
   HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager: '@huh.fieldpalette.manager'
   HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler: '@huh.fieldpalette.dca.handler'
-  HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry: '@huh.fieldpalette.registry'

@@ -17,6 +17,7 @@ use Contao\System;
 /**
  * @property int $id
  * @property int $pid
+ * @property string $ptable
  * @property int $tstamp
  *
  * @method static FieldPaletteModel|null findById($id, $opt = [])

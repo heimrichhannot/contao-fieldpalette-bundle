@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2022 Heimrich & Hannot GmbH
+ * Copyright (c) 2023 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -70,55 +70,6 @@ class DcaHandler
     }
 
     /**
-     * @param string $paletteTable
-     *
-     * @throws \Exception
-     *
-     * @deprecated Use DcaProcessor::getFieldpaletteFields instead
-     */
-    public function extractFieldPaletteFields(string $table, array $fields = [], $paletteTable = null): array
-    {
-        $extract = [];
-
-        if (null === $paletteTable) {
-            $paletteTable = $this->fieldPaletteTable;
-        }
-
-        if (!\is_array($fields)) {
-            return $extract;
-        }
-
-        foreach ($fields as $name => $field) {
-            if (!isset($field['inputType']) || 'fieldpalette' !== $field['inputType']) {
-                continue;
-            }
-
-            if (!isset($field['fieldpalette']['config']['table'])) {
-                $paletteTable = $this->fieldPaletteTable;
-            }
-
-            if (isset($field['fieldpalette']['config']['table']) && $field['fieldpalette']['config']['table'] !== $paletteTable) {
-                $paletteTable = $field['fieldpalette']['config']['table'];
-
-                $this->framework->getAdapter(Controller::class)->loadDataContainer($paletteTable);
-
-                if (!isset($GLOBALS['TL_DCA'][$paletteTable])) {
-                    throw new \Exception('Custom fieldpalette table '.$paletteTable.' does not exist.');
-                }
-            }
-
-            $extract[$paletteTable] = array_merge(
-                isset($extract[$paletteTable]) && \is_array($extract[$paletteTable]) ? $extract[$paletteTable] : [],
-                isset($field['fieldpalette']['fields']) && \is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []
-            );
-
-            $extract = array_merge_recursive($extract, $this->extractFieldPaletteFields($table, isset($field['fieldpalette']['fields']) && \is_array($field['fieldpalette']['fields']) ? $field['fieldpalette']['fields'] : []));
-        }
-
-        return $extract;
-    }
-
-    /**
      * @param string|null $act
      * @param string|null $parentTable
      *
@@ -167,6 +118,9 @@ class DcaHandler
                 }
 
                 list($strRootTable, $varPalette) = $this->getParentTable($objModel, $objModel->id);
+                if (empty($objModel->ptable) && $objModel->tstamp === 0) {
+                    $objModel->ptable = $parentTable;
+                }
                 $parentTable = $objModel->ptable;
 
                 // set back link from request
@@ -197,7 +151,11 @@ class DcaHandler
     {
         $parentTable = $this->getParentTableFromRequest();
 
-        list($palette, $rootTable, $parentTable) = $this->loadDynamicPaletteByParentTable($this->framework->getAdapter(Input::class)->get('act'), $table, $parentTable);
+        list($palette, $rootTable, $parentTable) = $this->loadDynamicPaletteByParentTable(
+            $this->framework->getAdapter(Input::class)->get('act'),
+            $table,
+            $parentTable
+        );
 
         if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$parentTable || !$palette) {
             return false;
@@ -221,6 +179,8 @@ class DcaHandler
 
         // nested palette
         if (\is_array($palette)) {
+
+
             $arrNestedPalette = $this->findNestedFieldPaletteFields($palette, $fields);
 
             if (false !== $arrNestedPalette) {

@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [DEV] - 2023-04-06
+- Changed: refactored logic to load fieldpalette fields from dca and add to database
+- Removed: huh.fieldpalette.listener.callback service alias
+
 ## [0.6.18] - 2023-12-22
 - Fixed: php8 syntax incompatible with php7
 

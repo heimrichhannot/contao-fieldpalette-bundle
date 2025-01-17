@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2022 Heimrich & Hannot GmbH
+ * Copyright (c) 2023 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -10,14 +10,13 @@ namespace HeimrichHannot\FieldpaletteBundle\Dca;
 
 use Contao\Controller;
 use Contao\DC_Table;
+use HeimrichHannot\FieldpaletteBundle\EventListener\Callback\BaseDcaListener;
 use HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener;
 
 class DcaGenerator
 {
     public static function generateFieldpaletteBaseDca(): array
     {
-        Controller::loadLanguageFile('tl_fieldpalette');
-
         return [
             'config' => [
                 'dataContainer' => DC_Table::class,
@@ -27,7 +26,7 @@ class DcaGenerator
                 'enableVersioning' => true,
                 'notCopyable' => true,
                 'onload_callback' => [
-                    'setDateAdded' => ['huh.utils.dca', 'setDateAdded', true],
+                    [BaseDcaListener::class, 'onLoadCallback'],
                     'setReferrerOnSaveAndClose' => [CallbackListener::class, 'setReferrerOnSaveAndClose'],
                 ],
                 'sql' => [
@@ -37,7 +36,7 @@ class DcaGenerator
                     ],
                 ],
                 'oncreate_callback' => [
-                    [CallbackListener::class, 'setTable'],
+                    [BaseDcaListener::class, 'onConfigCreateCallback'],
                 ],
                 'onsubmit_callback' => [
                     [CallbackListener::class, 'updateParentFieldOnSubmit'],
@@ -46,7 +45,7 @@ class DcaGenerator
                     [CallbackListener::class, 'updateParentFieldOnCut'],
                 ],
                 'ondelete_callback' => [
-                    [CallbackListener::class, 'updateParentFieldonDelete'],
+                    [CallbackListener::class, 'updateParentFieldOnDelete'],
                 ],
             ],
 
@@ -59,25 +58,25 @@ class DcaGenerator
                     'edit' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['edit'],
                         'href' => 'act=edit',
-                        'icon' => 'edit.gif',
+                        'icon' => 'edit.svg',
                     ],
                     'delete' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['delete'],
                         'href' => 'act=delete',
-                        'icon' => 'delete.gif',
+                        'icon' => 'delete.svg',
                         'attributes' => 'onclick="if(!confirm(\''.($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? null)
                             .'\'))return false;FieldPaletteBackend.deleteFieldPaletteEntry(this,%s);return false;"',
                     ],
                     'toggle' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['toggle'],
-                        'icon' => 'visible.gif',
+                        'icon' => 'visible.svg',
                         'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
                         'button_callback' => [CallbackListener::class, 'toggleIcon'],
                     ],
                     'show' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['show'],
                         'href' => 'act=show',
-                        'icon' => 'show.gif',
+                        'icon' => 'show.svg',
                     ],
                 ],
                 'sorting' => [

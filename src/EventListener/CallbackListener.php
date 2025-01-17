@@ -31,8 +31,6 @@ use HeimrichHannot\UtilsBundle\Util\Utils;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Terminal42\DcMultilingualBundle\Model\Multilingual;
-use Terminal42\DcMultilingualBundle\Model\MultilingualTrait;
 
 class CallbackListener
 {
@@ -87,46 +85,6 @@ class CallbackListener
         $this->logger = $logger;
         $this->utils = $utils;
         $this->connection = $connection;
-    }
-
-    /**
-     * @param $insertID
-     * @param $set
-     *
-     * @return bool
-     */
-    public function setTable(string $table, int $insertID, array $set)
-    {
-        $this->framework->getAdapter(Controller::class)->loadDataContainer($table);
-
-        if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette'])) {
-            return false;
-        }
-        $fieldPalette = $this->dcaHandler->getPaletteFromRequest();
-
-        if (!$model = $this->modelManager->createModelByTable($table)) {
-            return false;
-        }
-        $parentModel = $model->findByPk($insertID);
-        if (!$parentModel) {
-            return false;
-        }
-
-        // if are within nested fieldpalettes set parent item tstamp
-        if (isset($set['ptable']) && 'tl_fieldpalette' === $set['ptable']) {
-            $parent = $parentModel->findByPk($parentModel->pid);
-
-            if (null !== $parent) {
-                $parent->tstamp = time();
-                $parent->save();
-            }
-        }
-
-        // set fieldpalette field
-        $parentModel->pfield = $fieldPalette;
-        $parentModel->save();
-
-        return true;
     }
 
     /**

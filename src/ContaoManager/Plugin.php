@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2020 Heimrich & Hannot GmbH
+ * Copyright (c) 2023 Heimrich & Hannot GmbH
  *
  * @license LGPL-3.0-or-later
  */
@@ -20,16 +20,13 @@ class Plugin implements BundlePluginInterface
     /**
      * Gets a list of autoload configurations for this bundle.
      *
-     * @param ParserInterface $parser
-     *
      * @return ConfigInterface[]
      */
-    public function getBundles(ParserInterface $parser)
+    public function getBundles(ParserInterface $parser): array
     {
         return [
             BundleConfig::create(HeimrichHannotContaoFieldpaletteBundle::class)->setLoadAfter([
                 ContaoCoreBundle::class,
-                'fieldpalette',
             ]),
         ];
     }
