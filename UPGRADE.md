@@ -1,6 +1,9 @@
 # UPGRADE GUIDE
 
-## From module to 1.0
+## To 0.7
+Update your custom dca to use [DcaGenerator.php](src/Dca/DcaGenerator.php instead of defining the complete dca on your own.
+
+## From module
 
 ### Namespaces
 Namespaced now respect PSR-4. 
