@@ -33,8 +33,8 @@ $dca['fields'] = array_merge($dca['fields'], $fields);
 
 Then add the following fieldpalette input to your parent table (e.g. `tl_member`).
 
-```
-// src/Ressources/contao/dca/tl_member.php
+```php
+# contao/dca/tl_member.php
 
 $dca = &$GLOBALS['TL_DCA']['tl_member'];
 
@@ -47,7 +47,6 @@ $dca['palettes']['default'] = str_replace('country', 'country,additionalAddresse
 * Adjust fields
 */
 $dca['fields']['additionalAddresses'] = [
-    'label'        => &$GLOBALS['TL_LANG']['tl_member']['additionalAddresses'],
     'inputType'    => 'fieldpalette',
     'foreignKey'   => 'tl_member_address.id',
     'relation'     => ['type' => 'hasMany', 'load' => 'eager'],
@@ -68,5 +67,4 @@ $dca['fields']['additionalAddresses'] = [
         ],
     ],
 ];
-
 ```
