@@ -69,10 +69,9 @@ class DcaGenerator
                     ],
                     'toggle' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['toggle'],
-                        'href' => 'act=toggle&amp;field=published',
                         'icon' => 'visible.svg',
-//                        'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
-//                        'button_callback' => [CallbackListener::class, 'toggleIcon'],
+                        'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
+                        'button_callback' => [CallbackListener::class, 'toggleIcon'],
                     ],
                     'show' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['show'],
@@ -118,7 +117,6 @@ class DcaGenerator
                     'sql' => "int(10) unsigned NOT NULL default '0'",
                 ],
                 'published' => [
-                    'toggle' => true,
                     'exclude' => true,
                     'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['published'],
                     'inputType' => 'checkbox',

@@ -158,6 +158,107 @@ class CallbackListener
         }
     }
 
+    /**
+     * Return the "toggle visibility" button.
+     *
+     * @return string
+     */
+    public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table)
+    {
+        $tid = $this->framework->getAdapter(Input::class)->get('tid');
+        if ($tid) {
+            $this->toggleVisibility($tid, ('1' === $this->framework->getAdapter(Input::class)->get('state')), (@func_get_arg(12) ?: null));
+            $this->framework->getAdapter(Controller::class)->redirect(
+                $this->framework->getAdapter(System::class)->getReferer()
+            );
+        }
+
+        /** @var BackendUser $user */
+        $user = $this->framework->createInstance(BackendUser::class);
+
+        // Check permissions AFTER checking the tid, so hacking attempts are logged
+        if (!$user->hasAccess($table.'::published', 'alexf')) {
+            return '';
+        }
+
+        $href = $this->urlUtil->addQueryString('tid='.$row['id'], $href);
+        $href = $this->urlUtil->addQueryString('state='.($row['published'] ? '' : 1), $href);
+
+        if (!$row['published']) {
+            $icon = 'invisible.gif';
+        }
+
+        $image = $this->framework->getAdapter(Image::class)->getHtml(
+            $icon,
+            $label,
+            'data-state="'.($row['published'] ? 1 : 0).'"'
+        );
+
+        return '<a href="'.$href.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$image.'</a> ';
+    }
+
+    /**
+     * Disable/enable a user group.
+     *
+     * @param DataContainer $dc
+     */
+    public function toggleVisibility(int $id, bool $visible, DataContainer $dc = null)
+    {
+        // Set the ID and action
+        $this->framework->getAdapter(Input::class)->setGet('id', $id);
+        $this->framework->getAdapter(Input::class)->setGet('act', 'toggle');
+
+        if ($dc) {
+            $dc->id = $id; // see #8043
+        }
+
+        /** @var BackendUser $user */
+        $user = $this->framework->createInstance(BackendUser::class);
+
+        // Check the field access
+        if (!$user->hasAccess($dc->table.'::published', 'alexf')) {
+            $this->logger->log(
+                LogLevel::ERROR,
+                'Not enough permissions to publish/unpublish fieldpalette item ID "'.$id.'"',
+                ['contao' => new ContaoContext(__METHOD__, TL_ERROR)]
+            );
+            $this->framework->getAdapter(Controller::class)
+                ->redirect($this->utils->routing()->generateBackendRoute(['act' => 'error'], false, false));
+        }
+
+        $objVersions = $this->framework->createInstance(Versions::class, [$dc->table, $id]);
+        $objVersions->initialize();
+
+        // Trigger the save_callback
+        if (\is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'])) {
+            foreach ($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'] as $callback) {
+                if (\is_array($callback)) {
+                    $this->framework->getAdapter(System::class)->importStatic($callback[0])->{$callback[1]}($visible, ($dc ?: $this));
+                } elseif (\is_callable($callback)) {
+                    $visible = $callback($visible, ($dc ?: $this));
+                }
+            }
+        }
+
+        // Update the database
+        $this->framework->createInstance(Database::class)->prepare(
+            'UPDATE '.$dc->table.' SET tstamp='.time().", published='".($visible ? '1' : '')."' WHERE id=?"
+        )->execute($id);
+
+        $objVersions->create();
+
+        $parentEntries = '';
+        if ($record = $dc->activeRecord) {
+            $parentEntries = '(parent records: '.$record->ptable.'.id='.$record->pid.')';
+        }
+
+        $this->logger->log(
+            LogLevel::INFO,
+            'A new version of record "'.$dc->table.'.id='.$id.'" has been created'.$parentEntries,
+            ['contao' => new ContaoContext(__METHOD__, TL_GENERAL)]
+        );
+    }
+
     public function updateParentFieldOnSubmit(DataContainer $dc)
     {
         $currentRecord = $this->modelManager->createModel()->findByPk($dc->id);
