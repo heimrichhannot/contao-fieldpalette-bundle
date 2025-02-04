@@ -28,14 +28,12 @@
         "heimrichhannot/datatables-additional": "^1.0"
     },
     "require-dev": {
-        "contao/test-case": "^1.1",
-        "contao/manager-plugin": "^2.0",
-        "friendsofphp/php-cs-fixer": "^2.2",
-        "phpunit/phpunit": ">=6.0 <6.5",
-        "php-http/guzzle6-adapter": "^1.0",
-        "php-http/message-factory": "^1.0.2",
-        "php-coveralls/php-coveralls": "^2.0",
-        "symfony/phpunit-bridge": "^3.2"
+        "rector/rector": "^1.2",
+        "contao/contao-rector": "dev-main",
+        "symplify/easy-coding-standard": "^12.5",
+        "phpstan/phpstan": "^1.12",
+        "phpstan/phpstan-symfony": "^1.4",
+        "contao/manager-plugin": "^2.13"
     },
     "replace": {
         "heimrichhannot/contao-fieldpalette": "*"

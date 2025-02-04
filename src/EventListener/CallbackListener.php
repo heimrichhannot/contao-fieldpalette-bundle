@@ -91,7 +91,7 @@ class CallbackListener
      * Use this method as an oncopy_callback.
      * Support recursive copying fieldpalette records by copying their parent record.
      */
-    public function copyFieldPaletteRecords(int $newId)
+    public function copyFieldPaletteRecords(int $newId): void
     {
         if (!$this->utils->container()->isBackend()) {
             return;
@@ -111,7 +111,7 @@ class CallbackListener
         $this->dcaHandler->recursivelyCopyFieldPaletteRecords($id, $newId, $table, $dcaFields);
     }
 
-    public function setReferrerOnSaveAndClose(DataContainer $dc)
+    public function setReferrerOnSaveAndClose(DataContainer $dc): void
     {
         if (!isset($_POST['saveNclose'])) {
             return;
@@ -200,7 +200,7 @@ class CallbackListener
      *
      * @param DataContainer $dc
      */
-    public function toggleVisibility(int $id, bool $visible, DataContainer $dc = null)
+    public function toggleVisibility(int $id, bool $visible, DataContainer $dc = null): void
     {
         // Set the ID and action
         $this->framework->getAdapter(Input::class)->setGet('id', $id);
@@ -218,7 +218,7 @@ class CallbackListener
             $this->logger->log(
                 LogLevel::ERROR,
                 'Not enough permissions to publish/unpublish fieldpalette item ID "'.$id.'"',
-                ['contao' => new ContaoContext(__METHOD__, TL_ERROR)]
+                ['contao' => new ContaoContext(__METHOD__, ContaoContext::ERROR)]
             );
             $this->framework->getAdapter(Controller::class)
                 ->redirect($this->utils->routing()->generateBackendRoute(['act' => 'error'], false, false));
@@ -253,7 +253,7 @@ class CallbackListener
         $this->logger->log(
             LogLevel::INFO,
             'A new version of record "'.$dc->table.'.id='.$id.'" has been created'.$parentEntries,
-            ['contao' => new ContaoContext(__METHOD__, TL_GENERAL)]
+            ['contao' => new ContaoContext(__METHOD__, ContaoContext::GENERAL)]
         );
     }
 

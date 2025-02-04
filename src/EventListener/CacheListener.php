@@ -33,12 +33,12 @@ class CacheListener implements CacheClearerInterface, CacheWarmerInterface
         return true;
     }
 
-    public function warmUp($cacheDir)
+    public function warmUp($cacheDir): void
     {
         $this->registry->refresh();
     }
 
-    public function clear($cacheDir)
+    public function clear($cacheDir): void
     {
         $cache = new TagAwareAdapter(new FilesystemAdapter($this->registry::CACHE_REGISTRY));
         $cache->clear();

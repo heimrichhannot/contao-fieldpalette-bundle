@@ -64,7 +64,7 @@ class FieldPaletteModel extends Model
 
         // support custom fieldpalette entities without having its own model
         if (!isset($GLOBALS['TL_MODELS'][$table])) {
-            $GLOBALS['TL_MODELS'][$table] = __CLASS__;
+            $GLOBALS['TL_MODELS'][$table] = self::class;
         }
 
         return $this;
@@ -211,7 +211,7 @@ class FieldPaletteModel extends Model
     public function findPublishedBy(array $columns = [], array $values = [], array $options = [])
     {
         $t = static::$strTable;
-        if (!BE_USER_LOGGED_IN) {
+        if (!System::getContainer()->get('contao.security.token_checker')->isPreviewMode()) {
             $time = Date::floorToMinute();
             $columns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time + 60)."') AND $t.published='1'";
         }

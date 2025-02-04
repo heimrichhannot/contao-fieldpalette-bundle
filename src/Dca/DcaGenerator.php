@@ -8,7 +8,6 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Dca;
 
-use Contao\Controller;
 use Contao\DC_Table;
 use HeimrichHannot\FieldpaletteBundle\EventListener\Callback\BaseDcaListener;
 use HeimrichHannot\FieldpaletteBundle\EventListener\CallbackListener;

@@ -8,6 +8,7 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Widget;
 
+use HeimrichHannot\FieldpaletteBundle\Element\ButtonElement;
 use Contao\Controller;
 use Contao\Database;
 use Contao\DC_Table;
@@ -59,7 +60,7 @@ class FieldPaletteWizard extends Widget
      */
     protected $paletteTable;
     /**
-     * @var \HeimrichHannot\FieldpaletteBundle\Element\ButtonElement|object
+     * @var ButtonElement|object
      */
     protected $buttonGenerator;
 
@@ -283,7 +284,7 @@ class FieldPaletteWizard extends Widget
         }
 
         $label = vsprintf(
-            ((isset($this->dca['list']['label']['format'])) ? $this->dca['list']['label']['format'] : '%s'),
+            ($this->dca['list']['label']['format'] ?? '%s'),
             $args
         );
 
@@ -361,7 +362,7 @@ class FieldPaletteWizard extends Widget
             $value = \is_array($value) ? $value : [$value];
             $id = StringUtil::specialchars(rawurldecode($rowModel->id));
 
-            $label = isset($value['label']) ? (\is_string($value['label']) ? $value['label'] : (isset($value['label'][0]) ? $value['label'][0] : $key)) : $key;
+            $label = isset($value['label']) ? (\is_string($value['label']) ? $value['label'] : ($value['label'][0] ?? $key)) : $key;
 
             $title = sprintf($label, $id);
 
@@ -433,8 +434,8 @@ class FieldPaletteWizard extends Widget
             $controller = $framework->getAdapter(Controller::class);
 
             foreach ($arrDirections as $dir) {
-                $label = isset($GLOBALS['TL_LANG'][$defaultTable][$dir][0]) ? $GLOBALS['TL_LANG'][$defaultTable][$dir][0] : $dir;
-                $title = isset($GLOBALS['TL_LANG'][$defaultTable][$dir][1]) ? $GLOBALS['TL_LANG'][$defaultTable][$dir][1] : $dir;
+                $label = $GLOBALS['TL_LANG'][$defaultTable][$dir][0] ?? $dir;
+                $title = $GLOBALS['TL_LANG'][$defaultTable][$dir][1] ?? $dir;
 
                 $label = $image->getHtml($dir.'.gif', $label);
                 $href = $value['href'] ?: '&amp;act=move';
@@ -523,10 +524,10 @@ class FieldPaletteWizard extends Widget
         $system = $framework->getAdapter(System::class);
 
         $reload = false;
-        $ptable = isset($this->dca['config']['ptable']) ? $this->dca['config']['ptable'] : null;
-        $ctable = isset($this->dca['config']['ctable']) ? $this->dca['config']['ctable'] : null;
+        $ptable = $this->dca['config']['ptable'] ?? null;
+        $ctable = $this->dca['config']['ctable'] ?? null;
 
-        $new_records = $container->get('session')->get('new_records') ?: null;
+        $new_records = System::getContainer()->get('request_stack')->getSession()->get('new_records') ?: null;
 
         // HOOK: add custom logic
         if (isset($GLOBALS['TL_HOOKS']['reviseTable']) && \is_array($GLOBALS['TL_HOOKS']['reviseTable'])) {
@@ -612,7 +613,7 @@ class FieldPaletteWizard extends Widget
 
         // Reload the page
         if ($reload) {
-            if ($environment->get('isAjaxRequest')) {
+            if (Environment::get('isAjaxRequest')) {
                 return true;
             }
 

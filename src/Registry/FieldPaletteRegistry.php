@@ -37,7 +37,7 @@ class FieldPaletteRegistry
         $this->cache = $cache;
     }
 
-    public function set(string $table, string $field, array $dca)
+    public function set(string $table, string $field, array $dca): void
     {
         $this->registriy[$table][$field] = $dca;
     }

@@ -9,7 +9,6 @@
 namespace HeimrichHannot\FieldpaletteBundle\DcaHelper;
 
 use Contao\BackendUser;
-use Contao\Config;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\Input;
@@ -97,7 +96,7 @@ class DcaHandler
                     $objParent = $this->modelManager->createModelByTable($parentTable)->findByPk($intPid);
 
                     if (null !== $objParent) {
-                        list($strRootTable, $varPalette) = $this->getParentTable($objParent, $objParent->id);
+                        [$strRootTable, $varPalette] = $this->getParentTable($objParent, $objParent->id);
                     }
                 }
 
@@ -117,7 +116,7 @@ class DcaHandler
                     break;
                 }
 
-                list($strRootTable, $varPalette) = $this->getParentTable($objModel, $objModel->id);
+                [$strRootTable, $varPalette] = $this->getParentTable($objModel, $objModel->id);
                 if (empty($objModel->ptable) && $objModel->tstamp === 0) {
                     $objModel->ptable = $parentTable;
                 }
@@ -151,7 +150,7 @@ class DcaHandler
     {
         $parentTable = $this->getParentTableFromRequest();
 
-        list($palette, $rootTable, $parentTable) = $this->loadDynamicPaletteByParentTable(
+        [$palette, $rootTable, $parentTable] = $this->loadDynamicPaletteByParentTable(
             $this->framework->getAdapter(Input::class)->get('act'),
             $table,
             $parentTable
@@ -427,7 +426,7 @@ class DcaHandler
         return $data;
     }
 
-    public function refuseFromBackendModuleByTable(string $table)
+    public function refuseFromBackendModuleByTable(string $table): void
     {
         foreach ($GLOBALS['BE_MOD'] as $strGroup => $arrGroup) {
             if (!\is_array($arrGroup)) {
@@ -456,7 +455,7 @@ class DcaHandler
      * @param string $table     The parent table
      * @param array  $dcaFields A dca array of fields
      */
-    public function recursivelyCopyFieldPaletteRecords(int $pid, int $newId, string $table, array $dcaFields)
+    public function recursivelyCopyFieldPaletteRecords(int $pid, int $newId, string $table, array $dcaFields): void
     {
         foreach ($dcaFields as $field => $fieldData) {
             if ('fieldpalette' === $fieldData['inputType']) {

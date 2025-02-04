@@ -8,6 +8,7 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Element;
 
+use Contao\StringUtil;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
@@ -119,7 +120,7 @@ class ButtonElement
         );
     }
 
-    public function setType($strType)
+    public function setType($strType): void
     {
         $this->act = $strType;
         $this->cssClass = $strType;
@@ -203,7 +204,7 @@ class ButtonElement
             $parameter['popup'] = 1;
             $this->options['attributes']['onclick'] =
                 'onclick="FieldPaletteBackend.openModalIframe({\'action\':\''.DcaHandler::FieldpaletteRefreshAction.'\',\'syncId\':\''.$this->syncId
-                .'\',\'width\':768,\'title\':\''.specialchars(sprintf($this->modalTitle, $this->id)).'\',\'url\':this.href});return false;"';
+                .'\',\'width\':768,\'title\':\''.StringUtil::specialchars(sprintf($this->modalTitle, $this->id)).'\',\'url\':this.href});return false;"';
         }
 
         // TODO: DC_TABLE : 2097 - catch POST and Cookie from saveNClose and do not redirect and just close modal
