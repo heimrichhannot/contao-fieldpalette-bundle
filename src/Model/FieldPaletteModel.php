@@ -15,29 +15,29 @@ use Contao\Model\Collection;
 use Contao\System;
 
 /**
- * @property int $id
- * @property int $pid
+ * @property int    $id
+ * @property int    $pid
  * @property string $ptable
- * @property int $tstamp
+ * @property int    $tstamp
  *
- * @method static FieldPaletteModel|null findById($id, $opt = [])
- * @method static FieldPaletteModel|null findByPk($id, $opt = [])
- * @method static FieldPaletteModel|null findByIdOrAlias($val, $opt = [])
- * @method static FieldPaletteModel|null findOneBy($col, $val, $opt = [])
- * @method static FieldPaletteModel|null findOneByPid($val, $opt = [])
- * @method static FieldPaletteModel|null findOneByTstamp($val, $opt = [])
+ * @method static FieldPaletteModel|null            findById($id, $opt = [])
+ * @method static FieldPaletteModel|null            findByPk($id, $opt = [])
+ * @method static FieldPaletteModel|null            findByIdOrAlias($val, $opt = [])
+ * @method static FieldPaletteModel|null            findOneBy($col, $val, $opt = [])
+ * @method static FieldPaletteModel|null            findOneByPid($val, $opt = [])
+ * @method static FieldPaletteModel|null            findOneByTstamp($val, $opt = [])
  * @method static Collection|FieldPaletteModel|null findByPid($val, $opt = [])
  * @method static Collection|FieldPaletteModel|null findByTstamp($val, $opt = [])
  * @method static Collection|FieldPaletteModel|null findMultipleByIds($val, $opt = [])
  * @method static Collection|FieldPaletteModel|null findBy($col, $val, $opt = [])
  * @method static Collection|FieldPaletteModel|null findAll($opt = [])
- * @method static integer countById($id, $opt = [])
- * @method static integer countByPid($val, $opt = [])
- * @method static integer countByTstamp($val, $opt = [])
+ * @method static integer                           countById($id, $opt = [])
+ * @method static integer                           countByPid($val, $opt = [])
+ * @method static integer                           countByTstamp($val, $opt = [])
  */
 class FieldPaletteModel extends Model
 {
-    const TABLE = 'tl_fieldpalette';
+    public const TABLE = 'tl_fieldpalette';
 
     protected static $strTable = self::TABLE;
 
@@ -72,10 +72,6 @@ class FieldPaletteModel extends Model
 
     /**
      * Check if instance has the correct table.
-     *
-     * @param string $table
-     *
-     * @return bool
      */
     public function hasTable(string $table = self::TABLE): bool
     {
@@ -104,7 +100,7 @@ class FieldPaletteModel extends Model
             return null;
         }
 
-        $columns[] = "$t.id IN(".implode(',', array_map('intval', $fieldpaletteIds)).')';
+        $columns[] = "$t.id IN(" . implode(',', array_map('intval', $fieldpaletteIds)) . ')';
 
         if (!isset($options['order'])) {
             $options['order'] = "$t.sorting";
@@ -160,13 +156,13 @@ class FieldPaletteModel extends Model
 
         $t = static::$strTable;
 
-        $columns[] = "$t.pid IN(".implode(',', array_map('intval', $pids)).')';
+        $columns[] = "$t.pid IN(" . implode(',', array_map('intval', $pids)) . ')';
 
         $columns[] = "$t.ptable=? AND $t.pfield=?";
         $values = array_merge($values, [$parentTable, $parentField]);
 
         if (!isset($options['order'])) {
-            $options['order'] = "FIELD($t.pid, ".implode(',', array_map('intval', $pids))."), $t.sorting";
+            $options['order'] = "FIELD($t.pid, " . implode(',', array_map('intval', $pids)) . "), $t.sorting";
         }
 
         return $this->findPublishedBy($columns, $values, $options);
@@ -202,10 +198,6 @@ class FieldPaletteModel extends Model
     }
 
     /**
-     * @param array $columns
-     * @param array $values
-     * @param array $options
-     *
      * @return Collection|FieldPaletteModel|null
      */
     public function findPublishedBy(array $columns = [], array $values = [], array $options = [])
@@ -213,7 +205,7 @@ class FieldPaletteModel extends Model
         $t = static::$strTable;
         if (!System::getContainer()->get('contao.security.token_checker')->isPreviewMode()) {
             $time = Date::floorToMinute();
-            $columns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time + 60)."') AND $t.published='1'";
+            $columns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'" . ($time + 60) . "') AND $t.published='1'";
         }
 
         return $this->dynamicFindBy($columns, $values, $options);
@@ -221,10 +213,6 @@ class FieldPaletteModel extends Model
 
     /**
      * Helper method to make findBy testable.
-     *
-     * @param mixed $columns
-     * @param mixed $values
-     * @param array $options
      *
      * @return Collection|FieldPaletteModel|null
      *

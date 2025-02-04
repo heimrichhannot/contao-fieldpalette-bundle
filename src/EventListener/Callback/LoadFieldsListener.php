@@ -16,7 +16,7 @@ use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 class LoadFieldsListener
 {
     private FieldPaletteRegistry $registry;
-    private DcaHandler           $dcaHandler;
+    private DcaHandler $dcaHandler;
 
     public function __construct(FieldPaletteRegistry $registry, DcaHandler $dcaHandler)
     {
@@ -24,7 +24,7 @@ class LoadFieldsListener
         $this->dcaHandler = $dcaHandler;
     }
 
-    public function onLoadCallback(DataContainer $dc = null): void
+    public function onLoadCallback(?DataContainer $dc = null): void
     {
         $table = $dc->table;
         if (!$dc || !$table || !$this->registry->hasTargetFields($table)) {
@@ -38,7 +38,7 @@ class LoadFieldsListener
             return;
         }
 
-        $fields = array_filter($fields, fn($field): bool => $field['sourceTable'] === $ptable);
+        $fields = array_filter($fields, fn ($field): bool => $field['sourceTable'] === $ptable);
 
         foreach ($fields as $field) {
             $fieldData = $this->registry->getFieldData($field);

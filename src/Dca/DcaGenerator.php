@@ -62,8 +62,8 @@ class DcaGenerator
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['delete'],
                         'href' => 'act=delete',
                         'icon' => 'delete.svg',
-                        'attributes' => 'onclick="if(!confirm(\''.($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? null)
-                            .'\'))return false;FieldPaletteBackend.deleteFieldPaletteEntry(this,%s);return false;"',
+                        'attributes' => 'onclick="if(!confirm(\'' . ($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? null)
+                            . '\'))return false;FieldPaletteBackend.deleteFieldPaletteEntry(this,%s);return false;"',
                     ],
                     'toggle' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['toggle'],
@@ -111,28 +111,42 @@ class DcaGenerator
                     'label' => &$GLOBALS['TL_LANG']['MSC']['dateAdded'],
                     'sorting' => true,
                     'flag' => 6,
-                    'eval' => ['rgxp' => 'datim', 'doNotCopy' => true],
+                    'eval' => [
+                        'rgxp' => 'datim',
+                        'doNotCopy' => true,
+                    ],
                     'sql' => "int(10) unsigned NOT NULL default '0'",
                 ],
                 'published' => [
                     'exclude' => true,
                     'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['published'],
                     'inputType' => 'checkbox',
-                    'eval' => ['submitOnChange' => true, 'doNotCopy' => true],
+                    'eval' => [
+                        'submitOnChange' => true,
+                        'doNotCopy' => true,
+                    ],
                     'sql' => "char(1) NOT NULL default ''",
                 ],
                 'start' => [
                     'exclude' => true,
                     'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['start'],
                     'inputType' => 'text',
-                    'eval' => ['rgxp' => 'datim', 'datepicker' => true, 'tl_class' => 'w50 wizard'],
+                    'eval' => [
+                        'rgxp' => 'datim',
+                        'datepicker' => true,
+                        'tl_class' => 'w50 wizard',
+                    ],
                     'sql' => "varchar(10) NOT NULL default ''",
                 ],
                 'stop' => [
                     'exclude' => true,
                     'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['stop'],
                     'inputType' => 'text',
-                    'eval' => ['rgxp' => 'datim', 'datepicker' => true, 'tl_class' => 'w50 wizard'],
+                    'eval' => [
+                        'rgxp' => 'datim',
+                        'datepicker' => true,
+                        'tl_class' => 'w50 wizard',
+                    ],
                     'sql' => "varchar(10) NOT NULL default ''",
                 ],
             ],

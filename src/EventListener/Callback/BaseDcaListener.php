@@ -30,15 +30,14 @@ class BaseDcaListener
     public function __construct(
         FieldPaletteModelManager $modelManager,
         Security $security,
-        Utils $utils
-    )
-    {
+        Utils $utils,
+    ) {
         $this->modelManager = $modelManager;
         $this->security = $security;
         $this->utils = $utils;
     }
 
-    public function onLoadCallback(DataContainer $dc = null): void
+    public function onLoadCallback(?DataContainer $dc = null): void
     {
         Controller::loadLanguageFile('tl_fieldpalette');
         $this->setDateAdded($dc);
@@ -99,27 +98,27 @@ class BaseDcaListener
         $tid = Input::get('tid');
 
         if ($tid) {
-            $this->toggleVisibility($tid, ('1' === Input::get('state')), (@func_get_arg(12) ?: null));
+            $this->toggleVisibility($tid, '1' === Input::get('state'), @func_get_arg(12) ?: null);
             Controller::redirect(Controller::getReferer());
         }
 
-        if (!$this->security->isGranted('contao_user.alexf', $table.'::published')) {
+        if (!$this->security->isGranted('contao_user.alexf', $table . '::published')) {
             return '';
         }
 
-        $this->utils->url()->addQueryStringParameterToUrl('tid='.$row['id'], $href);
-        $this->utils->url()->addQueryStringParameterToUrl('state='.($row['published'] ? '' : 1), $href);
+        $this->utils->url()->addQueryStringParameterToUrl('tid=' . $row['id'], $href);
+        $this->utils->url()->addQueryStringParameterToUrl('state=' . ($row['published'] ? '' : 1), $href);
 
         if (!$row['published']) {
             $icon = 'invisible.svg';
         }
 
-        $image = Image::getHtml($icon, $label, 'data-state="'.($row['published'] ? 1 : 0).'"');
+        $image = Image::getHtml($icon, $label, 'data-state="' . ($row['published'] ? 1 : 0) . '"');
 
-        return '<a href="'.$href.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$image.'</a> ';
+        return '<a href="' . $href . '" title="' . StringUtil::specialchars($title) . '"' . $attributes . '>' . $image . '</a> ';
     }
 
-    private function toggleVisibility(int $id, bool $visible, DataContainer $dc = null): void
+    private function toggleVisibility(int $id, bool $visible, ?DataContainer $dc = null): void
     {
         Input::setGet('id', $id);
         Input::setGet('act', 'toggle');
@@ -128,13 +127,15 @@ class BaseDcaListener
             $dc->id = $id; // see #8043
         }
 
-        if (!$this->security->isGranted('contao_user.alexf', $dc->table.'::published')) {
+        if (!$this->security->isGranted('contao_user.alexf', $dc->table . '::published')) {
             $this->utils->container()->log(
-                'Not enough permissions to publish/unpublish fieldpalette item ID "'.$id.'"',
+                'Not enough permissions to publish/unpublish fieldpalette item ID "' . $id . '"',
                 __METHOD__,
                 ContaoContext::ERROR
             );
-            Controller::redirect($this->utils->routing()->generateBackendRoute(['act' => 'error'], false, false));
+            Controller::redirect($this->utils->routing()->generateBackendRoute([
+                'act' => 'error',
+            ], false, false));
         }
 
         $objVersions = new Versions($dc->table, $id);
@@ -143,23 +144,23 @@ class BaseDcaListener
         // Trigger the save_callback
         if (\is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'])) {
             foreach ($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'] as $callback) {
-                $visible = $this->utils->dca()->executeCallback($callback, $visible, ($dc ?: $this));
+                $visible = $this->utils->dca()->executeCallback($callback, $visible, $dc ?: $this);
             }
         }
 
         Database::getInstance()
-            ->prepare('UPDATE '.$dc->table.' SET tstamp='.time().", published='".($visible ? '1' : '')."' WHERE id=?")
+            ->prepare('UPDATE ' . $dc->table . ' SET tstamp=' . time() . ", published='" . ($visible ? '1' : '') . "' WHERE id=?")
             ->execute($id);
 
         $objVersions->create();
 
         $parentEntries = '';
         if ($record = $dc->activeRecord) {
-            $parentEntries = '(parent records: '.$record->ptable.'.id='.$record->pid.')';
+            $parentEntries = '(parent records: ' . $record->ptable . '.id=' . $record->pid . ')';
         }
 
         $this->utils->container()->log(
-            'A new version of record "'.$dc->table.'.id='.$id.'" has been created'.$parentEntries,
+            'A new version of record "' . $dc->table . '.id=' . $id . '" has been created' . $parentEntries,
             __METHOD__,
             ContaoContext::GENERAL
         );

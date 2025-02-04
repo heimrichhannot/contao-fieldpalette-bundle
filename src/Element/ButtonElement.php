@@ -8,26 +8,26 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\Element;
 
-use Contao\StringUtil;
 use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\StringUtil;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Routing\RoutingUtil;
 use Twig\Environment;
 
 /**
- * @property mixed $act
+ * @property mixed        $act
  * @property mixed|string $cssClass
- * @property mixed $table
- * @property mixed $syncId
- * @property mixed $do
- * @property mixed $ptable
- * @property mixed $pid
- * @property mixed $modalTitle
- * @property mixed $fieldpaletteKey
- * @property mixed $id
- * @property mixed $fieldpalette
- * @property mixed $popup
+ * @property mixed        $table
+ * @property mixed        $syncId
+ * @property mixed        $do
+ * @property mixed        $ptable
+ * @property mixed        $pid
+ * @property mixed        $modalTitle
+ * @property mixed        $fieldpaletteKey
+ * @property mixed        $id
+ * @property mixed        $fieldpalette
+ * @property mixed        $popup
  */
 class ButtonElement
 {
@@ -47,9 +47,8 @@ class ButtonElement
         string $table,
         Environment $twig,
         RoutingUtil $routeUtil,
-        DcaHandler $dcaHandler
-    )
-    {
+        DcaHandler $dcaHandler,
+    ) {
         $this->framework = $framework;
         $this->defaultTable = $table;
         $this->twig = $twig;
@@ -61,7 +60,6 @@ class ButtonElement
      * Set an object property.
      *
      * @param string $property
-     * @param mixed  $value
      */
     public function __set($property, $value)
     {
@@ -75,8 +73,6 @@ class ButtonElement
      * Return an object property.
      *
      * @param string $property
-     *
-     * @return mixed
      */
     public function __get($property)
     {
@@ -191,7 +187,7 @@ class ButtonElement
         return $this;
     }
 
-    public function getHref()
+    public function getHref(): string
     {
         return $this->generateHref();
     }
@@ -208,8 +204,8 @@ class ButtonElement
         if (isset($parameter['popup']) && $parameter['popup']) {
             $parameter['popup'] = 1;
             $this->options['attributes']['onclick'] =
-                'onclick="FieldPaletteBackend.openModalIframe({\'action\':\''.DcaHandler::FieldpaletteRefreshAction.'\',\'syncId\':\''.$this->syncId
-                .'\',\'width\':768,\'title\':\''.StringUtil::specialchars(sprintf($this->modalTitle, $this->id)).'\',\'url\':this.href});return false;"';
+                'onclick="FieldPaletteBackend.openModalIframe({\'action\':\'' . DcaHandler::FieldpaletteRefreshAction . '\',\'syncId\':\'' . $this->syncId
+                . '\',\'width\':768,\'title\':\'' . StringUtil::specialchars(sprintf($this->modalTitle, $this->id)) . '\',\'url\':this.href});return false;"';
         }
 
         // TODO: DC_TABLE : 2097 - catch POST and Cookie from saveNClose and do not redirect and just close modal
@@ -222,11 +218,7 @@ class ButtonElement
     }
 
     /**
-     * @param $act
-     *
      * @throws \Exception
-     *
-     * @return array
      */
     protected function prepareParameter($act): array
     {
@@ -237,7 +229,7 @@ class ButtonElement
             'act' => $this->act,
             'pid' => $this->pid,
             'id' => $this->id,
-            'nb' => 1, //don't show saveNclose button
+            'nb' => 1, // don't show saveNclose button
             $this->fieldpaletteKey => $this->fieldpalette,
             'popup' => $this->popup,
         ];
@@ -250,8 +242,8 @@ class ButtonElement
 
                 // nested fieldpalettes
                 if (
-                    $this->ptable === $this->defaultTable &&
-                    ($model = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($this->pid))
+                    $this->ptable === $this->defaultTable
+                    && ($model = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($this->pid))
                 ) {
                     $parameters['table'] = $this->dcaHandler->getParentTable($model, $model->id);
                 }

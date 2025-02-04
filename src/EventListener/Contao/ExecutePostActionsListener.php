@@ -48,13 +48,17 @@ class ExecutePostActionsListener
                 }
 
                 $attributes = $this->contaoFramework->getAdapter(Widget::class)
-                    ->getAttributesFromDca($field, $name, ($dc->activeRecord->{$name} ?? null), $name, $dc->table, $dc);
+                    ->getAttributesFromDca($field, $name, $dc->activeRecord->{$name} ?? null, $name, $dc->table, $dc);
 
                 /** @var Widget $widget */
                 $widget = new $class($attributes);
                 $widget->currentRecord = $dc->id;
 
-                $data = ['field' => $name, 'target' => '#ctrl_'.$name, 'content' => $widget->generate()];
+                $data = [
+                    'field' => $name,
+                    'target' => '#ctrl_' . $name,
+                    'content' => $widget->generate(),
+                ];
 
                 if ($widget->submitOnChange) {
                     $data['autoSubmit'] = $dc->table;

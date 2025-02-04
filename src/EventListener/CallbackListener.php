@@ -50,7 +50,7 @@ class CallbackListener
         RequestStack $requestStack,
         UrlUtil $urlUtil,
         LoggerInterface $logger,
-        Connection $connection
+        Connection $connection,
     ) {
         $this->modelManager = $modelManager;
         $this->dcaHandler = $dcaHandler;
@@ -75,7 +75,7 @@ class CallbackListener
         $id = $this->framework->getAdapter(Input::class)->get('id') ?: $dc->currentPid;
         $do = $this->framework->getAdapter(Input::class)->get('do');
 
-        $table = $do ? 'tl_'.$do : null;
+        $table = $do ? 'tl_' . $do : null;
 
         if (!$id || !$table) {
             return;
@@ -89,15 +89,13 @@ class CallbackListener
     /**
      * Return the "toggle visibility" button.
      *
-     * @return string
-     *
      * @deprecated Use BaseDcaListener::onListOperationsToggleButtonCallback instead
      */
     public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table): string
     {
         $tid = $this->framework->getAdapter(Input::class)->get('tid');
         if ($tid) {
-            $this->toggleVisibility($tid, ('1' === $this->framework->getAdapter(Input::class)->get('state')), (@func_get_arg(12) ?: null));
+            $this->toggleVisibility($tid, '1' === $this->framework->getAdapter(Input::class)->get('state'), @func_get_arg(12) ?: null);
             $this->framework->getAdapter(Controller::class)->redirect(
                 $this->framework->getAdapter(System::class)->getReferer()
             );
@@ -107,12 +105,12 @@ class CallbackListener
         $user = $this->framework->createInstance(BackendUser::class);
 
         // Check permissions AFTER checking the tid, so hacking attempts are logged
-        if (!$user->hasAccess($table.'::published', 'alexf')) {
+        if (!$user->hasAccess($table . '::published', 'alexf')) {
             return '';
         }
 
-        $this->utils->url()->addQueryStringParameterToUrl('tid='.$row['id'], $href);
-        $this->utils->url()->addQueryStringParameterToUrl('state='.($row['published'] ? '' : 1), $href);
+        $this->utils->url()->addQueryStringParameterToUrl('tid=' . $row['id'], $href);
+        $this->utils->url()->addQueryStringParameterToUrl('state=' . ($row['published'] ? '' : 1), $href);
 
         if (!$row['published']) {
             $icon = 'invisible.gif';
@@ -121,20 +119,18 @@ class CallbackListener
         $image = $this->framework->getAdapter(Image::class)->getHtml(
             $icon,
             $label,
-            'data-state="'.($row['published'] ? 1 : 0).'"'
+            'data-state="' . ($row['published'] ? 1 : 0) . '"'
         );
 
-        return '<a href="'.$href.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$image.'</a> ';
+        return '<a href="' . $href . '" title="' . StringUtil::specialchars($title) . '"' . $attributes . '>' . $image . '</a> ';
     }
 
     /**
      * Disable/enable a user group.
      *
-     * @param DataContainer $dc
-     *
      * @deprecated
      */
-    public function toggleVisibility(int $id, bool $visible, DataContainer $dc = null): void
+    public function toggleVisibility(int $id, bool $visible, ?DataContainer $dc = null): void
     {
         // Set the ID and action
         $this->framework->getAdapter(Input::class)->setGet('id', $id);
@@ -148,14 +144,18 @@ class CallbackListener
         $user = $this->framework->createInstance(BackendUser::class);
 
         // Check the field access
-        if (!$user->hasAccess($dc->table.'::published', 'alexf')) {
+        if (!$user->hasAccess($dc->table . '::published', 'alexf')) {
             $this->logger->log(
                 LogLevel::ERROR,
-                'Not enough permissions to publish/unpublish fieldpalette item ID "'.$id.'"',
-                ['contao' => new ContaoContext(__METHOD__, ContaoContext::ERROR)]
+                'Not enough permissions to publish/unpublish fieldpalette item ID "' . $id . '"',
+                [
+                    'contao' => new ContaoContext(__METHOD__, ContaoContext::ERROR),
+                ]
             );
             $this->framework->getAdapter(Controller::class)
-                ->redirect($this->utils->routing()->generateBackendRoute(['act' => 'error'], false, false));
+                ->redirect($this->utils->routing()->generateBackendRoute([
+                    'act' => 'error',
+                ], false, false));
         }
 
         $objVersions = $this->framework->createInstance(Versions::class, [$dc->table, $id]);
@@ -165,29 +165,31 @@ class CallbackListener
         if (\is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'])) {
             foreach ($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'] as $callback) {
                 if (\is_array($callback)) {
-                    $this->framework->getAdapter(System::class)->importStatic($callback[0])->{$callback[1]}($visible, ($dc ?: $this));
+                    $this->framework->getAdapter(System::class)->importStatic($callback[0])->{$callback[1]}($visible, $dc ?: $this);
                 } elseif (\is_callable($callback)) {
-                    $visible = $callback($visible, ($dc ?: $this));
+                    $visible = $callback($visible, $dc ?: $this);
                 }
             }
         }
 
         // Update the database
         $this->framework->createInstance(Database::class)->prepare(
-            'UPDATE '.$dc->table.' SET tstamp='.time().", published='".($visible ? '1' : '')."' WHERE id=?"
+            'UPDATE ' . $dc->table . ' SET tstamp=' . time() . ", published='" . ($visible ? '1' : '') . "' WHERE id=?"
         )->execute($id);
 
         $objVersions->create();
 
         $parentEntries = '';
         if ($record = $dc->activeRecord) {
-            $parentEntries = '(parent records: '.$record->ptable.'.id='.$record->pid.')';
+            $parentEntries = '(parent records: ' . $record->ptable . '.id=' . $record->pid . ')';
         }
 
         $this->logger->log(
             LogLevel::INFO,
-            'A new version of record "'.$dc->table.'.id='.$id.'" has been created'.$parentEntries,
-            ['contao' => new ContaoContext(__METHOD__, ContaoContext::GENERAL)]
+            'A new version of record "' . $dc->table . '.id=' . $id . '" has been created' . $parentEntries,
+            [
+                'contao' => new ContaoContext(__METHOD__, ContaoContext::GENERAL),
+            ]
         );
     }
 
@@ -266,6 +268,10 @@ class CallbackListener
             }
         }
 
-        $this->connection->update($currentRecord->ptable, [$currentRecord->pfield => serialize($varValue)], ['id' => $currentRecord->pid]);
+        $this->connection->update($currentRecord->ptable, [
+            $currentRecord->pfield => serialize($varValue),
+        ], [
+            'id' => $currentRecord->pid,
+        ]);
     }
 }

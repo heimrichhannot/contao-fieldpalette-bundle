@@ -20,9 +20,6 @@ class InitializeSystemListener
     private ScopeMatcher $scopeMatcher;
     private RequestStack $requestStack;
 
-    /**
-     * InitializeSystemListener constructor.
-     */
     public function __construct(ContaoFramework $contaoFramework, ScopeMatcher $scopeMatcher, RequestStack $requestStack)
     {
         $this->contaoFramework = $contaoFramework;
@@ -48,7 +45,9 @@ class InitializeSystemListener
             unset($GLOBALS['TL_JAVASCRIPT']['jquery']);
         }
         $GLOBALS['TL_JAVASCRIPT'] = array_merge(
-            ['jquery' => $jquery],
+            [
+                'jquery' => $jquery,
+            ],
             $GLOBALS['TL_JAVASCRIPT'] ?? []
         );
         $GLOBALS['TL_JAVASCRIPT']['datatables-i18n'] = 'assets/datatables-additional/datatables-i18n/datatables-i18n.min.js';
@@ -93,7 +92,7 @@ class InitializeSystemListener
 
                 if (isset($GLOBALS['BE_MOD'][$strGroup][$strModule]['tables']) && !\is_array($GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'])) {
                     trigger_error(
-                        'Invalid backend module configuration. $GLOBALS[\'BE_MOD\'][\''.$strGroup.'\'][\''.$strModule.'\'][\'tables\'] must be an array.',
+                        'Invalid backend module configuration. $GLOBALS[\'BE_MOD\'][\'' . $strGroup . '\'][\'' . $strModule . '\'][\'tables\'] must be an array.',
                         \E_USER_WARNING
                     );
                     if (\is_string($GLOBALS['BE_MOD'][$strGroup][$strModule]['tables'])) {

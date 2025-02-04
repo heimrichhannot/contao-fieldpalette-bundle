@@ -15,12 +15,10 @@ class FieldPaletteModelManager
     /**
      * @var FieldPaletteModel
      */
-    protected $modelInstance = null;
+    protected $modelInstance;
 
     /**
      * Return a new model instance.
-     *
-     * @return FieldPaletteModel
      *
      * @codeCoverageIgnore
      */
@@ -49,9 +47,8 @@ class FieldPaletteModelManager
     /**
      * Returns a new model instance with given table set.
      *
-     * @param string $table
-     *
      * @return FieldPaletteModel
+     *
      * @codeCoverageIgnore
      */
     public function createModelByTable(string $table)

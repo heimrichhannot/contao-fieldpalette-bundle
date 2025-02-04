@@ -29,7 +29,7 @@ class FieldPaletteRegistry
     /**
      * @var true
      */
-    private bool           $fullyLoaded = false;
+    private bool $fullyLoaded = false;
 
     public function __construct(ContaoFramework $framework, CacheInterface $cache)
     {
@@ -112,7 +112,7 @@ class FieldPaletteRegistry
         return !empty($this->targetFields[$table]);
     }
 
-    public function getTargetFields(string $table, ): array
+    public function getTargetFields(string $table): array
     {
         if (!$this->isFullyLoaded()) {
             $this->restoreResults();

@@ -38,7 +38,7 @@ class SqlGetFromDcaListener
                 && isset($fieldData['sql'])
             ) {
                 $sql[$field['targetTable']]['TABLE_FIELDS'][$field['fieldName']] =
-                    '`'.$field['fieldName'].'` '.$fieldData['sql'];
+                    '`' . $field['fieldName'] . '` ' . $fieldData['sql'];
             }
         }
 

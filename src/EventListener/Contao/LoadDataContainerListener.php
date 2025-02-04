@@ -72,7 +72,7 @@ class LoadDataContainerListener
     }
 
     /**
-     * Check if the table is a fieldpalette enabled table and set the dynamic parent table
+     * Check if the table is a fieldpalette enabled table and set the dynamic parent table.
      */
     private function setDynamicParentTable(string $table): void
     {
