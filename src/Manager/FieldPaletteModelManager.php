@@ -24,7 +24,7 @@ class FieldPaletteModelManager
      *
      * @codeCoverageIgnore
      */
-    public function createModel()
+    public function createModel(): FieldPaletteModel
     {
         return new FieldPaletteModel();
     }

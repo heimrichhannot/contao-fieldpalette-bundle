@@ -38,7 +38,7 @@ class LoadFieldsListener
             return;
         }
 
-        $fields = array_filter($fields, fn($field) => $field['sourceTable'] === $ptable);
+        $fields = array_filter($fields, fn($field): bool => $field['sourceTable'] === $ptable);
 
         foreach ($fields as $field) {
             $fieldData = $this->registry->getFieldData($field);

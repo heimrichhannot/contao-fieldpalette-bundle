@@ -142,7 +142,7 @@ class FieldPaletteWizard extends Widget
      *
      * @codeCoverageIgnore
      */
-    public function getModelInstance(string $table = '')
+    public function getModelInstance(string $table = ''): FieldPaletteModel
     {
         $model = new FieldPaletteModel();
         if (!empty($table)) {
@@ -159,7 +159,7 @@ class FieldPaletteWizard extends Widget
      *
      * @codeCoverageIgnore
      */
-    public function getDcTableInstance(string $table, array $module = [])
+    public function getDcTableInstance(string $table, array $module = []): DC_Table
     {
         return new DC_Table($table, $module);
     }
@@ -167,7 +167,7 @@ class FieldPaletteWizard extends Widget
     /**
      * @return string
      */
-    protected function getViewTemplate(string $type)
+    protected function getViewTemplate(string $type): string
     {
         switch ($this->viewMode) {
             default:
@@ -264,6 +264,8 @@ class FieldPaletteWizard extends Widget
         $dc->id = $model->id;
         $dc->activeRecord = $model;
 
+        $args = [];
+
         foreach ($showFields as $key => $fieldName) {
             $value = $model->{$fieldName};
 
@@ -330,7 +332,7 @@ class FieldPaletteWizard extends Widget
         $childRecordIds = null,
         $previous = null,
         $next = null
-    ) {
+    ): string {
         if (empty($this->dca['list']['operations'])) {
             return '';
         }

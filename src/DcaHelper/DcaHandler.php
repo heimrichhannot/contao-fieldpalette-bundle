@@ -25,39 +25,28 @@ class DcaHandler
     /**
      * @var string
      */
-    const TableRequestKey = 'table';
+    public const TableRequestKey = 'table';
     /**
      * @var string
      */
-    const ParentTableRequestKey = 'ptable';
+    public const ParentTableRequestKey = 'ptable';
     /**
      * @var string
      */
-    const PaletteRequestKey = 'fieldpalette';
+    public const PaletteRequestKey = 'fieldpalette';
     /**
      * @var string
      */
-    const FieldpaletteRefreshAction = 'refreshFieldPaletteField';
-    /**
-     * @var ContaoFramework
-     */
-    private $framework;
-    /**
-     * @var string
-     */
-    private $fieldPaletteTable;
-    /**
-     * @var FieldPaletteModelManager
-     */
-    private $modelManager;
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
-    /**
-     * @var FieldPaletteRegistry
-     */
-    private $registry;
+    public const FieldpaletteRefreshAction = 'refreshFieldPaletteField';
+
+    private ContaoFramework $framework;
+    private string $fieldPaletteTable;
+
+    private FieldPaletteModelManager $modelManager;
+
+    private RequestStack $requestStack;
+
+    private FieldPaletteRegistry $registry;
 
     public function __construct(string $table, ContaoFramework $framework, FieldPaletteModelManager $modelManager, RequestStack $requestStack, FieldPaletteRegistry $registry)
     {
@@ -146,7 +135,7 @@ class DcaHandler
      *
      * @return bool
      */
-    public function registerFieldPalette(string $table)
+    public function registerFieldPalette(string $table): void
     {
         $parentTable = $this->getParentTableFromRequest();
 
@@ -157,7 +146,7 @@ class DcaHandler
         );
 
         if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$parentTable || !$palette) {
-            return false;
+            return;
         }
 
         if ($table !== $rootTable) {
@@ -169,11 +158,11 @@ class DcaHandler
         $fields = $arrDCA['fields'];
 
         if (!\is_array($fields)) {
-            return false;
+            return;
         }
 
         if (!$palette) {
-            return false;
+            return;
         }
 
         // nested palette
@@ -187,13 +176,13 @@ class DcaHandler
             }
         } else {
             if (!isset($fields[$palette])) {
-                return false;
+                return;
             }
 
             $fields = [$palette => $fields[$palette]];
         }
 
-        $blnFound = $this->registerFieldPaletteFields($dc, $table, $parentTable, $rootTable, $palette, $fields);
+        $blnFound = $this->registerFieldPaletteFields($arrDCA, $table, $parentTable, $rootTable, $palette, $fields);
 
         if (!$blnFound) {
             $this->refuseFromBackendModuleByTable($table);
@@ -238,16 +227,18 @@ class DcaHandler
 
             return $this->findNestedFieldPaletteFields($childPalettes, $fields[$fieldPalette]['fieldpalette']['fields']);
         }
+
+        return false;
     }
 
     /**
-     * @param $dc
+     * @param $dca
      * @param $palette
      * @param bool $blnFound
      *
      * @return bool
      */
-    public function registerFieldPaletteFields(&$dc, string $table, string $parentTable, string $rootTable, $palette, array $fields, $blnFound = false)
+    public function registerFieldPaletteFields(array &$dca, string $table, string $parentTable, string $rootTable, $palette, array $fields, $blnFound = false)
     {
         if (!\is_array($fields)) {
             return false;
@@ -258,13 +249,13 @@ class DcaHandler
                 continue;
             }
 
-            $dc['fields'] = array_merge(
-                $dc['fields'] ?? [],
+            $dca['fields'] = array_merge(
+                $dca['fields'] ?? [],
                 $fieldData['fieldpalette']['fields'] ?? [],
                 $GLOBALS['TL_DCA'][$table]['fields'] ?? []
             );
 
-            $this->registry->set($rootTable, $field, $dc);
+            $this->registry->set($rootTable, $field, $dca);
 
             // set active ptable
             if ($this->isActive($rootTable, $parentTable, $table, $field)) {
@@ -359,7 +350,7 @@ class DcaHandler
     /**
      * @return array
      */
-    public function getDca(string $rootTable, string $parentTable, string $field, array $palette = [])
+    public function getDca(string $rootTable, string $parentTable, string $field, array $palette = []): array
     {
         $controller = $this->framework->getAdapter(Controller::class);
         $controller->loadDataContainer($rootTable);

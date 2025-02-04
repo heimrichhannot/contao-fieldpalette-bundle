@@ -34,38 +34,14 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class CallbackListener
 {
-    /**
-     * @var FieldPaletteModelManager
-     */
-    private $modelManager;
-    /**
-     * @var DcaHandler
-     */
-    private $dcaHandler;
-    /**
-     * @var ContaoFramework
-     */
-    private $framework;
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
-    /**
-     * @var UrlUtil
-     */
-    private $urlUtil;
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-    /**
-     * @var Utils
-     */
-    private $utils;
-    /**
-     * @var Connection
-     */
-    private $connection;
+    private FieldPaletteModelManager $modelManager;
+    private DcaHandler $dcaHandler;
+    private ContaoFramework $framework;
+    private RequestStack $requestStack;
+    private UrlUtil $urlUtil;
+    private LoggerInterface $logger;
+    private Utils $utils;
+    private Connection $connection;
 
     public function __construct(
         ContaoFramework $framework,
@@ -91,13 +67,13 @@ class CallbackListener
      * Use this method as an oncopy_callback.
      * Support recursive copying fieldpalette records by copying their parent record.
      */
-    public function copyFieldPaletteRecords(int $newId): void
+    public function copyFieldPaletteRecords(int $newId, DataContainer $dc): void
     {
         if (!$this->utils->container()->isBackend()) {
             return;
         }
 
-        $id = $this->framework->getAdapter(Input::class)->get('id') ?: CURRENT_ID;
+        $id = $this->framework->getAdapter(Input::class)->get('id') ?: $dc->currentPid;
         $do = $this->framework->getAdapter(Input::class)->get('do');
 
         $table = $do ? 'tl_'.$do : null;
@@ -161,7 +137,7 @@ class CallbackListener
      *
      * @return string
      */
-    public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table)
+    public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table): string
     {
         $tid = $this->framework->getAdapter(Input::class)->get('tid');
         if ($tid) {
@@ -289,7 +265,7 @@ class CallbackListener
      *
      * @return bool
      */
-    public function updateParentField(FieldPaletteModel $currentRecord, int $deleteIds = 0)
+    public function updateParentField(FieldPaletteModel $currentRecord, int $deleteIds = 0): void
     {
         $ptable = $currentRecord->ptable;
         if ($ptable) {
@@ -297,12 +273,12 @@ class CallbackListener
         }
 
         if (!class_exists($modelClass)) {
-            return false;
+            return;
         }
 
         /** @var Model $modelClass */
         if (null === $modelClass::findByPk($currentRecord->pid)) {
-            return false;
+            return;
         }
 
         $objItems = $this->modelManager->createModel()->findByPidAndTableAndField(

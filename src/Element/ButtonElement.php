@@ -17,31 +17,16 @@ use Twig\Environment;
 
 class ButtonElement
 {
-    /**
-     * @var Environment
-     */
-    protected $twig;
+    protected Environment $twig;
 
     /**
      * @var array
      */
     protected $options = [];
-    /**
-     * @var ContaoFramework
-     */
-    private $framework;
-    /**
-     * @var string
-     */
-    private $defaultTable;
-    /**
-     * @var RoutingUtil
-     */
-    private $routeUtil;
-    /**
-     * @var DcaHandler
-     */
-    private $dcaHandler;
+    private ContaoFramework $framework;
+    private string $defaultTable;
+    private RoutingUtil $routeUtil;
+    private DcaHandler $dcaHandler;
 
     public function __construct(ContaoFramework $framework, string $table, Environment $twig, RoutingUtil $routeUtil, DcaHandler $dcaHandler)
     {
@@ -99,7 +84,7 @@ class ButtonElement
         return isset($this->options[$property]);
     }
 
-    public function generate()
+    public function generate(): string
     {
         $parameter = $this->options;
         $parameter['href'] = $this->generateHref();
@@ -132,35 +117,35 @@ class ButtonElement
         }
     }
 
-    public function setModalTitle($varValue)
+    public function setModalTitle($varValue): self
     {
         $this->options['modalTitle'] = $varValue;
 
         return $this;
     }
 
-    public function setHref($varValue)
+    public function setHref($varValue): self
     {
         $this->options['href'] = $varValue;
 
         return $this;
     }
 
-    public function setTitle($varValue)
+    public function setTitle($varValue): self
     {
         $this->options['title'] = $varValue;
 
         return $this;
     }
 
-    public function setLabel($varValue)
+    public function setLabel($varValue): self
     {
         $this->options['label'] = $varValue;
 
         return $this;
     }
 
-    public function setId($varValue)
+    public function setId($varValue): self
     {
         $this->options['id'] = $varValue;
 
@@ -172,14 +157,14 @@ class ButtonElement
         return $this->options;
     }
 
-    public function addOptions(array $arrOptions = [])
+    public function addOptions(array $arrOptions = []): self
     {
         $this->options = array_merge($this->options, $arrOptions);
 
         return $this;
     }
 
-    public function setAttributes(array $attributes)
+    public function setAttributes(array $attributes): self
     {
         $this->options['attributes'] = $attributes;
 
@@ -223,7 +208,7 @@ class ButtonElement
      *
      * @return array
      */
-    protected function prepareParameter($act)
+    protected function prepareParameter($act): array
     {
         $parameters = [
             'do' => $this->do,
@@ -256,7 +241,7 @@ class ButtonElement
                 $parameters['id'] = $this->pid;
                 break;
             case 'edit':
-                $allowed = ['do', 'table', 'act', 'id', 'popup', 'popupReferer', 'nb'];
+                $allowed = ['do', 'table', 'ptable', 'act', 'id', 'popup', 'popupReferer', 'nb'];
                 break;
             case 'copy':
                 $allowed = ['do', 'table', 'act', 'id', 'popup', 'popupReferer'];

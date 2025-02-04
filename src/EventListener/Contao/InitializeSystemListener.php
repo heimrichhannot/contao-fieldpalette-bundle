@@ -16,18 +16,9 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class InitializeSystemListener
 {
-    /**
-     * @var ContaoFramework
-     */
-    protected $contaoFramework;
-    /**
-     * @var ScopeMatcher
-     */
-    private $scopeMatcher;
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
+    protected ContaoFramework $contaoFramework;
+    private ScopeMatcher $scopeMatcher;
+    private RequestStack $requestStack;
 
     /**
      * InitializeSystemListener constructor.

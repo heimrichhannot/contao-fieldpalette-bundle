@@ -48,7 +48,7 @@ class FieldPaletteModel extends Model
      *
      * @return FieldPaletteModel $this
      */
-    public function setTable($table)
+    public function setTable($table): self
     {
         static::$strTable = $table;
         $framework = System::getContainer()->get('contao.framework');
@@ -77,7 +77,7 @@ class FieldPaletteModel extends Model
      *
      * @return bool
      */
-    public function hasTable(string $table = self::TABLE)
+    public function hasTable(string $table = self::TABLE): bool
     {
         if (static::$strTable === $table) {
             return true;

@@ -17,7 +17,7 @@ return RectorConfig::configure()
     ->withRules([
         AddVoidReturnTypeWhereNoReturnRector::class,
         # In Vorbereitung für PHP 8.4:
-         ExplicitNullableParamTypeRector::class
+         ExplicitNullableParamTypeRector::class,
     ])
 
     ->withImportNames(importShortClasses: false, removeUnusedImports: true)
@@ -30,4 +30,5 @@ return RectorConfig::configure()
         ContaoLevelSetList::UP_TO_CONTAO_413,
         ContaoSetList::FQCN,
         ContaoSetList::ANNOTATIONS_TO_ATTRIBUTES,
+        \Rector\Set\ValueObject\SetList::TYPE_DECLARATION,
     ]);
