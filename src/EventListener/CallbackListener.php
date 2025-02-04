@@ -226,15 +226,15 @@ class CallbackListener
     public function updateParentField(FieldPaletteModel $currentRecord, int $deleteIds = 0): void
     {
         $ptable = $currentRecord->ptable;
-        if ($ptable) {
-            $modelClass = $this->framework->getAdapter(Model::class)->getClassFromTable($currentRecord->ptable);
+        if (!$ptable) {
+            return;
         }
 
+        $modelClass = Model::getClassFromTable($ptable);
         if (!class_exists($modelClass)) {
             return;
         }
 
-        /** @var Model $modelClass */
         if (null === $modelClass::findByPk($currentRecord->pid)) {
             return;
         }

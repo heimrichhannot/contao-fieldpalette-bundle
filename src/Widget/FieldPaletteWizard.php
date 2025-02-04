@@ -95,11 +95,11 @@ class FieldPaletteWizard extends Widget
     /**
      * Generate the widget and return it as string.
      *
-     * @throws \Twig_Error_Loader
+     * @return string
      * @throws \Twig_Error_Runtime
      * @throws \Twig_Error_Syntax
      *
-     * @return string
+     * @throws \Twig_Error_Loader
      */
     public function generate()
     {
@@ -116,7 +116,7 @@ class FieldPaletteWizard extends Widget
             'fieldpalette' => $this->strName,
             'fieldpaletteKey' => DcaHandler::PaletteRequestKey,
             'popup' => true,
-            'syncId' => 'ctrl_'.$this->strId,
+            'syncId' => 'ctrl_' . $this->strId,
             'pfield' => $this->strId,
         ];
 
@@ -179,15 +179,15 @@ class FieldPaletteWizard extends Widget
                 break;
         }
 
-        return '@HeimrichHannotContaoFieldpalette/'.$type.'/fieldpalette_'.$type.'_'.$mode.'.html.twig';
+        return '@HeimrichHannotContaoFieldpalette/' . $type . '/fieldpalette_' . $type . '_' . $mode . '.html.twig';
     }
 
     /**
-     * @throws \Twig_Error_Loader
+     * @return string
      * @throws \Twig_Error_Runtime
      * @throws \Twig_Error_Syntax
      *
-     * @return string
+     * @throws \Twig_Error_Loader
      */
     protected function generateListView()
     {
@@ -221,11 +221,11 @@ class FieldPaletteWizard extends Widget
     /**
      * @param int $index
      *
-     * @throws \Twig_Error_Loader
+     * @return string
      * @throws \Twig_Error_Runtime
      * @throws \Twig_Error_Syntax
      *
-     * @return string
+     * @throws \Twig_Error_Loader
      */
     protected function generateListItem(FieldPaletteModel $model, $index)
     {
@@ -240,7 +240,7 @@ class FieldPaletteWizard extends Widget
 
     /**
      * @param FieldPaletteModel $model
-     * @param string            $folderAttribute
+     * @param string $folderAttribute
      *
      * @return string
      */
@@ -297,7 +297,7 @@ class FieldPaletteWizard extends Widget
                 strip_tags($label)
             )
         ) {
-            $label = trim(StringUtil::substrHtml($label, $this->dca['list']['label']['maxCharacters'])).' …';
+            $label = trim(StringUtil::substrHtml($label, $this->dca['list']['label']['maxCharacters'])) . ' …';
         }
 
         // Call the label_callback ($row, $label, $this)
@@ -319,7 +319,7 @@ class FieldPaletteWizard extends Widget
     /**
      * Compile buttons from the table configuration array and return them as HTML.
      *
-     * @param array|null  $childRecordIds
+     * @param array|null $childRecordIds
      * @param string|null $previous
      * @param string|null $next
      *
@@ -327,12 +327,13 @@ class FieldPaletteWizard extends Widget
      */
     protected function generateButtons(
         FieldPaletteModel $rowModel,
-        array $rootIds = [],
-        bool $circularReference = false,
-        $childRecordIds = null,
-        $previous = null,
-        $next = null
-    ): string {
+        array             $rootIds = [],
+        bool              $circularReference = false,
+                          $childRecordIds = null,
+                          $previous = null,
+                          $next = null
+    ): string
+    {
         if (empty($this->dca['list']['operations'])) {
             return '';
         }
@@ -439,16 +440,16 @@ class FieldPaletteWizard extends Widget
                 $label = $GLOBALS['TL_LANG'][$defaultTable][$dir][0] ?? $dir;
                 $title = $GLOBALS['TL_LANG'][$defaultTable][$dir][1] ?? $dir;
 
-                $label = $image->getHtml($dir.'.gif', $label);
+                $label = $image->getHtml($dir . '.gif', $label);
                 $href = $value['href'] ?: '&amp;act=move';
 
                 if ('up' === $dir) {
                     if (is_numeric($previous) && (!\in_array($rowModel->id, $rootIds, true)
                             || empty($this->dca['list']['sorting']['root']))) {
-                        $return .= '<a href="'.$controller->addToUrl($href.'&amp;id='.$rowModel->id)
-                            .'&amp;sid='.(int) $previous.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$label.'</a> ';
+                        $return .= '<a href="' . $controller->addToUrl($href . '&amp;id=' . $rowModel->id)
+                            . '&amp;sid=' . (int)$previous . '" title="' . StringUtil::specialchars($title) . '"' . $attributes . '>' . $label . '</a> ';
                     } else {
-                        $return .= $image->getHtml('up_.gif').' ';
+                        $return .= $image->getHtml('up_.gif') . ' ';
                     }
                     continue;
                 }
@@ -456,8 +457,8 @@ class FieldPaletteWizard extends Widget
                 if (is_numeric($next)
                     && (!\in_array($rowModel->id, $rootIds, true)
                         || empty($this->dca['list']['sorting']['root']))) {
-                    $return .= '<a href="'.$controller->addToUrl($href.'&amp;id='.$rowModel->id)
-                        .'&amp;sid='.(int) $next.'" title="'.StringUtil::specialchars($title).'"'.$attributes.'>'.$label.'</a> ';
+                    $return .= '<a href="' . $controller->addToUrl($href . '&amp;id=' . $rowModel->id)
+                        . '&amp;sid=' . (int)$next . '" title="' . StringUtil::specialchars($title) . '"' . $attributes . '>' . $label . '</a> ';
                 } else {
                     $return .= $image->getHtml('down_.gif');
                 }
@@ -477,12 +478,12 @@ class FieldPaletteWizard extends Widget
             ], true, false);
 
             $title = sprintf(($GLOBALS['TL_LANG'][$this->strTable]['cut'][1] ?? 'Cut'), $rowModel->id);
-            $return .= ' '.$image->getHtml(
+            $return .= ' ' . $image->getHtml(
                     'drag.gif',
                     '',
-                    'class="drag-handle" title="'.$title.'" data-href="'.$href
+                    'class="drag-handle" title="' . $title . '" data-href="' . $href
 
-                    .'" data-id="'.$rowModel->id.'" data-pid="'.$rowModel->pid.'"'
+                    . '" data-id="' . $rowModel->id . '" data-pid="' . $rowModel->pid . '"'
                 );
         }
 
@@ -506,6 +507,7 @@ class FieldPaletteWizard extends Widget
         $button->setTitle($GLOBALS['TL_LANG']['tl_fieldpalette']['new'][0]);
 
         return $button->generate();
+
     }
 
     /**
@@ -551,13 +553,13 @@ class FieldPaletteWizard extends Widget
         // Delete all new but incomplete fieldpalette records (tstamp=0)
         if (!empty($new_records[$this->paletteTable]) && \is_array($new_records[$this->paletteTable])) {
             $result = $framework->createInstance(Database::class)->prepare(
-                'DELETE FROM '.$this->paletteTable.' WHERE id IN('.implode(
+                'DELETE FROM ' . $this->paletteTable . ' WHERE id IN(' . implode(
                     ',',
                     array_map(
                         'intval',
                         $new_records[$this->paletteTable]
                     )
-                ).') AND tstamp=0 AND (? IS NULL OR id != ?)'
+                ) . ') AND tstamp=0 AND (? IS NULL OR id != ?)'
             )->execute($this->activeRecord->id, $this->activeRecord->id);
 
             if ($result->affectedRows > 0) {
@@ -569,13 +571,13 @@ class FieldPaletteWizard extends Widget
         if (!empty($ptable)) {
             if (isset($this->dca['config']['dynamicPtable']) && $this->dca['config']['dynamicPtable']) {
                 $result = $framework->createInstance(Database::class)->execute(
-                    'DELETE FROM '.$this->paletteTable." WHERE ptable='".$ptable."' AND NOT EXISTS (SELECT * FROM (SELECT * FROM "
-                    .$ptable.') AS fpp WHERE '.$this->paletteTable.'.pid = fpp.id)'
+                    'DELETE FROM ' . $this->paletteTable . " WHERE ptable='" . $ptable . "' AND NOT EXISTS (SELECT * FROM (SELECT * FROM "
+                    . $ptable . ') AS fpp WHERE ' . $this->paletteTable . '.pid = fpp.id)'
                 );
             } else {
                 $result = $framework->createInstance(Database::class)->execute(
-                    'DELETE FROM '.$this->paletteTable.' WHERE NOT EXISTS '.'(SELECT * FROM (SELECT * FROM '.$ptable.') AS fpp WHERE '
-                    .$defaultTable.'.pid = fpp.id)'
+                    'DELETE FROM ' . $this->paletteTable . ' WHERE NOT EXISTS ' . '(SELECT * FROM (SELECT * FROM ' . $ptable . ') AS fpp WHERE '
+                    . $defaultTable . '.pid = fpp.id)'
                 );
             }
 
@@ -596,13 +598,13 @@ class FieldPaletteWizard extends Widget
                     if (isset($GLOBALS['TL_DCA'][$v]['config']['dynamicPtable'])
                         && $GLOBALS['TL_DCA'][$v]['config']['dynamicPtable']) {
                         $result = $framework->createInstance(Database::class)->execute(
-                            "DELETE FROM $v WHERE ptable='".$this->paletteTable."' AND NOT EXISTS (SELECT * FROM ".'(SELECT * FROM '
-                            .$this->paletteTable.") AS fp WHERE $v.pid = fp.id)"
+                            "DELETE FROM $v WHERE ptable='" . $this->paletteTable . "' AND NOT EXISTS (SELECT * FROM " . '(SELECT * FROM '
+                            . $this->paletteTable . ") AS fp WHERE $v.pid = fp.id)"
                         );
                     } else {
                         $result = $framework->createInstance(Database::class)->execute(
-                            "DELETE FROM $v WHERE NOT EXISTS (SELECT * FROM (SELECT * FROM ".$this->paletteTable
-                            .") AS fp WHERE $v.pid = fp.id)"
+                            "DELETE FROM $v WHERE NOT EXISTS (SELECT * FROM (SELECT * FROM " . $this->paletteTable
+                            . ") AS fp WHERE $v.pid = fp.id)"
                         );
                     }
 

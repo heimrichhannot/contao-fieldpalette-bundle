@@ -47,7 +47,7 @@ class LoadFieldsListener
             }
             $GLOBALS['TL_DCA'][$table]['fields'][$field['fieldName']] = $fieldData;
 
-            $this->dcaHandler->registerFieldPalette($table);
+            $this->dcaHandler->registerFieldPalette($table, $dc);
         }
     }
 }

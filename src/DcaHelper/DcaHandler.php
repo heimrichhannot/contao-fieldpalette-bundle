@@ -11,6 +11,7 @@ namespace HeimrichHannot\FieldpaletteBundle\DcaHelper;
 use Contao\BackendUser;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\DataContainer;
 use Contao\Input;
 use Contao\Session;
 use Contao\StringUtil;
@@ -61,11 +62,11 @@ class DcaHandler
      * @param string|null $act
      * @param string|null $parentTable
      *
-     * @throws \Exception
-     *
      * @return array|bool
+     *@throws \Exception
+     *
      */
-    public function loadDynamicPaletteByParentTable($act, string $table, $parentTable)
+    public function loadDynamicPaletteByParentTable($act, string $table, ?string $parentTable, DataContainer $dc)
     {
         $input = $this->framework->getAdapter(Input::class);
 
@@ -97,7 +98,7 @@ class DcaHandler
             case 'show':
             case 'delete':
             case 'toggle':
-                $id = \strlen($input->get('id')) ? $input->get('id') : CURRENT_ID;
+                $id = \strlen($input->get('id')) ? $input->get('id') : $dc->currentPid;
 
                 $objModel = $this->modelManager->createModelByTable($table)->findByPk($id);
 
@@ -135,14 +136,15 @@ class DcaHandler
      *
      * @return bool
      */
-    public function registerFieldPalette(string $table): void
+    public function registerFieldPalette(string $table, DataContainer $dc): void
     {
         $parentTable = $this->getParentTableFromRequest();
 
         [$palette, $rootTable, $parentTable] = $this->loadDynamicPaletteByParentTable(
             $this->framework->getAdapter(Input::class)->get('act'),
             $table,
-            $parentTable
+            $parentTable,
+            $dc
         );
 
         if (!isset($GLOBALS['TL_DCA'][$table]['config']['fieldpalette']) || !$parentTable || !$palette) {
@@ -182,7 +184,15 @@ class DcaHandler
             $fields = [$palette => $fields[$palette]];
         }
 
-        $blnFound = $this->registerFieldPaletteFields($arrDCA, $table, $parentTable, $rootTable, $palette, $fields);
+        $blnFound = $this->registerFieldPaletteFields(
+            $arrDCA,
+            $table,
+            $parentTable,
+            $rootTable,
+            $palette,
+            $fields,
+            $dc
+        );
 
         if (!$blnFound) {
             $this->refuseFromBackendModuleByTable($table);
@@ -238,11 +248,21 @@ class DcaHandler
      *
      * @return bool
      */
-    public function registerFieldPaletteFields(array &$dca, string $table, string $parentTable, string $rootTable, $palette, array $fields, $blnFound = false)
+    public function registerFieldPaletteFields(
+        array         &$dca,
+        string        $table,
+        string        $parentTable,
+        string        $rootTable,
+                      $palette,
+        array         $fields,
+        DataContainer $dc
+    )
     {
         if (!\is_array($fields)) {
             return false;
         }
+
+        $blnFound = false;
 
         foreach ($fields as $field => $fieldData) {
             if (!\is_array($fieldData) || !\is_array($fieldData['fieldpalette'] ?? null)) {
@@ -258,7 +278,7 @@ class DcaHandler
             $this->registry->set($rootTable, $field, $dca);
 
             // set active ptable
-            if ($this->isActive($rootTable, $parentTable, $table, $field)) {
+            if ($this->isActive($rootTable, $parentTable, $table, $field, $dc)) {
                 $this->framework->getAdapter(Controller::class)->loadLanguageFile($rootTable); // allow translations within parent fieldpalette table
                 $GLOBALS['TL_DCA'][$table] = $this->getDca($rootTable, $parentTable, $field, $palette);
             }
@@ -269,7 +289,13 @@ class DcaHandler
         return $blnFound;
     }
 
-    public function isActive(string $rootTable, string $parentTable, string $table, string $field)
+    public function isActive(
+        string $rootTable,
+        string $parentTable,
+        string $table,
+        string $field,
+        DataContainer $dc
+    )
     {
         $registry = $this->registry->get($rootTable);
 
@@ -279,7 +305,7 @@ class DcaHandler
 
         // determine active state by current element
         if ($this->getTableFromRequest() === $table) {
-            $id = $this->framework->getAdapter(Input::class)->get('id') ?: CURRENT_ID;
+            $id = $this->framework->getAdapter(Input::class)->get('id') ?: $dc->currentPid;
             $act = $this->framework->getAdapter(Input::class)->get('act');
 
             switch ($act) {

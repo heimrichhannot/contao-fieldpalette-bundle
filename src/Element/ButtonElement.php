@@ -15,6 +15,20 @@ use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Routing\RoutingUtil;
 use Twig\Environment;
 
+/**
+ * @property mixed $act
+ * @property mixed|string $cssClass
+ * @property mixed $table
+ * @property mixed $syncId
+ * @property mixed $do
+ * @property mixed $ptable
+ * @property mixed $pid
+ * @property mixed $modalTitle
+ * @property mixed $fieldpaletteKey
+ * @property mixed $id
+ * @property mixed $fieldpalette
+ * @property mixed $popup
+ */
 class ButtonElement
 {
     protected Environment $twig;
@@ -28,7 +42,13 @@ class ButtonElement
     private RoutingUtil $routeUtil;
     private DcaHandler $dcaHandler;
 
-    public function __construct(ContaoFramework $framework, string $table, Environment $twig, RoutingUtil $routeUtil, DcaHandler $dcaHandler)
+    public function __construct(
+        ContaoFramework $framework,
+        string $table,
+        Environment $twig,
+        RoutingUtil $routeUtil,
+        DcaHandler $dcaHandler
+    )
     {
         $this->framework = $framework;
         $this->defaultTable = $table;
@@ -176,7 +196,7 @@ class ButtonElement
         return $this->generateHref();
     }
 
-    protected function generateHref()
+    protected function generateHref(): string
     {
         $parameter = $this->prepareParameter($this->act);
 
