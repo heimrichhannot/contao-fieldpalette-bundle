@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.1] - 2025-02-04
+- Changed: allow utils bundle v3
+- Changed: code refactoring and modernization
+- Fixed: issue with showing palette fields when edit entry
+- Deprecated: CallbackListener::setReferrerOnSaveAndClose()
+- Deprecated: CallbackListener::toggleIcon()
+- Deprecated: CallbackListener::setReferrerOnSaveAndClose()
+- Deprecated: 'huh.fieldpalette.element.button' service alias
+
 ## [0.7.0] - 2025-01-17
 - Changed: refactored logic to load fieldpalette fields (**Please check if everything works as expected!**) ([#20](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/20))
 - Changed: require contao 4.13 ([#20](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/20))

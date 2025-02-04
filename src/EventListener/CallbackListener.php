@@ -14,6 +14,7 @@ use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Monolog\ContaoContext;
 use Contao\Database;
 use Contao\DataContainer;
+use Contao\Environment;
 use Contao\Image;
 use Contao\Input;
 use Contao\Model;
@@ -28,6 +29,7 @@ use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class CallbackListener
 {
@@ -37,6 +39,7 @@ class CallbackListener
     private LoggerInterface $logger;
     private Utils $utils;
     private Connection $connection;
+    private RequestStack $requestStack;
 
     public function __construct(
         ContaoFramework $framework,
@@ -44,7 +47,8 @@ class CallbackListener
         FieldPaletteModelManager $modelManager,
         DcaHandler $dcaHandler,
         LoggerInterface $logger,
-        Connection $connection
+        Connection $connection,
+        RequestStack $requestStack
     ) {
         $this->modelManager = $modelManager;
         $this->dcaHandler = $dcaHandler;
@@ -52,6 +56,7 @@ class CallbackListener
         $this->logger = $logger;
         $this->utils = $utils;
         $this->connection = $connection;
+        $this->requestStack = $requestStack;
     }
 
     /**
@@ -76,6 +81,54 @@ class CallbackListener
         $dcaFields = $GLOBALS['TL_DCA'][$table]['fields'];
 
         $this->dcaHandler->recursivelyCopyFieldPaletteRecords($id, $newId, $table, $dcaFields);
+    }
+
+    /**
+     * @deprecated No support for saveNclose anymore
+     */
+    public function setReferrerOnSaveAndClose(DataContainer $dc): void
+    {
+        if (!isset($_POST['saveNclose'])) {
+            return;
+        }
+        $key = null;
+        if ($this->utils->container()->isBackend()) {
+            $key = $this->framework->getAdapter(Input::class)->get('popup') ? 'popupReferer' : 'referer';
+        }
+
+        if ($key) {
+            $session = $this->requestStack->getCurrentRequest()->getSession();
+            $sessionData = $session->all();
+            $referer = $this->requestStack->getCurrentRequest()->get('_contao_referer_id');
+
+            if (!\is_array($sessionData[$key]) || !\is_array($sessionData[$key][$referer])) {
+                $sessionData[$key][$referer]['last'] = '';
+            }
+
+            while (\count($sessionData[$key]) >= 25) {
+                array_shift($sessionData[$key]);
+            }
+
+            $ref = $this->framework->getAdapter(Input::class)->get('ref');
+
+            if ('' !== $ref && isset($sessionData[$key][$ref])) {
+                if (!isset($sessionData[$key][$referer])) {
+                    $sessionData[$key][$referer] = [];
+                }
+
+                $sessionData[$key][$referer] = array_merge($sessionData[$key][$referer], $sessionData[$key][$ref]);
+                $sessionData[$key][$referer]['last'] = $sessionData[$key][$ref]['current'];
+            } elseif (\count($sessionData[$key]) > 1) {
+                $sessionData[$key][$referer] = end($sessionData[$key]);
+            }
+
+            $strUrl = $this->requestStack->getCurrentRequest()->getBaseUrl();
+
+            $sessionData[$key][$referer]['current'] = $strUrl;
+            $sessionData[$key][$referer]['last'] = $strUrl;
+
+            $session->set($key, $sessionData[$key]);
+        }
     }
 
     /**
