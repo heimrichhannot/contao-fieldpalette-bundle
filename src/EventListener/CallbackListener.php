@@ -14,7 +14,6 @@ use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Monolog\ContaoContext;
 use Contao\Database;
 use Contao\DataContainer;
-use Contao\Environment;
 use Contao\Image;
 use Contao\Input;
 use Contao\Model;
@@ -87,55 +86,12 @@ class CallbackListener
         $this->dcaHandler->recursivelyCopyFieldPaletteRecords($id, $newId, $table, $dcaFields);
     }
 
-    public function setReferrerOnSaveAndClose(DataContainer $dc): void
-    {
-        if (!isset($_POST['saveNclose'])) {
-            return;
-        }
-        $key = null;
-        if ($this->utils->container()->isBackend()) {
-            $key = $this->framework->getAdapter(Input::class)->get('popup') ? 'popupReferer' : 'referer';
-        }
-
-        if ($key) {
-            $session = $this->requestStack->getCurrentRequest()->getSession();
-            $sessionData = $session->all();
-            $referer = $this->requestStack->getCurrentRequest()->get('_contao_referer_id');
-
-            if (!\is_array($sessionData[$key]) || !\is_array($sessionData[$key][$referer])) {
-                $sessionData[$key][$referer]['last'] = '';
-            }
-
-            while (\count($sessionData[$key]) >= 25) {
-                array_shift($sessionData[$key]);
-            }
-
-            $ref = $this->framework->getAdapter(Input::class)->get('ref');
-
-            if ('' !== $ref && isset($sessionData[$key][$ref])) {
-                if (!isset($sessionData[$key][$referer])) {
-                    $sessionData[$key][$referer] = [];
-                }
-
-                $sessionData[$key][$referer] = array_merge($sessionData[$key][$referer], $sessionData[$key][$ref]);
-                $sessionData[$key][$referer]['last'] = $sessionData[$key][$ref]['current'];
-            } elseif (\count($sessionData[$key]) > 1) {
-                $sessionData[$key][$referer] = end($sessionData[$key]);
-            }
-
-            $strUrl = substr($this->framework->getAdapter(Environment::class)->get('requestUri'), \strlen(TL_PATH) + 1);
-
-            $sessionData[$key][$referer]['current'] = $strUrl;
-            $sessionData[$key][$referer]['last'] = $strUrl;
-
-            $session->set($key, $sessionData[$key]);
-        }
-    }
-
     /**
      * Return the "toggle visibility" button.
      *
      * @return string
+     *
+     * @deprecated Use BaseDcaListener::onListOperationsToggleButtonCallback instead
      */
     public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table): string
     {
@@ -155,8 +111,8 @@ class CallbackListener
             return '';
         }
 
-        $href = $this->urlUtil->addQueryString('tid='.$row['id'], $href);
-        $href = $this->urlUtil->addQueryString('state='.($row['published'] ? '' : 1), $href);
+        $this->utils->url()->addQueryStringParameterToUrl('tid='.$row['id'], $href);
+        $this->utils->url()->addQueryStringParameterToUrl('state='.($row['published'] ? '' : 1), $href);
 
         if (!$row['published']) {
             $icon = 'invisible.gif';
@@ -175,6 +131,8 @@ class CallbackListener
      * Disable/enable a user group.
      *
      * @param DataContainer $dc
+     *
+     * @deprecated
      */
     public function toggleVisibility(int $id, bool $visible, DataContainer $dc = null): void
     {

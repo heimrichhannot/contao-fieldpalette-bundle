@@ -26,7 +26,6 @@ class DcaGenerator
                 'notCopyable' => true,
                 'onload_callback' => [
                     [BaseDcaListener::class, 'onLoadCallback'],
-                    'setReferrerOnSaveAndClose' => [CallbackListener::class, 'setReferrerOnSaveAndClose'],
                 ],
                 'sql' => [
                     'keys' => [
@@ -70,7 +69,7 @@ class DcaGenerator
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['toggle'],
                         'icon' => 'visible.svg',
                         'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
-                        'button_callback' => [CallbackListener::class, 'toggleIcon'],
+                        'button_callback' => [BaseDcaListener::class, 'onListOperationsToggleButtonCallback'],
                     ],
                     'show' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['show'],
