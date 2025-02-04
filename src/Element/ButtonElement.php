@@ -12,7 +12,8 @@ use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\StringUtil;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Routing\RoutingUtil;
+use HeimrichHannot\UtilsBundle\Util\Utils;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Twig\Environment;
 
 /**
@@ -31,29 +32,29 @@ use Twig\Environment;
  */
 class ButtonElement
 {
-    protected Environment $twig;
-
-    /**
-     * @var array
-     */
-    protected $options = [];
     private ContaoFramework $framework;
-    private string $defaultTable;
-    private RoutingUtil $routeUtil;
+    private Environment $twig;
     private DcaHandler $dcaHandler;
+    private Utils $utils;
+    private ParameterBagInterface $parameterBag;
+
+    private string $defaultTable;
+    protected array $options = [];
 
     public function __construct(
         ContaoFramework $framework,
-        string $table,
         Environment $twig,
-        RoutingUtil $routeUtil,
         DcaHandler $dcaHandler,
+        Utils $utils,
+        ParameterBagInterface $parameterBag
     ) {
         $this->framework = $framework;
-        $this->defaultTable = $table;
         $this->twig = $twig;
-        $this->routeUtil = $routeUtil;
         $this->dcaHandler = $dcaHandler;
+        $this->utils = $utils;
+        $this->parameterBag = $parameterBag;
+
+        $this->defaultTable = $parameterBag->get('huh.fieldpalette.table');
     }
 
     /**
@@ -214,7 +215,7 @@ class ButtonElement
         // required by DC_TABLE::getNewPosition() within nested fieldpalettes
         $parameter['mode'] = 2;
 
-        return $this->routeUtil->generateBackendRoute($parameter, true);
+        return $this->utils->routing()->generateBackendRoute($parameter, true);
     }
 
     /**

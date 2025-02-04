@@ -1,20 +1,17 @@
 services:
 
   HeimrichHannot\FieldpaletteBundle\:
-    resource: '../../{Dca,Registry,EventListener}/*'
+    resource: '../../{Dca,Element,EventListener,Registry}/*'
     autowire: true
     autoconfigure: true
     public: true
 
   huh.fieldpalette.element.button:
-    class: HeimrichHannot\FieldpaletteBundle\Element\ButtonElement
-    public: true
-    arguments:
-      - '@contao.framework'
-      - '%huh.fieldpalette.table%'
-      - '@twig'
-      - '@huh.utils.routing'
-      - '@huh.fieldpalette.dca.handler'
+    alias: 'HeimrichHannot\FieldpaletteBundle\Element\ButtonElement'
+    deprecated:
+      package: 'heimrichhannot/contao-fieldpalette-bundle'
+      version: '0.7.1'
+
   huh.fieldpalette.manager:
     class: HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager
     public: true

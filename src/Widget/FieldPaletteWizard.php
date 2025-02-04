@@ -22,6 +22,7 @@ use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Element\ButtonElement;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Form\FormUtil;
+use HeimrichHannot\UtilsBundle\Util\FormatterUtil\FormatDcaFieldValueOptions;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 
 class FieldPaletteWizard extends Widget
@@ -241,8 +242,10 @@ class FieldPaletteWizard extends Widget
          * @var System
          */
         $system = System::getContainer()->get('contao.framework')->getAdapter(System::class);
-        $formUtil = System::getContainer()->get(FormUtil::class);
+
         $utils = System::getContainer()->get(Utils::class);
+        // utils bundle v2 fallback:
+        $formUtil = System::getContainer()->has(FormUtil::class) ? System::getContainer()->get(FormUtil::class) : null;
 
         $protected = false;
 
@@ -270,10 +273,24 @@ class FieldPaletteWizard extends Widget
                     }
                 }
             }
-            $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, [
-                '_dcaOverride' => $this->dca['fields'][$fieldName],
-                'skipReplaceInsertTags' => $utils->container()->isBackend(),
-            ]);
+
+            if (method_exists($utils, 'formatter')) {
+                $args[$key] = $utils->formatter()->formatDcaFieldValue(
+                    $dc,
+                    $fieldName,
+                    $value,
+                    (new FormatDcaFieldValueOptions())
+                        ->setDcaOverride($this->dca['fields'][$fieldName])
+                        ->setReplaceInsertTags(!$utils->container()->isBackend())
+                );
+            } elseif ($formUtil) {
+                $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, [
+                    '_dcaOverride' => $this->dca['fields'][$fieldName],
+                    'skipReplaceInsertTags' => $utils->container()->isBackend(),
+                ]);
+            } else {
+                $args[$key] = $value;
+            }
         }
 
         $label = vsprintf(
@@ -333,7 +350,7 @@ class FieldPaletteWizard extends Widget
 
         $container = System::getContainer();
         $framework = $container->get('contao.framework');
-        $buttonGenerator = $container->get('huh.fieldpalette.element.button');
+        $buttonGenerator = $container->get(ButtonElement::class);
         /**
          * @var Image
          */
@@ -480,7 +497,7 @@ class FieldPaletteWizard extends Widget
 
     protected function generateGlobalButtons()
     {
-        $button = System::getContainer()->get('huh.fieldpalette.element.button');
+        $button = System::getContainer()->get(ButtonElement::class);
 
         $button->addOptions($this->buttonDefaults);
         $button->setType('create');

@@ -25,19 +25,15 @@ use Doctrine\DBAL\Connection;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Url\UrlUtil;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 class CallbackListener
 {
     private FieldPaletteModelManager $modelManager;
     private DcaHandler $dcaHandler;
     private ContaoFramework $framework;
-    private RequestStack $requestStack;
-    private UrlUtil $urlUtil;
     private LoggerInterface $logger;
     private Utils $utils;
     private Connection $connection;
@@ -47,16 +43,12 @@ class CallbackListener
         Utils $utils,
         FieldPaletteModelManager $modelManager,
         DcaHandler $dcaHandler,
-        RequestStack $requestStack,
-        UrlUtil $urlUtil,
         LoggerInterface $logger,
-        Connection $connection,
+        Connection $connection
     ) {
         $this->modelManager = $modelManager;
         $this->dcaHandler = $dcaHandler;
         $this->framework = $framework;
-        $this->requestStack = $requestStack;
-        $this->urlUtil = $urlUtil;
         $this->logger = $logger;
         $this->utils = $utils;
         $this->connection = $connection;

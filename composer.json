@@ -23,7 +23,7 @@
     "require": {
         "php": "^7.4 || ^8.0",
         "contao/core-bundle": "^4.13",
-        "heimrichhannot/contao-utils-bundle": "^2.233.0",
+        "heimrichhannot/contao-utils-bundle": "^2.233.0 || ^3.3",
         "heimrichhannot/datatables": "^1.10",
         "heimrichhannot/datatables-additional": "^1.0"
     },
