@@ -82,7 +82,6 @@ class FieldPaletteWizard extends Widget
         $controller->loadLanguageFile($container->getParameter('huh.fieldpalette.table'));
         $controller->loadLanguageFile($this->strTable);
 
-        $this->import('Database');
         $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
         $this->viewMode = $this->dca['list']['viewMode'] ?? 0;
         $this->paletteTable = $this->dca['config']['table'] ?? $container->getParameter('huh.fieldpalette.table');
@@ -371,8 +370,8 @@ class FieldPaletteWizard extends Widget
             $button->setId($rowModel->id);
             $button->setModalTitle(
                 sprintf(
-                    $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'],
-                    $GLOBALS['TL_LANG'][$this->strTable][$this->strName][0] ?: $this->strName,
+                    $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'] ?? '',
+                    $GLOBALS['TL_LANG'][$this->strTable][$this->strName][0] ?? $this->strName,
                     sprintf($title, $rowModel->id)
                 )
             );

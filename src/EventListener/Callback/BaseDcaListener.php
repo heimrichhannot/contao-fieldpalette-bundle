@@ -87,7 +87,20 @@ class BaseDcaListener
         $model->save();
     }
 
-    public function onListOperationsToggleButtonCallback(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table): string
+    public function onListOperationsToggleButtonCallback(
+        array $row,
+        ?string $href,
+        string $label,
+        string $title,
+        ?string $icon,
+        string $attributes,
+        string $table,
+        array $rootRecordIds,
+        ?array $childRecordIds,
+        bool $circularReference,
+        ?string $previous,
+        ?string $next,
+        DataContainer $dc): string
     {
         $tid = Input::get('tid');
 
@@ -97,19 +110,37 @@ class BaseDcaListener
         }
 
         if (!$this->auth->isGranted('contao_user.alexf', $table . '::published')) {
-            return '';
+            return Image::getHtml(str_replace('.svg', '--disabled.svg', $icon)) . ' ';
         }
 
-        $this->utils->url()->addQueryStringParameterToUrl('tid=' . $row['id'], $href);
-        $this->utils->url()->addQueryStringParameterToUrl('state=' . ($row['published'] ? '' : 1), $href);
+        $href = $this->utils->url()->addQueryStringParameterToUrl('tid=' . $row['id'], (string) $href);
+        $href = $this->utils->url()->addQueryStringParameterToUrl('state=' . ($row['published'] ? '' : 1), (string) $href);
 
         if (!$row['published']) {
             $icon = 'invisible.svg';
         }
 
-        $image = Image::getHtml($icon, $label, 'data-state="' . ($row['published'] ? 1 : 0) . '"');
+        $imgAttributes = $this->utils->html()->generateAttributeString([
+            'data-icon' => Image::getPath('visible.svg'),
+            'data-icon-disabled' => Image::getPath('invisible.svg'),
+            'data-state' => (int) $row['published'],
+            'data-alt' => StringUtil::specialchars($title),
+            'data-alt-disabled' => StringUtil::specialchars($title),
+        ]);
 
-        return '<a href="' . $href . '" title="' . StringUtil::specialchars($title) . '"' . $attributes . '>' . $image . '</a> ';
+        $image = Image::getHtml($icon, $title, $imgAttributes);
+
+        $attributes .= ' '. $this->utils->html()->generateAttributeString([
+            'data-action' => "contao--scroll-offset#store",
+            'onclick' => "return AjaxRequest.toggleField(this,true)",
+        ]);
+
+        return sprintf('<a href="%s" title="%s" %s>%s</a> ',
+            $href,
+            StringUtil::specialchars($title),
+            $attributes,
+            $image
+        );
     }
 
     /**
@@ -139,7 +170,7 @@ class BaseDcaListener
         $objVersions->initialize();
 
         // Trigger the save_callback
-        if (\is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'])) {
+        if (\is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'] ?? null)) {
             foreach ($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'] as $callback) {
                 $visible = $this->utils->dca()->executeCallback($callback, $visible, $dc ?: $this);
             }
