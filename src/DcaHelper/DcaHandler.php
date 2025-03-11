@@ -39,22 +39,13 @@ class DcaHandler
      */
     public const FieldpaletteRefreshAction = 'refreshFieldPaletteField';
 
-    private ContaoFramework $framework;
-    private string $fieldPaletteTable;
-
-    private FieldPaletteModelManager $modelManager;
-
-    private RequestStack $requestStack;
-
-    private FieldPaletteRegistry $registry;
-
-    public function __construct(string $table, ContaoFramework $framework, FieldPaletteModelManager $modelManager, RequestStack $requestStack, FieldPaletteRegistry $registry)
-    {
-        $this->fieldPaletteTable = $table;
-        $this->framework = $framework;
-        $this->modelManager = $modelManager;
-        $this->requestStack = $requestStack;
-        $this->registry = $registry;
+    public function __construct(
+        private readonly string $fieldPaletteTable,
+        private readonly ContaoFramework $framework,
+        private readonly FieldPaletteModelManager $modelManager,
+        private readonly RequestStack $requestStack,
+        private readonly FieldPaletteRegistry $registry,
+    ) {
     }
 
     /**
@@ -132,8 +123,6 @@ class DcaHandler
     }
 
     /**
-     * @return bool
-     *
      * @throws \Exception
      */
     public function registerFieldPalette(string $table, DataContainer $dc): void
@@ -354,18 +343,18 @@ class DcaHandler
         }
 
         if ($model->ptable === $this->fieldPaletteTable) {
-            $model = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($model->pid);
+            $parent = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($model->pid);
 
-            if (null === $model) {
+            if (null === $parent) {
                 return [$model->ptable, null];
             }
 
             // save nested path
-            if ($model->pfield) {
-                $palette[] = $model->pfield;
+            if ($parent->pfield) {
+                $palette[] = $parent->pfield;
             }
 
-            return $this->getParentTable($model, $id, $palette);
+            return $this->getParentTable($parent, $id, $palette);
         }
 
         return [$model->ptable, array_reverse($palette)];
