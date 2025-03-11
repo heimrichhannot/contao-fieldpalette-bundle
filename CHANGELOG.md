@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.3] - 2025-03-11
+- Changed: allow contao 5 ([#22](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/22))
+- Changed: require at least php 8.1 ([#22](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/22))
+- Fixed: various warnings and deprecations ([#22](https://github.com/heimrichhannot/contao-fieldpalette-bundle/pull/22))
+
 ## [0.7.2] - 2025-03-11
 - Fixed: warning
 
