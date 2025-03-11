@@ -252,7 +252,7 @@ class DcaHandler
         string $table,
         string $parentTable,
         string $rootTable,
-        $palette,
+        array $palette,
         array $fields,
         DataContainer $dc,
     ) {

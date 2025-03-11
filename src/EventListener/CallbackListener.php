@@ -14,7 +14,6 @@ use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Monolog\ContaoContext;
 use Contao\Database;
 use Contao\DataContainer;
-use Contao\Environment;
 use Contao\Image;
 use Contao\Input;
 use Contao\Model;

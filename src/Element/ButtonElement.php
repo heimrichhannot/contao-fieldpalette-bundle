@@ -169,7 +169,7 @@ class ButtonElement
         return $this;
     }
 
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }

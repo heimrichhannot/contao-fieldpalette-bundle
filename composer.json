@@ -28,11 +28,11 @@
         "heimrichhannot/datatables-additional": "^1.0"
     },
     "require-dev": {
-        "rector/rector": "^1.2",
+        "rector/rector": "^1.2 || ^2.0",
         "contao/contao-rector": "dev-main",
         "symplify/easy-coding-standard": "^12.5",
-        "phpstan/phpstan": "^1.12",
-        "phpstan/phpstan-symfony": "^1.4",
+        "phpstan/phpstan": "^1.12 || ^2.0",
+        "phpstan/phpstan-symfony": "^1.4 || ^2.0",
         "contao/manager-plugin": "^2.13"
     },
     "replace": {
