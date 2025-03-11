@@ -2,7 +2,8 @@ parameters:
   level: 2
   paths:
     - src
-#  universalObjectCratesClasses:
+  universalObjectCratesClasses:
+    - Contao\Database\Result
 #    - Contao\Model
 #    - Contao\Template
 includes:

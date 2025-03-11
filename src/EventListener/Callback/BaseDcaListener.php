@@ -44,6 +44,7 @@ class BaseDcaListener
 
         /** @var class-string<Model> $modelClass */
         $modelClass = Model::getClassFromTable($dc->table);
+        /* @phpstan-ignore property.notFound */
         if (class_exists($modelClass) && ($model = $modelClass::findByPk($dc->id)) && 0 === $model->dateAdded) {
             $model->dateAdded = time();
             $model->save();
@@ -111,7 +112,10 @@ class BaseDcaListener
         return '<a href="' . $href . '" title="' . StringUtil::specialchars($title) . '"' . $attributes . '>' . $image . '</a> ';
     }
 
-    private function toggleVisibility(int $id, bool $visible, ?DataContainer $dc = null): void
+    /**
+     * @internal Only exposed for internal backwards compatibility. Will be private in next major version.
+     */
+    public function toggleVisibility(int $id, bool $visible, ?DataContainer $dc = null): void
     {
         Input::setGet('id', $id);
         Input::setGet('act', 'toggle');
@@ -148,6 +152,7 @@ class BaseDcaListener
         $objVersions->create();
 
         $parentEntries = '';
+        /* @phpstan-ignore property.notFound */
         if ($record = $dc->activeRecord) {
             $parentEntries = '(parent records: ' . $record->ptable . '.id=' . $record->pid . ')';
         }

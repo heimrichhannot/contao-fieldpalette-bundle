@@ -93,14 +93,8 @@ class FieldPaletteWizard extends Widget
 
     /**
      * Generate the widget and return it as string.
-     *
-     * @return string
-     *
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     * @throws \Twig_Error_Loader
      */
-    public function generate()
+    public function generate(): string
     {
         $this->reviseTable();
 
@@ -176,10 +170,6 @@ class FieldPaletteWizard extends Widget
 
     /**
      * @return string
-     *
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     * @throws \Twig_Error_Loader
      */
     protected function generateListView()
     {
@@ -214,10 +204,6 @@ class FieldPaletteWizard extends Widget
      * @param int $index
      *
      * @return string
-     *
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     * @throws \Twig_Error_Loader
      */
     protected function generateListItem(FieldPaletteModel $model, $index)
     {
@@ -253,6 +239,7 @@ class FieldPaletteWizard extends Widget
 
         $dc = $this->getDcTableInstance($this->paletteTable);
         $dc->id = $model->id;
+        /* @phpstan-ignore property.notFound */
         $dc->activeRecord = $model;
 
         $args = [];
@@ -365,6 +352,7 @@ class FieldPaletteWizard extends Widget
 
         $dc = $this->getDcTableInstance($this->paletteTable);
         $dc->id = $this->currentRecord;
+        /* @phpstan-ignore property.notFound */
         $dc->activeRecord = $rowModel;
 
         foreach ($operations as $key => $value) {

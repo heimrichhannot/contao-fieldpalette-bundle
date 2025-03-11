@@ -58,6 +58,7 @@ class ExecutePostActionsListener
                     'content' => $widget->generate(),
                 ];
 
+                /* @phpstan-ignore property.notFound */
                 if ($widget->submitOnChange) {
                     $data['autoSubmit'] = $dc->table;
                 }
