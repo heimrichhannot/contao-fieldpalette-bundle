@@ -112,9 +112,36 @@ class CallbackListener
      *
      * @deprecated Use BaseDcaListener::onListOperationsToggleButtonCallback instead
      */
-    public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table): string
-    {
-        return $this->baseDcaListener->onListOperationsToggleButtonCallback($row, $href, $label, $title, $icon, $attributes, $table);
+    public function toggleIcon(
+        array $row,
+        ?string $href,
+        string $label,
+        string $title,
+        ?string $icon,
+        string $attributes,
+        string $table,
+        array $rootRecordIds,
+        ?array $childRecordIds,
+        bool $circularReference,
+        ?string $previous,
+        ?string $next,
+        DataContainer $dc,
+    ): string {
+        return $this->baseDcaListener->onListOperationsToggleButtonCallback(
+            $row,
+            $href,
+            $label,
+            $title,
+            $icon,
+            $attributes,
+            $table,
+            $rootRecordIds,
+            $childRecordIds,
+            $circularReference,
+            $previous,
+            $next,
+            $dc
+        );
     }
 
     /**

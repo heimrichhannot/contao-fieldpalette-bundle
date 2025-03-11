@@ -130,9 +130,9 @@ class BaseDcaListener
 
         $image = Image::getHtml($icon, $title, $imgAttributes);
 
-        $attributes .= ' '. $this->utils->html()->generateAttributeString([
-            'data-action' => "contao--scroll-offset#store",
-            'onclick' => "return AjaxRequest.toggleField(this,true)",
+        $attributes .= ' ' . $this->utils->html()->generateAttributeString([
+            'data-action' => 'contao--scroll-offset#store',
+            'onclick' => 'return AjaxRequest.toggleField(this,true)',
         ]);
 
         return sprintf('<a href="%s" title="%s" %s>%s</a> ',
