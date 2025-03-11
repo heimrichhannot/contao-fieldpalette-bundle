@@ -16,15 +16,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class InitializeSystemListener
 {
-    protected ContaoFramework $contaoFramework;
-    private ScopeMatcher $scopeMatcher;
-    private RequestStack $requestStack;
-
-    public function __construct(ContaoFramework $contaoFramework, ScopeMatcher $scopeMatcher, RequestStack $requestStack)
-    {
-        $this->contaoFramework = $contaoFramework;
-        $this->scopeMatcher = $scopeMatcher;
-        $this->requestStack = $requestStack;
+    public function __construct(
+        protected ContaoFramework $contaoFramework,
+        private readonly ScopeMatcher $scopeMatcher,
+        private readonly RequestStack $requestStack,
+    ) {
     }
 
     public function __invoke(): void

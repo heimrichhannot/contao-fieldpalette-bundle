@@ -22,7 +22,7 @@ return RectorConfig::configure()
 
     ->withImportNames(importShortClasses: false, removeUnusedImports: true)
     ->withSets([
-        LevelSetList::UP_TO_PHP_74,
+        LevelSetList::UP_TO_PHP_81,
         SymfonySetList::SYMFONY_54,
         SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
         # Erst mit Symfony 6 (Contao 5) nutzen:
@@ -30,5 +30,4 @@ return RectorConfig::configure()
         ContaoLevelSetList::UP_TO_CONTAO_413,
         ContaoSetList::FQCN,
         ContaoSetList::ANNOTATIONS_TO_ATTRIBUTES,
-        \Rector\Set\ValueObject\SetList::TYPE_DECLARATION,
     ]);

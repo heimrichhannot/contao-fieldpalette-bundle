@@ -8,21 +8,17 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\EventListener\Contao;
 
-use Contao\CoreBundle\ServiceAnnotation\Hook;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\Input;
 use HeimrichHannot\FieldpaletteBundle\EventListener\Callback\LoadFieldsListener;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 
-/**
- * @Hook("loadDataContainer", priority=-250)
- */
+#[AsHook('loadDataContainer', priority: -250)]
 class LoadDataContainerListener
 {
-    private FieldPaletteRegistry $registry;
-
-    public function __construct(FieldPaletteRegistry $registry)
-    {
-        $this->registry = $registry;
+    public function __construct(
+        private readonly FieldPaletteRegistry $registry,
+    ) {
     }
 
     public function __invoke(string $table): void

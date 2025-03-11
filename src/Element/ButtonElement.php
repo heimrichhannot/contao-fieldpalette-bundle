@@ -32,29 +32,17 @@ use Twig\Environment;
  */
 class ButtonElement
 {
-    private ContaoFramework $framework;
-    private Environment $twig;
-    private DcaHandler $dcaHandler;
-    private Utils $utils;
-    private ParameterBagInterface $parameterBag;
-
-    private string $defaultTable;
+    private readonly string $defaultTable;
     protected array $options = [];
 
     public function __construct(
-        ContaoFramework $framework,
-        Environment $twig,
-        DcaHandler $dcaHandler,
-        Utils $utils,
-        ParameterBagInterface $parameterBag
+        private readonly ContaoFramework $framework,
+        private readonly Environment $twig,
+        private readonly DcaHandler $dcaHandler,
+        private readonly Utils $utils,
+        private readonly ParameterBagInterface $parameterBag,
     ) {
-        $this->framework = $framework;
-        $this->twig = $twig;
-        $this->dcaHandler = $dcaHandler;
-        $this->utils = $utils;
-        $this->parameterBag = $parameterBag;
-
-        $this->defaultTable = $parameterBag->get('huh.fieldpalette.table');
+        $this->defaultTable = $this->parameterBag->get('huh.fieldpalette.table');
     }
 
     /**
@@ -169,7 +157,7 @@ class ButtonElement
         return $this;
     }
 
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }

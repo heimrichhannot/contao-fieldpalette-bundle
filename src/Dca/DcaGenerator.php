@@ -68,7 +68,6 @@ class DcaGenerator
                     'toggle' => [
                         'label' => &$GLOBALS['TL_LANG']['tl_fieldpalette']['toggle'],
                         'icon' => 'visible.svg',
-                        'attributes' => 'onclick="Backend.getScrollOffset();return AjaxRequest.toggleVisibility(this,%s)"',
                         'button_callback' => [BaseDcaListener::class, 'onListOperationsToggleButtonCallback'],
                     ],
                     'show' => [

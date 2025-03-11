@@ -8,55 +8,31 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
-use Contao\BackendUser;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
-use Contao\CoreBundle\Monolog\ContaoContext;
-use Contao\Database;
 use Contao\DataContainer;
-use Contao\Environment;
-use Contao\Image;
 use Contao\Input;
 use Contao\Model;
-use Contao\StringUtil;
-use Contao\System;
-use Contao\Versions;
 use Contao\Widget;
 use Doctrine\DBAL\Connection;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
+use HeimrichHannot\FieldpaletteBundle\EventListener\Callback\BaseDcaListener;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use HeimrichHannot\UtilsBundle\Util\Utils;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class CallbackListener
 {
-    private FieldPaletteModelManager $modelManager;
-    private DcaHandler $dcaHandler;
-    private ContaoFramework $framework;
-    private LoggerInterface $logger;
-    private Utils $utils;
-    private Connection $connection;
-    private RequestStack $requestStack;
-
     public function __construct(
-        ContaoFramework $framework,
-        Utils $utils,
-        FieldPaletteModelManager $modelManager,
-        DcaHandler $dcaHandler,
-        LoggerInterface $logger,
-        Connection $connection,
-        RequestStack $requestStack
+        private readonly ContaoFramework $framework,
+        private readonly Utils $utils,
+        private readonly FieldPaletteModelManager $modelManager,
+        private readonly DcaHandler $dcaHandler,
+        private readonly Connection $connection,
+        private readonly RequestStack $requestStack,
+        private readonly BaseDcaListener $baseDcaListener,
     ) {
-        $this->modelManager = $modelManager;
-        $this->dcaHandler = $dcaHandler;
-        $this->framework = $framework;
-        $this->logger = $logger;
-        $this->utils = $utils;
-        $this->connection = $connection;
-        $this->requestStack = $requestStack;
     }
 
     /**
@@ -136,38 +112,36 @@ class CallbackListener
      *
      * @deprecated Use BaseDcaListener::onListOperationsToggleButtonCallback instead
      */
-    public function toggleIcon(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table): string
-    {
-        $tid = $this->framework->getAdapter(Input::class)->get('tid');
-        if ($tid) {
-            $this->toggleVisibility($tid, '1' === $this->framework->getAdapter(Input::class)->get('state'), @func_get_arg(12) ?: null);
-            $this->framework->getAdapter(Controller::class)->redirect(
-                $this->framework->getAdapter(System::class)->getReferer()
-            );
-        }
-
-        /** @var BackendUser $user */
-        $user = $this->framework->createInstance(BackendUser::class);
-
-        // Check permissions AFTER checking the tid, so hacking attempts are logged
-        if (!$user->hasAccess($table . '::published', 'alexf')) {
-            return '';
-        }
-
-        $this->utils->url()->addQueryStringParameterToUrl('tid=' . $row['id'], $href);
-        $this->utils->url()->addQueryStringParameterToUrl('state=' . ($row['published'] ? '' : 1), $href);
-
-        if (!$row['published']) {
-            $icon = 'invisible.gif';
-        }
-
-        $image = $this->framework->getAdapter(Image::class)->getHtml(
-            $icon,
+    public function toggleIcon(
+        array $row,
+        ?string $href,
+        string $label,
+        string $title,
+        ?string $icon,
+        string $attributes,
+        string $table,
+        array $rootRecordIds,
+        ?array $childRecordIds,
+        bool $circularReference,
+        ?string $previous,
+        ?string $next,
+        DataContainer $dc,
+    ): string {
+        return $this->baseDcaListener->onListOperationsToggleButtonCallback(
+            $row,
+            $href,
             $label,
-            'data-state="' . ($row['published'] ? 1 : 0) . '"'
+            $title,
+            $icon,
+            $attributes,
+            $table,
+            $rootRecordIds,
+            $childRecordIds,
+            $circularReference,
+            $previous,
+            $next,
+            $dc
         );
-
-        return '<a href="' . $href . '" title="' . StringUtil::specialchars($title) . '"' . $attributes . '>' . $image . '</a> ';
     }
 
     /**
@@ -177,65 +151,7 @@ class CallbackListener
      */
     public function toggleVisibility(int $id, bool $visible, ?DataContainer $dc = null): void
     {
-        // Set the ID and action
-        $this->framework->getAdapter(Input::class)->setGet('id', $id);
-        $this->framework->getAdapter(Input::class)->setGet('act', 'toggle');
-
-        if ($dc) {
-            $dc->id = $id; // see #8043
-        }
-
-        /** @var BackendUser $user */
-        $user = $this->framework->createInstance(BackendUser::class);
-
-        // Check the field access
-        if (!$user->hasAccess($dc->table . '::published', 'alexf')) {
-            $this->logger->log(
-                LogLevel::ERROR,
-                'Not enough permissions to publish/unpublish fieldpalette item ID "' . $id . '"',
-                [
-                    'contao' => new ContaoContext(__METHOD__, ContaoContext::ERROR),
-                ]
-            );
-            $this->framework->getAdapter(Controller::class)
-                ->redirect($this->utils->routing()->generateBackendRoute([
-                    'act' => 'error',
-                ], false, false));
-        }
-
-        $objVersions = $this->framework->createInstance(Versions::class, [$dc->table, $id]);
-        $objVersions->initialize();
-
-        // Trigger the save_callback
-        if (\is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'])) {
-            foreach ($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'] as $callback) {
-                if (\is_array($callback)) {
-                    $this->framework->getAdapter(System::class)->importStatic($callback[0])->{$callback[1]}($visible, $dc ?: $this);
-                } elseif (\is_callable($callback)) {
-                    $visible = $callback($visible, $dc ?: $this);
-                }
-            }
-        }
-
-        // Update the database
-        $this->framework->createInstance(Database::class)->prepare(
-            'UPDATE ' . $dc->table . ' SET tstamp=' . time() . ", published='" . ($visible ? '1' : '') . "' WHERE id=?"
-        )->execute($id);
-
-        $objVersions->create();
-
-        $parentEntries = '';
-        if ($record = $dc->activeRecord) {
-            $parentEntries = '(parent records: ' . $record->ptable . '.id=' . $record->pid . ')';
-        }
-
-        $this->logger->log(
-            LogLevel::INFO,
-            'A new version of record "' . $dc->table . '.id=' . $id . '" has been created' . $parentEntries,
-            [
-                'contao' => new ContaoContext(__METHOD__, ContaoContext::GENERAL),
-            ]
-        );
+        $this->baseDcaListener->toggleVisibility($id, $visible, $dc);
     }
 
     public function updateParentFieldOnSubmit(DataContainer $dc)
@@ -267,8 +183,6 @@ class CallbackListener
 
     /**
      * Update the parent field with its tl_fieldpalette item ids.
-     *
-     * @return bool
      */
     public function updateParentField(FieldPaletteModel $currentRecord, int $deleteIds = 0): void
     {

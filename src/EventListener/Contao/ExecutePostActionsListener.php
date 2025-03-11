@@ -17,11 +17,9 @@ use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 
 class ExecutePostActionsListener
 {
-    private ContaoFramework $contaoFramework;
-
-    public function __construct(ContaoFramework $contaoFramework)
-    {
-        $this->contaoFramework = $contaoFramework;
+    public function __construct(
+        private readonly ContaoFramework $contaoFramework,
+    ) {
     }
 
     public function __invoke(string $action, DataContainer $dc): void
@@ -60,6 +58,7 @@ class ExecutePostActionsListener
                     'content' => $widget->generate(),
                 ];
 
+                /* @phpstan-ignore property.notFound */
                 if ($widget->submitOnChange) {
                     $data['autoSubmit'] = $dc->table;
                 }

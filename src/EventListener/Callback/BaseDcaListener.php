@@ -19,22 +19,15 @@ use Contao\StringUtil;
 use Contao\Versions;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\UtilsBundle\Util\Utils;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class BaseDcaListener
 {
-    private FieldPaletteModelManager $modelManager;
-    private Security $security;
-    private Utils $utils;
-
     public function __construct(
-        FieldPaletteModelManager $modelManager,
-        Security $security,
-        Utils $utils,
+        private readonly FieldPaletteModelManager $modelManager,
+        private readonly AuthorizationCheckerInterface $auth,
+        private readonly Utils $utils,
     ) {
-        $this->modelManager = $modelManager;
-        $this->security = $security;
-        $this->utils = $utils;
     }
 
     public function onLoadCallback(?DataContainer $dc = null): void
@@ -51,6 +44,7 @@ class BaseDcaListener
 
         /** @var class-string<Model> $modelClass */
         $modelClass = Model::getClassFromTable($dc->table);
+        /* @phpstan-ignore property.notFound */
         if (class_exists($modelClass) && ($model = $modelClass::findByPk($dc->id)) && 0 === $model->dateAdded) {
             $model->dateAdded = time();
             $model->save();
@@ -93,7 +87,20 @@ class BaseDcaListener
         $model->save();
     }
 
-    public function onListOperationsToggleButtonCallback(array $row, string $href, string $label, string $title, string $icon, string $attributes, string $table): string
+    public function onListOperationsToggleButtonCallback(
+        array $row,
+        ?string $href,
+        string $label,
+        string $title,
+        ?string $icon,
+        string $attributes,
+        string $table,
+        array $rootRecordIds,
+        ?array $childRecordIds,
+        bool $circularReference,
+        ?string $previous,
+        ?string $next,
+        DataContainer $dc): string
     {
         $tid = Input::get('tid');
 
@@ -102,23 +109,44 @@ class BaseDcaListener
             Controller::redirect(Controller::getReferer());
         }
 
-        if (!$this->security->isGranted('contao_user.alexf', $table . '::published')) {
-            return '';
+        if (!$this->auth->isGranted('contao_user.alexf', $table . '::published')) {
+            return Image::getHtml(str_replace('.svg', '--disabled.svg', $icon)) . ' ';
         }
 
-        $this->utils->url()->addQueryStringParameterToUrl('tid=' . $row['id'], $href);
-        $this->utils->url()->addQueryStringParameterToUrl('state=' . ($row['published'] ? '' : 1), $href);
+        $href = $this->utils->url()->addQueryStringParameterToUrl('tid=' . $row['id'], (string) $href);
+        $href = $this->utils->url()->addQueryStringParameterToUrl('state=' . ($row['published'] ? '' : 1), (string) $href);
 
         if (!$row['published']) {
             $icon = 'invisible.svg';
         }
 
-        $image = Image::getHtml($icon, $label, 'data-state="' . ($row['published'] ? 1 : 0) . '"');
+        $imgAttributes = $this->utils->html()->generateAttributeString([
+            'data-icon' => Image::getPath('visible.svg'),
+            'data-icon-disabled' => Image::getPath('invisible.svg'),
+            'data-state' => (int) $row['published'],
+            'data-alt' => StringUtil::specialchars($title),
+            'data-alt-disabled' => StringUtil::specialchars($title),
+        ]);
 
-        return '<a href="' . $href . '" title="' . StringUtil::specialchars($title) . '"' . $attributes . '>' . $image . '</a> ';
+        $image = Image::getHtml($icon, $title, $imgAttributes);
+
+        $attributes .= ' ' . $this->utils->html()->generateAttributeString([
+            'data-action' => 'contao--scroll-offset#store',
+            'onclick' => 'return AjaxRequest.toggleField(this,true)',
+        ]);
+
+        return sprintf('<a href="%s" title="%s" %s>%s</a> ',
+            $href,
+            StringUtil::specialchars($title),
+            $attributes,
+            $image
+        );
     }
 
-    private function toggleVisibility(int $id, bool $visible, ?DataContainer $dc = null): void
+    /**
+     * @internal Only exposed for internal backwards compatibility. Will be private in next major version.
+     */
+    public function toggleVisibility(int $id, bool $visible, ?DataContainer $dc = null): void
     {
         Input::setGet('id', $id);
         Input::setGet('act', 'toggle');
@@ -127,7 +155,7 @@ class BaseDcaListener
             $dc->id = $id; // see #8043
         }
 
-        if (!$this->security->isGranted('contao_user.alexf', $dc->table . '::published')) {
+        if (!$this->auth->isGranted('contao_user.alexf', $dc->table . '::published')) {
             $this->utils->container()->log(
                 'Not enough permissions to publish/unpublish fieldpalette item ID "' . $id . '"',
                 __METHOD__,
@@ -142,7 +170,7 @@ class BaseDcaListener
         $objVersions->initialize();
 
         // Trigger the save_callback
-        if (\is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'])) {
+        if (\is_array($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'] ?? null)) {
             foreach ($GLOBALS['TL_DCA'][$dc->table]['fields']['published']['save_callback'] as $callback) {
                 $visible = $this->utils->dca()->executeCallback($callback, $visible, $dc ?: $this);
             }
@@ -155,6 +183,7 @@ class BaseDcaListener
         $objVersions->create();
 
         $parentEntries = '';
+        /* @phpstan-ignore property.notFound */
         if ($record = $dc->activeRecord) {
             $parentEntries = '(parent records: ' . $record->ptable . '.id=' . $record->pid . ')';
         }

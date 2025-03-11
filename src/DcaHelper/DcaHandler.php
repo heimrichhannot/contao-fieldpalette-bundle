@@ -13,7 +13,6 @@ use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\DataContainer;
 use Contao\Input;
-use Contao\Session;
 use Contao\StringUtil;
 use Contao\System;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
@@ -40,22 +39,13 @@ class DcaHandler
      */
     public const FieldpaletteRefreshAction = 'refreshFieldPaletteField';
 
-    private ContaoFramework $framework;
-    private string $fieldPaletteTable;
-
-    private FieldPaletteModelManager $modelManager;
-
-    private RequestStack $requestStack;
-
-    private FieldPaletteRegistry $registry;
-
-    public function __construct(string $table, ContaoFramework $framework, FieldPaletteModelManager $modelManager, RequestStack $requestStack, FieldPaletteRegistry $registry)
-    {
-        $this->fieldPaletteTable = $table;
-        $this->framework = $framework;
-        $this->modelManager = $modelManager;
-        $this->requestStack = $requestStack;
-        $this->registry = $registry;
+    public function __construct(
+        private readonly string $fieldPaletteTable,
+        private readonly ContaoFramework $framework,
+        private readonly FieldPaletteModelManager $modelManager,
+        private readonly RequestStack $requestStack,
+        private readonly FieldPaletteRegistry $registry,
+    ) {
     }
 
     /**
@@ -111,13 +101,15 @@ class DcaHandler
                 }
                 $parentTable = $objModel->ptable;
 
+                $request = $this->requestStack->getCurrentRequest();
+
                 // set back link from request
                 if ($input->get('popup') && $input->get('popupReferer')) {
-                    /** @var Session $session */
-                    $session = $this->framework->createInstance(Session::class)->getData();
-                    $refererId = $this->requestStack->getCurrentRequest()->get('_contao_referer_id');
-                    $session['popupReferer'][$refererId]['current'] = StringUtil::decodeEntities(rawurldecode($input->get('popupReferer')));
-                    $session->setData($session);
+                    $objSession = $request->getSession();
+                    $strRefererId = $request->attributes->get('_contao_referer_id');
+                    $session = $objSession->get('popupReferer');
+                    $session[$strRefererId]['current'] = StringUtil::decodeEntities(rawurldecode($input->get('popupReferer')));
+                    $objSession->set('popupReferer', $session);
                 }
 
                 break;
@@ -131,8 +123,6 @@ class DcaHandler
     }
 
     /**
-     * @return bool
-     *
      * @throws \Exception
      */
     public function registerFieldPalette(string $table, DataContainer $dc): void
@@ -252,7 +242,7 @@ class DcaHandler
         string $table,
         string $parentTable,
         string $rootTable,
-        $palette,
+        array $palette,
         array $fields,
         DataContainer $dc,
     ) {
@@ -353,18 +343,18 @@ class DcaHandler
         }
 
         if ($model->ptable === $this->fieldPaletteTable) {
-            $model = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($model->pid);
+            $parent = $this->framework->getAdapter(FieldPaletteModel::class)->findByPk($model->pid);
 
-            if (null === $model) {
+            if (null === $parent) {
                 return [$model->ptable, null];
             }
 
             // save nested path
-            if ($model->pfield) {
-                $palette[] = $model->pfield;
+            if ($parent->pfield) {
+                $palette[] = $parent->pfield;
             }
 
-            return $this->getParentTable($model, $id, $palette);
+            return $this->getParentTable($parent, $id, $palette);
         }
 
         return [$model->ptable, array_reverse($palette)];

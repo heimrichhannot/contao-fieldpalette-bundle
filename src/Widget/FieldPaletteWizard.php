@@ -82,7 +82,6 @@ class FieldPaletteWizard extends Widget
         $controller->loadLanguageFile($container->getParameter('huh.fieldpalette.table'));
         $controller->loadLanguageFile($this->strTable);
 
-        $this->import('Database');
         $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
         $this->viewMode = $this->dca['list']['viewMode'] ?? 0;
         $this->paletteTable = $this->dca['config']['table'] ?? $container->getParameter('huh.fieldpalette.table');
@@ -93,14 +92,8 @@ class FieldPaletteWizard extends Widget
 
     /**
      * Generate the widget and return it as string.
-     *
-     * @return string
-     *
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     * @throws \Twig_Error_Loader
      */
-    public function generate()
+    public function generate(): string
     {
         $this->reviseTable();
 
@@ -176,10 +169,6 @@ class FieldPaletteWizard extends Widget
 
     /**
      * @return string
-     *
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     * @throws \Twig_Error_Loader
      */
     protected function generateListView()
     {
@@ -214,10 +203,6 @@ class FieldPaletteWizard extends Widget
      * @param int $index
      *
      * @return string
-     *
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     * @throws \Twig_Error_Loader
      */
     protected function generateListItem(FieldPaletteModel $model, $index)
     {
@@ -244,9 +229,6 @@ class FieldPaletteWizard extends Widget
         $system = System::getContainer()->get('contao.framework')->getAdapter(System::class);
 
         $utils = System::getContainer()->get(Utils::class);
-        // utils bundle v2 fallback:
-        $formUtil = System::getContainer()->has(FormUtil::class) ? System::getContainer()->get(FormUtil::class) : null;
-
         $protected = false;
 
         if (!isset($this->dca['list']['label']['fields'])) {
@@ -256,6 +238,7 @@ class FieldPaletteWizard extends Widget
 
         $dc = $this->getDcTableInstance($this->paletteTable);
         $dc->id = $model->id;
+        /* @phpstan-ignore property.notFound */
         $dc->activeRecord = $model;
 
         $args = [];
@@ -283,7 +266,11 @@ class FieldPaletteWizard extends Widget
                         ->setDcaOverride($this->dca['fields'][$fieldName])
                         ->setReplaceInsertTags(!$utils->container()->isBackend())
                 );
-            } elseif ($formUtil) {
+            // utils bundle v2 fallback
+            /* @phpstan-ignore class.notFound */
+            } elseif (System::getContainer()->has(FormUtil::class)) {
+                /** @phpstan-ignore class.notFound */
+                $formUtil = System::getContainer()->get(FormUtil::class);
                 $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, [
                     '_dcaOverride' => $this->dca['fields'][$fieldName],
                     'skipReplaceInsertTags' => $utils->container()->isBackend(),
@@ -364,6 +351,7 @@ class FieldPaletteWizard extends Widget
 
         $dc = $this->getDcTableInstance($this->paletteTable);
         $dc->id = $this->currentRecord;
+        /* @phpstan-ignore property.notFound */
         $dc->activeRecord = $rowModel;
 
         foreach ($operations as $key => $value) {
@@ -382,8 +370,8 @@ class FieldPaletteWizard extends Widget
             $button->setId($rowModel->id);
             $button->setModalTitle(
                 sprintf(
-                    $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'],
-                    $GLOBALS['TL_LANG'][$this->strTable][$this->strName][0] ?: $this->strName,
+                    $GLOBALS['TL_LANG']['tl_fieldpalette']['modalTitle'] ?? '',
+                    $GLOBALS['TL_LANG'][$this->strTable][$this->strName][0] ?? $this->strName,
                     sprintf($title, $rowModel->id)
                 )
             );
