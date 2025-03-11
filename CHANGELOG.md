@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.2] - 2025-03-11
+- Fixed: warning
+
 ## [0.7.1] - 2025-02-04
 - Changed: allow utils bundle v3
 - Changed: code refactoring and modernization

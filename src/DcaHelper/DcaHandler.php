@@ -469,8 +469,8 @@ class DcaHandler
     public function recursivelyCopyFieldPaletteRecords(int $pid, int $newId, string $table, array $dcaFields): void
     {
         foreach ($dcaFields as $field => $fieldData) {
-            if ('fieldpalette' === $fieldData['inputType']) {
-                if (isset($fieldData['fieldpalette']['fields']) && !$fieldData['eval']['doNotCopy']) {
+            if ('fieldpalette' === ($fieldData['inputType'] ?? '')) {
+                if (isset($fieldData['fieldpalette']['fields']) && !($fieldData['eval']['doNotCopy'] ?? false)) {
                     $fieldPaletteRecords = $this->modelManager->createModel()->findByPidAndTableAndField($pid, $table, $field);
 
                     if (!$fieldPaletteRecords) {
