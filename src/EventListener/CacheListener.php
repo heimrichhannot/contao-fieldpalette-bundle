@@ -21,11 +21,9 @@ use Terminal42\ServiceAnnotationBundle\Annotation\ServiceTag;
  */
 class CacheListener implements CacheClearerInterface, CacheWarmerInterface
 {
-    private FieldPaletteRegistry $registry;
-
-    public function __construct(FieldPaletteRegistry $registry)
-    {
-        $this->registry = $registry;
+    public function __construct(
+        private readonly FieldPaletteRegistry $registry,
+    ) {
     }
 
     public function isOptional(): bool

@@ -8,18 +8,16 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\EventListener\Contao;
 
-use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\Controller;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 
 #[AsHook('sqlGetFromDca')]
 class SqlGetFromDcaListener
 {
-    protected FieldPaletteRegistry $registry;
-
-    public function __construct(FieldPaletteRegistry $registry)
-    {
-        $this->registry = $registry;
+    public function __construct(
+        protected FieldPaletteRegistry $registry,
+    ) {
     }
 
     public function __invoke(array $sql): array

@@ -18,7 +18,9 @@ use Contao\System;
  * @property int    $id
  * @property int    $pid
  * @property string $ptable
+ * @property string $pfield
  * @property int    $tstamp
+ * @property bool|string $published
  *
  * @method static FieldPaletteModel|null            findById($id, $opt = [])
  * @method static FieldPaletteModel|null            findByPk($id, $opt = [])

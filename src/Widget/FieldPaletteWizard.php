@@ -280,8 +280,8 @@ class FieldPaletteWizard extends Widget
                         ->setDcaOverride($this->dca['fields'][$fieldName])
                         ->setReplaceInsertTags(!$utils->container()->isBackend())
                 );
-                // utils bundle v2 fallback
-                /** @phpstan-ignore class.notFound */
+            // utils bundle v2 fallback
+            /* @phpstan-ignore class.notFound */
             } elseif (System::getContainer()->has(FormUtil::class)) {
                 /** @phpstan-ignore class.notFound */
                 $formUtil = System::getContainer()->get(FormUtil::class);

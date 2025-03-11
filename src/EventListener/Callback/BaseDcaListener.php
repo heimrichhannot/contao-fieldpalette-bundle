@@ -23,11 +23,10 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class BaseDcaListener
 {
-
     public function __construct(
-        private FieldPaletteModelManager $modelManager,
-        private AuthorizationCheckerInterface $auth,
-        private Utils $utils,
+        private readonly FieldPaletteModelManager $modelManager,
+        private readonly AuthorizationCheckerInterface $auth,
+        private readonly Utils $utils,
     ) {
     }
 

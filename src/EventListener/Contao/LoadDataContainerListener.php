@@ -16,11 +16,9 @@ use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 #[AsHook('loadDataContainer', priority: -250)]
 class LoadDataContainerListener
 {
-    private FieldPaletteRegistry $registry;
-
-    public function __construct(FieldPaletteRegistry $registry)
-    {
-        $this->registry = $registry;
+    public function __construct(
+        private readonly FieldPaletteRegistry $registry,
+    ) {
     }
 
     public function __invoke(string $table): void

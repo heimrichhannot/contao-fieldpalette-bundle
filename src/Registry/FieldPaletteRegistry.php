@@ -18,23 +18,20 @@ class FieldPaletteRegistry
 {
     public const CACHE_REGISTRY = 'huh.fieldpalette.registry';
 
-    protected ContaoFramework $framework;
-
     protected array $fields = [];
     protected array $targetFields = [];
     protected array $sourceFields = [];
 
     protected $registriy;
-    private CacheInterface $cache;
     /**
      * @var true
      */
     private bool $fullyLoaded = false;
 
-    public function __construct(ContaoFramework $framework, CacheInterface $cache)
-    {
-        $this->framework = $framework;
-        $this->cache = $cache;
+    public function __construct(
+        protected ContaoFramework $framework,
+        private readonly CacheInterface $cache,
+    ) {
     }
 
     public function set(string $table, string $field, array $dca): void

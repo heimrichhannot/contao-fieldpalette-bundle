@@ -32,30 +32,15 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class CallbackListener
 {
-    private FieldPaletteModelManager $modelManager;
-    private DcaHandler $dcaHandler;
-    private ContaoFramework $framework;
-    private LoggerInterface $logger;
-    private Utils $utils;
-    private Connection $connection;
-    private RequestStack $requestStack;
-
     public function __construct(
-        ContaoFramework $framework,
-        Utils $utils,
-        FieldPaletteModelManager $modelManager,
-        DcaHandler $dcaHandler,
-        LoggerInterface $logger,
-        Connection $connection,
-        RequestStack $requestStack
+        private readonly ContaoFramework $framework,
+        private readonly Utils $utils,
+        private readonly FieldPaletteModelManager $modelManager,
+        private readonly DcaHandler $dcaHandler,
+        private readonly LoggerInterface $logger,
+        private readonly Connection $connection,
+        private readonly RequestStack $requestStack,
     ) {
-        $this->modelManager = $modelManager;
-        $this->dcaHandler = $dcaHandler;
-        $this->framework = $framework;
-        $this->logger = $logger;
-        $this->utils = $utils;
-        $this->connection = $connection;
-        $this->requestStack = $requestStack;
     }
 
     /**

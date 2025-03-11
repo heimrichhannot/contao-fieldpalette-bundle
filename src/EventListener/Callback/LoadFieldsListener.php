@@ -15,13 +15,10 @@ use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 
 class LoadFieldsListener
 {
-    private FieldPaletteRegistry $registry;
-    private DcaHandler $dcaHandler;
-
-    public function __construct(FieldPaletteRegistry $registry, DcaHandler $dcaHandler)
-    {
-        $this->registry = $registry;
-        $this->dcaHandler = $dcaHandler;
+    public function __construct(
+        private readonly FieldPaletteRegistry $registry,
+        private readonly DcaHandler $dcaHandler,
+    ) {
     }
 
     public function onLoadCallback(?DataContainer $dc = null): void
