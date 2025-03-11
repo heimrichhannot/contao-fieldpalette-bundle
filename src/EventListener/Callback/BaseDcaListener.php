@@ -19,22 +19,16 @@ use Contao\StringUtil;
 use Contao\Versions;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
 use HeimrichHannot\UtilsBundle\Util\Utils;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class BaseDcaListener
 {
-    private FieldPaletteModelManager $modelManager;
-    private Security $security;
-    private Utils $utils;
 
     public function __construct(
-        FieldPaletteModelManager $modelManager,
-        Security $security,
-        Utils $utils,
+        private FieldPaletteModelManager $modelManager,
+        private AuthorizationCheckerInterface $auth,
+        private Utils $utils,
     ) {
-        $this->modelManager = $modelManager;
-        $this->security = $security;
-        $this->utils = $utils;
     }
 
     public function onLoadCallback(?DataContainer $dc = null): void
@@ -102,7 +96,7 @@ class BaseDcaListener
             Controller::redirect(Controller::getReferer());
         }
 
-        if (!$this->security->isGranted('contao_user.alexf', $table . '::published')) {
+        if (!$this->auth->isGranted('contao_user.alexf', $table . '::published')) {
             return '';
         }
 
@@ -127,7 +121,7 @@ class BaseDcaListener
             $dc->id = $id; // see #8043
         }
 
-        if (!$this->security->isGranted('contao_user.alexf', $dc->table . '::published')) {
+        if (!$this->auth->isGranted('contao_user.alexf', $dc->table . '::published')) {
             $this->utils->container()->log(
                 'Not enough permissions to publish/unpublish fieldpalette item ID "' . $id . '"',
                 __METHOD__,

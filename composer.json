@@ -21,11 +21,12 @@
         "issues": "https://github.com/heimrichhannot/contao-fieldpalette-bundle/issues"
     },
     "require": {
-        "php": "^7.4 || ^8.0",
+        "php": "^8.1",
         "contao/core-bundle": "^4.13 || ^5.0",
         "heimrichhannot/contao-utils-bundle": "^2.233.0 || ^3.3",
         "heimrichhannot/datatables": "^1.10",
-        "heimrichhannot/datatables-additional": "^1.0"
+        "heimrichhannot/datatables-additional": "^1.0",
+        "symfony/security-core": "^5.4 || ^6.0"
     },
     "require-dev": {
         "rector/rector": "^1.2 || ^2.0",

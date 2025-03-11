@@ -244,9 +244,6 @@ class FieldPaletteWizard extends Widget
         $system = System::getContainer()->get('contao.framework')->getAdapter(System::class);
 
         $utils = System::getContainer()->get(Utils::class);
-        // utils bundle v2 fallback:
-        $formUtil = System::getContainer()->has(FormUtil::class) ? System::getContainer()->get(FormUtil::class) : null;
-
         $protected = false;
 
         if (!isset($this->dca['list']['label']['fields'])) {
@@ -283,7 +280,11 @@ class FieldPaletteWizard extends Widget
                         ->setDcaOverride($this->dca['fields'][$fieldName])
                         ->setReplaceInsertTags(!$utils->container()->isBackend())
                 );
-            } elseif ($formUtil) {
+                // utils bundle v2 fallback
+                /** @phpstan-ignore class.notFound */
+            } elseif (System::getContainer()->has(FormUtil::class)) {
+                /** @phpstan-ignore class.notFound */
+                $formUtil = System::getContainer()->get(FormUtil::class);
                 $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, [
                     '_dcaOverride' => $this->dca['fields'][$fieldName],
                     'skipReplaceInsertTags' => $utils->container()->isBackend(),

@@ -30,5 +30,4 @@ return RectorConfig::configure()
         ContaoLevelSetList::UP_TO_CONTAO_413,
         ContaoSetList::FQCN,
         ContaoSetList::ANNOTATIONS_TO_ATTRIBUTES,
-        \Rector\Set\ValueObject\SetList::TYPE_DECLARATION,
     ]);

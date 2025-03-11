@@ -8,13 +8,11 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\EventListener\Contao;
 
+use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\Controller;
-use Contao\CoreBundle\ServiceAnnotation\Hook;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 
-/**
- * @Hook("sqlGetFromDca")
- */
+#[AsHook('sqlGetFromDca')]
 class SqlGetFromDcaListener
 {
     protected FieldPaletteRegistry $registry;

@@ -13,7 +13,6 @@ use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\DataContainer;
 use Contao\Input;
-use Contao\Session;
 use Contao\StringUtil;
 use Contao\System;
 use HeimrichHannot\FieldpaletteBundle\Manager\FieldPaletteModelManager;
@@ -111,13 +110,15 @@ class DcaHandler
                 }
                 $parentTable = $objModel->ptable;
 
+                $request = $this->requestStack->getCurrentRequest();
+
                 // set back link from request
                 if ($input->get('popup') && $input->get('popupReferer')) {
-                    /** @var Session $session */
-                    $session = $this->framework->createInstance(Session::class)->getData();
-                    $refererId = $this->requestStack->getCurrentRequest()->get('_contao_referer_id');
-                    $session['popupReferer'][$refererId]['current'] = StringUtil::decodeEntities(rawurldecode($input->get('popupReferer')));
-                    $session->setData($session);
+                    $objSession = $request->getSession();
+                    $strRefererId = $request->attributes->get('_contao_referer_id');
+                    $session = $objSession->get('popupReferer');
+                    $session[$strRefererId]['current'] = StringUtil::decodeEntities(rawurldecode($input->get('popupReferer')));
+                    $objSession->set('popupReferer', $session);
                 }
 
                 break;
