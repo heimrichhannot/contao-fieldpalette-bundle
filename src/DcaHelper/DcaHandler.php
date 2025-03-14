@@ -254,7 +254,7 @@ class DcaHandler
         string $rootTable,
         $palette,
         array $fields,
-        DataContainer $dc,
+        DataContainer $dc
     ) {
         if (!\is_array($fields)) {
             return false;
@@ -292,7 +292,7 @@ class DcaHandler
         string $parentTable,
         string $table,
         string $field,
-        DataContainer $dc,
+        DataContainer $dc
     ) {
         $registry = $this->registry->get($rootTable);
 
