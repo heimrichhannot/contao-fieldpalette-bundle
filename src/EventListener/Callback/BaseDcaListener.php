@@ -30,7 +30,7 @@ class BaseDcaListener
     public function __construct(
         FieldPaletteModelManager $modelManager,
         Security $security,
-        Utils $utils,
+        Utils $utils
     ) {
         $this->modelManager = $modelManager;
         $this->security = $security;
