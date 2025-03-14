@@ -337,7 +337,7 @@ class FieldPaletteWizard extends Widget
         bool $circularReference = false,
         $childRecordIds = null,
         $previous = null,
-        $next = null,
+        $next = null
     ): string {
         if (empty($this->dca['list']['operations'])) {
             return '';
