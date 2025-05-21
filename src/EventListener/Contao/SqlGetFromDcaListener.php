@@ -33,8 +33,18 @@ class SqlGetFromDcaListener
                 !isset($sql[$field['targetTable']]['TABLE_FIELDS'][$field['fieldName']])
                 && isset($fieldData['sql'])
             ) {
-                $sql[$field['targetTable']]['TABLE_FIELDS'][$field['fieldName']] =
-                    '`' . $field['fieldName'] . '` ' . $fieldData['sql'];
+                if (is_array($fieldData['sql'])) {
+
+                    if (!isset($fieldData['sql']['name']))
+                    {
+                        $fieldData['sql']['name'] = $field['fieldName'];
+                    }
+
+                    $sql[$field['targetTable']]['SCHEMA_FIELDS'][$field['fieldName']] = $fieldData['sql'];
+                } else {
+                    $sql[$field['targetTable']]['TABLE_FIELDS'][$field['fieldName']] =
+                        '`' . $field['fieldName'] . '` ' . $fieldData['sql'];
+                }
             }
         }
 
