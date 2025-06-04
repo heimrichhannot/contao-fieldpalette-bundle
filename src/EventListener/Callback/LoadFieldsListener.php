@@ -23,8 +23,12 @@ class LoadFieldsListener
 
     public function onLoadCallback(?DataContainer $dc = null): void
     {
+        if (!$dc || !$dc->table) {
+            return;
+        }
+
         $table = $dc->table;
-        if (!$dc || !$table || !$this->registry->hasTargetFields($table)) {
+        if (!$this->registry->hasTargetFields($table)) {
             return;
         }
 

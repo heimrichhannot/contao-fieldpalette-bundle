@@ -31,9 +31,11 @@ class CacheListener implements CacheClearerInterface, CacheWarmerInterface
         return true;
     }
 
-    public function warmUp($cacheDir): void
+    public function warmUp($cacheDir): array
     {
         $this->registry->refresh();
+
+        return [];
     }
 
     public function clear($cacheDir): void

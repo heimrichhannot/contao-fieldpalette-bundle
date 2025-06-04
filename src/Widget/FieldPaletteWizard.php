@@ -46,7 +46,7 @@ class FieldPaletteWizard extends Widget
     protected $dca = [];
 
     /**
-     * @var Collection|FieldPaletteModel|null
+     * @var Collection|FieldPaletteModel[]|null
      */
     protected $models;
 

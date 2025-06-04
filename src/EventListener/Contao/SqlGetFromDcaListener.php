@@ -34,9 +34,7 @@ class SqlGetFromDcaListener
                 && isset($fieldData['sql'])
             ) {
                 if (is_array($fieldData['sql'])) {
-
-                    if (!isset($fieldData['sql']['name']))
-                    {
+                    if (!isset($fieldData['sql']['name'])) {
                         $fieldData['sql']['name'] = $field['fieldName'];
                     }
 
