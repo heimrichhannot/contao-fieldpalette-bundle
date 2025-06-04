@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.5] - 2025-06-04
+- Fixed: exception in frontend when using member modules
+
 ## [0.7.4] - 2025-05-21
 - Added: support of doctrine schema representation sql
 
