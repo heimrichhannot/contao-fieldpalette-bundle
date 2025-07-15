@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.6] - 2025-07-15
+- Fixed: issue on cache warmup
+
 ## [0.7.5] - 2025-06-04
 - Fixed: exception in frontend when using member modules
 

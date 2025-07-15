@@ -8,6 +8,7 @@
 
 namespace HeimrichHannot\FieldpaletteBundle\EventListener;
 
+use Contao\CoreBundle\Framework\ContaoFramework;
 use HeimrichHannot\FieldpaletteBundle\Registry\FieldPaletteRegistry;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
@@ -23,6 +24,7 @@ class CacheListener implements CacheClearerInterface, CacheWarmerInterface
 {
     public function __construct(
         private readonly FieldPaletteRegistry $registry,
+        private readonly ContaoFramework $framework,
     ) {
     }
 
@@ -33,6 +35,7 @@ class CacheListener implements CacheClearerInterface, CacheWarmerInterface
 
     public function warmUp($cacheDir): array
     {
+        $this->framework->initialize();
         $this->registry->refresh();
 
         return [];
