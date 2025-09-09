@@ -147,9 +147,18 @@ class FieldPaletteWizard extends Widget
      *
      * @codeCoverageIgnore
      */
-    public function getDcTableInstance(string $table, array $module = []): DC_Table
+    public function getDcTableInstance(string $table, int $id): DC_Table
     {
-        return new DC_Table($table, $module);
+        return new class($table, $id) extends DC_Table {
+            /**
+             * @noinspection MagicMethodsValidityInspection
+             * @noinspection PhpMissingParentConstructorInspection
+             */
+            public function __construct(string $table, int $id) {
+                $this->intId = $id;
+                $this->strTable = $table;
+            }
+        };
     }
 
     protected function getViewTemplate(string $type): string
@@ -170,7 +179,7 @@ class FieldPaletteWizard extends Widget
     /**
      * @return string
      */
-    protected function generateListView()
+    protected function generateListView(): string
     {
         $image = System::getContainer()->get('contao.framework')->getAdapter(Image::class);
         $items = [];
@@ -236,8 +245,7 @@ class FieldPaletteWizard extends Widget
         }
         $showFields = $this->dca['list']['label']['fields'];
 
-        $dc = $this->getDcTableInstance($this->paletteTable);
-        $dc->id = $model->id;
+        $dc = $this->getDcTableInstance($this->paletteTable, $model->id);
         /* @phpstan-ignore property.notFound */
         $dc->activeRecord = $model;
 
@@ -349,8 +357,7 @@ class FieldPaletteWizard extends Widget
 
         $return = '';
 
-        $dc = $this->getDcTableInstance($this->paletteTable);
-        $dc->id = $this->currentRecord;
+        $dc = $this->getDcTableInstance($this->paletteTable, $this->currentRecord);
         /* @phpstan-ignore property.notFound */
         $dc->activeRecord = $rowModel;
 
