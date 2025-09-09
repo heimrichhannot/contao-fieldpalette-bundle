@@ -82,7 +82,7 @@ class FieldPaletteWizard extends Widget
         $controller->loadLanguageFile($container->getParameter('huh.fieldpalette.table'));
         $controller->loadLanguageFile($this->strTable);
 
-        $this->import('Database');
+        $this->import(Database::class);
         $this->dca = $dcaHandler->getDca($this->strTable, $this->strTable, $this->strName);
         $this->viewMode = $this->dca['list']['viewMode'] ?? 0;
         $this->paletteTable = $this->dca['config']['table'] ?? $container->getParameter('huh.fieldpalette.table');
@@ -326,7 +326,15 @@ class FieldPaletteWizard extends Widget
 
         $return = '';
 
-        $dc = $this->getDcTableInstance($this->paletteTable);
+        try
+        {
+            $dc = $this->getDcTableInstance($this->paletteTable);
+        }
+        catch (\Exception $e)
+        {
+            return '';
+        }
+
         $dc->id = $this->currentRecord;
         $dc->activeRecord = $rowModel;
 
@@ -465,9 +473,16 @@ class FieldPaletteWizard extends Widget
         return trim($return);
     }
 
-    protected function generateGlobalButtons()
+    protected function generateGlobalButtons(): string
     {
-        $button = System::getContainer()->get('huh.fieldpalette.element.button');
+        try
+        {
+            $button = System::getContainer()->get('huh.fieldpalette.element.button');
+        }
+        catch (\Throwable)
+        {
+            return '';
+        }
 
         $button->addOptions($this->buttonDefaults);
         $button->setType('create');
