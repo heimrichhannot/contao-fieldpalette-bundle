@@ -388,7 +388,7 @@ class DcaHandler
             return $data;
         }
 
-        foreach (['config', 'list', 'palettes', 'subpalettes'] as $key) {
+        foreach (['config', 'list', 'palettes', 'subpalettes', 'edit'] as $key) {
             $data[$key] = array_replace_recursive($defaults[$key] ?? [], $custom[$key] ?? []);
         }
 

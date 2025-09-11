@@ -46,7 +46,9 @@ class DcaGenerator
                     [CallbackListener::class, 'updateParentFieldOnDelete'],
                 ],
             ],
-
+            'edit' => [
+                'buttons_callback' => [[BaseDcaListener::class, 'onEditButtonsCallback']],
+            ],
             'list' => [
                 'label' => [
                     'fields' => ['pid', 'ptable', 'pfield'],

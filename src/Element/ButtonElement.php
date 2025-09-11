@@ -218,7 +218,7 @@ class ButtonElement
             'act' => $this->act,
             'pid' => $this->pid,
             'id' => $this->id,
-            'nb' => 1, // don't show saveNclose button
+            'nb' => '1', // don't show saveNclose button
             $this->fieldpaletteKey => $this->fieldpalette,
             'popup' => $this->popup,
         ];
