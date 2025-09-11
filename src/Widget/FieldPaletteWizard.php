@@ -154,7 +154,8 @@ class FieldPaletteWizard extends Widget
              * @noinspection MagicMethodsValidityInspection
              * @noinspection PhpMissingParentConstructorInspection
              */
-            public function __construct(string $table, int $id) {
+            public function __construct(string $table, int $id)
+            {
                 $this->intId = $id;
                 $this->strTable = $table;
             }
@@ -176,9 +177,6 @@ class FieldPaletteWizard extends Widget
         return '@HeimrichHannotContaoFieldpalette/' . $type . '/fieldpalette_' . $type . '_' . $mode . '.html.twig';
     }
 
-    /**
-     * @return string
-     */
     protected function generateListView(): string
     {
         $image = System::getContainer()->get('contao.framework')->getAdapter(Image::class);

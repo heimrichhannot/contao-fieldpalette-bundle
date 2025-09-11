@@ -197,6 +197,8 @@ class BaseDcaListener
 
     public function onEditButtonsCallback(array $buttons, DataContainer $dc): array
     {
-        return array_intersect_key($buttons, ['save' => '']);
+        return array_intersect_key($buttons, [
+            'save' => '',
+        ]);
     }
 }
