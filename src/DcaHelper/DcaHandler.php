@@ -372,7 +372,7 @@ class DcaHandler
 
         $data = [];
 
-        $defauts = $GLOBALS['TL_DCA'][$paletteTable];
+        $defaults = $GLOBALS['TL_DCA'][$paletteTable];
         $custom = $GLOBALS['TL_DCA'][$rootTable]['fields'][$field]['fieldpalette'];
 
         if (\is_array($palette)) {
@@ -384,15 +384,15 @@ class DcaHandler
             }
         }
 
-        if (!\is_array($defauts) || !\is_array($custom)) {
+        if (!\is_array($defaults) || !\is_array($custom)) {
             return $data;
         }
 
         foreach (['config', 'list', 'palettes', 'subpalettes'] as $key) {
-            $data[$key] = array_replace_recursive($defauts[$key] ?? [], $custom[$key] ?? []);
+            $data[$key] = array_replace_recursive($defaults[$key] ?? [], $custom[$key] ?? []);
         }
 
-        $data['fields'] = array_merge($defauts['fields'] ?? [], $custom['fields'] ?? []);
+        $data['fields'] = array_merge($defaults['fields'] ?? [], $custom['fields'] ?? []);
 
         // replace tl_fieldpalette with custom config
         //        $data = @array_replace_recursive($defauts, $custom); // supress warning, as long as references may exist in both arrays
