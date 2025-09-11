@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.9] - 2025-09-11
+- Changed: do not show buttons other than "save" in modals
+
+## [0.7.8] - 2025-09-09
+- Fixed: permission issue with contao 5 when a target instance not exists anymore
+
 ## [0.7.6] - 2025-07-15
 - Fixed: issue on cache warmup
 
