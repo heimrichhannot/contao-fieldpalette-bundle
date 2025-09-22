@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.10] - 2025-09-22
+- Fixed: issues with contao 5 permission system
+
 ## [0.7.9] - 2025-09-11
 - Changed: do not show buttons other than "save" in modals
 
