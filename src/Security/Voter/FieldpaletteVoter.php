@@ -9,6 +9,7 @@ use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\closure;
 
 class FieldpaletteVoter implements VoterInterface
 {
@@ -18,6 +19,11 @@ class FieldpaletteVoter implements VoterInterface
 
     public function vote(TokenInterface $token, mixed $subject, array $attributes): int
     {
+        // check if we are in contao 5 context
+        if (!class_exists(ReadAction::class)) {
+            return self::ACCESS_ABSTAIN;
+        }
+
         if (!in_array(ContaoCorePermissions::DC_PREFIX.FieldpaletteModel::TABLE, $attributes, true)) {
             return self::ACCESS_ABSTAIN;
         }
