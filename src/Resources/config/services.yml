@@ -6,6 +6,12 @@ services:
     autoconfigure: true
     public: true
 
+  HeimrichHannot\FieldpaletteBundle\Security\Voter\FieldpaletteVoter:
+    autowire: true
+    tags:
+      - { name: security.voter, priority: 101 }
+
+
   huh.fieldpalette.element.button:
     alias: 'HeimrichHannot\FieldpaletteBundle\Element\ButtonElement'
     deprecated:
