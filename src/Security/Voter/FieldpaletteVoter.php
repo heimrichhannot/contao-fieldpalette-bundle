@@ -3,7 +3,10 @@
 namespace HeimrichHannot\FieldpaletteBundle\Security\Voter;
 
 use Contao\CoreBundle\Security\ContaoCorePermissions;
+use Contao\CoreBundle\Security\DataContainer\CreateAction;
+use Contao\CoreBundle\Security\DataContainer\DeleteAction;
 use Contao\CoreBundle\Security\DataContainer\ReadAction;
+use Contao\CoreBundle\Security\DataContainer\UpdateAction;
 use Contao\Model;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -28,8 +31,20 @@ class FieldpaletteVoter implements VoterInterface
             return self::ACCESS_ABSTAIN;
         }
 
-        $ptable = $subject->getCurrent()['ptable'] ?? null;
-        $pid = $subject->getCurrent()['pid'] ?? null;
+        $row = match (get_class($subject)) {
+            CreateAction::class => $subject->getNew(),
+            ReadAction::class => $subject->getCurrent(),
+            UpdateAction::class => $subject->getCurrent(),
+            DeleteAction::class => $subject->getCurrent(),
+            default => null,
+        };
+
+        if (!$row || !is_array($row)) {
+            return self::ACCESS_ABSTAIN;
+        }
+
+        $ptable = $row['ptable'] ?? null;
+        $pid = $row['pid'] ?? null;
         if (!$ptable || !$pid) {
             return self::ACCESS_ABSTAIN;
         }

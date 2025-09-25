@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.11] - 2025-09-25
+- Fixed: issue with contao 5 permission system
+
 ## [0.7.10] - 2025-09-22
 - Fixed: issues with contao 5 permission system
 
