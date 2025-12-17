@@ -12,7 +12,6 @@ use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
-use function Symfony\Component\DependencyInjection\Loader\Configurator\closure;
 
 class FieldpaletteVoter implements VoterInterface
 {
@@ -31,7 +30,7 @@ class FieldpaletteVoter implements VoterInterface
             return self::ACCESS_ABSTAIN;
         }
 
-        $row = match (get_class($subject)) {
+        $row = match ($subject::class) {
             CreateAction::class => $subject->getNew(),
             ReadAction::class => $subject->getCurrent(),
             UpdateAction::class => $subject->getCurrent(),

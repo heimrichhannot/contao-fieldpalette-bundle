@@ -87,7 +87,7 @@ class DcaHandler
             case 'show':
             case 'delete':
             case 'toggle':
-                $id = \strlen($input->get('id')) ? $input->get('id') : $dc->currentPid;
+                $id = \strlen((string) $input->get('id')) ? $input->get('id') : $dc->currentPid;
 
                 $objModel = $this->modelManager->createModelByTable($table)->findByPk($id);
 
@@ -108,7 +108,7 @@ class DcaHandler
                     $objSession = $request->getSession();
                     $strRefererId = $request->attributes->get('_contao_referer_id');
                     $session = $objSession->get('popupReferer');
-                    $session[$strRefererId]['current'] = StringUtil::decodeEntities(rawurldecode($input->get('popupReferer')));
+                    $session[$strRefererId]['current'] = StringUtil::decodeEntities(rawurldecode((string) $input->get('popupReferer')));
                     $objSession->set('popupReferer', $session);
                 }
 

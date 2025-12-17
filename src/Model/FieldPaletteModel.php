@@ -102,7 +102,7 @@ class FieldPaletteModel extends Model
             return null;
         }
 
-        $columns[] = "$t.id IN(" . implode(',', array_map('intval', $fieldpaletteIds)) . ')';
+        $columns[] = "$t.id IN(" . implode(',', array_map(intval(...), $fieldpaletteIds)) . ')';
 
         if (!isset($options['order'])) {
             $options['order'] = "$t.sorting";
@@ -158,13 +158,13 @@ class FieldPaletteModel extends Model
 
         $t = static::$strTable;
 
-        $columns[] = "$t.pid IN(" . implode(',', array_map('intval', $pids)) . ')';
+        $columns[] = "$t.pid IN(" . implode(',', array_map(intval(...), $pids)) . ')';
 
         $columns[] = "$t.ptable=? AND $t.pfield=?";
         $values = array_merge($values, [$parentTable, $parentField]);
 
         if (!isset($options['order'])) {
-            $options['order'] = "FIELD($t.pid, " . implode(',', array_map('intval', $pids)) . "), $t.sorting";
+            $options['order'] = "FIELD($t.pid, " . implode(',', array_map(intval(...), $pids)) . "), $t.sorting";
         }
 
         return $this->findPublishedBy($columns, $values, $options);

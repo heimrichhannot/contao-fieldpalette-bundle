@@ -556,7 +556,7 @@ class FieldPaletteWizard extends Widget
                 'DELETE FROM ' . $this->paletteTable . ' WHERE id IN(' . implode(
                     ',',
                     array_map(
-                        'intval',
+                        intval(...),
                         $new_records[$this->paletteTable]
                     )
                 ) . ') AND tstamp=0 AND (? IS NULL OR id != ?)'
