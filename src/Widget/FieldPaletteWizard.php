@@ -247,7 +247,6 @@ class FieldPaletteWizard extends Widget
         $showFields = $this->dca['list']['label']['fields'];
 
         $dc = $this->getDcTableInstance($this->paletteTable, $model->id);
-        /* @phpstan-ignore property.notFound */
         $dc->activeRecord = $model;
 
         $args = [];
@@ -359,7 +358,6 @@ class FieldPaletteWizard extends Widget
         $return = '';
 
         $dc = $this->getDcTableInstance($this->paletteTable, $this->currentRecord);
-        /* @phpstan-ignore property.notFound */
         $dc->activeRecord = $rowModel;
 
         foreach ($operations as $key => $value) {

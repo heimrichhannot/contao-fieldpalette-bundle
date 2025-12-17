@@ -15,7 +15,9 @@ use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 
 class FieldpaletteVoter implements VoterInterface
 {
-    public function __construct(private readonly AccessDecisionManagerInterface $accessDecisionManager)
+    public function __construct(
+        private readonly AccessDecisionManagerInterface $accessDecisionManager
+    )
     {
     }
 

@@ -183,7 +183,6 @@ class BaseDcaListener
         $objVersions->create();
 
         $parentEntries = '';
-        /* @phpstan-ignore property.notFound */
         if ($record = $dc->activeRecord) {
             $parentEntries = '(parent records: ' . $record->ptable . '.id=' . $record->pid . ')';
         }

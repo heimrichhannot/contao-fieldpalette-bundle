@@ -87,6 +87,7 @@ class DcaHandler
             case 'show':
             case 'delete':
             case 'toggle':
+                /* @phpstan-ignore property.notFound */
                 $id = \strlen((string) $input->get('id')) ? $input->get('id') : $dc->currentPid;
 
                 $objModel = $this->modelManager->createModelByTable($table)->findByPk($id);
@@ -292,6 +293,7 @@ class DcaHandler
 
         // determine active state by current element
         if ($this->getTableFromRequest() === $table) {
+            /* @phpstan-ignore property.notFound */
             $id = $this->framework->getAdapter(Input::class)->get('id') ?: $dc->currentPid;
             $act = $this->framework->getAdapter(Input::class)->get('act');
 

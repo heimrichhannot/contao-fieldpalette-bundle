@@ -1,10 +1,13 @@
 parameters:
-  level: 2
-  paths:
-    - src
-  universalObjectCratesClasses:
-    - Contao\Database\Result
-#    - Contao\Model
-#    - Contao\Template
+    level: 2
+    paths:
+        - src
+    universalObjectCratesClasses:
+        - Contao\Database\Result
+    ignoreErrors:
+        # Skip contao 5 related reports in voter
+        - '#^Access to undefined constant Contao\\CoreBundle\\Security\\ContaoCorePermissions\:\:DC_PREFIX\.$#'
+        - '#^Call to method (getNew|getCurrent)\(\) on an unknown class Contao\\CoreBundle\\Security\\DataContainer\\(CreateAction|UpdateAction|DeleteAction)\.$#'
+        - '#^Class Contao\\CoreBundle\\Security\\DataContainer\\(CreateAction|UpdateAction|DeleteAction) not found\.$#'
 includes:
-  - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-symfony/extension.neon

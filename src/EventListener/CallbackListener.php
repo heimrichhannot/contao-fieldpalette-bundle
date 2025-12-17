@@ -45,6 +45,7 @@ class CallbackListener
             return;
         }
 
+        /** @phpstan-ignore property.notFound */
         $id = $this->framework->getAdapter(Input::class)->get('id') ?: $dc->currentPid;
         $do = $this->framework->getAdapter(Input::class)->get('do');
 
