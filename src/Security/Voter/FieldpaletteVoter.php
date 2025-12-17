@@ -16,9 +16,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 class FieldpaletteVoter implements VoterInterface
 {
     public function __construct(
-        private readonly AccessDecisionManagerInterface $accessDecisionManager
-    )
-    {
+        private readonly AccessDecisionManagerInterface $accessDecisionManager,
+    ) {
     }
 
     public function vote(TokenInterface $token, mixed $subject, array $attributes): int
@@ -28,7 +27,7 @@ class FieldpaletteVoter implements VoterInterface
             return self::ACCESS_ABSTAIN;
         }
 
-        if (!in_array(ContaoCorePermissions::DC_PREFIX.FieldpaletteModel::TABLE, $attributes, true)) {
+        if (!in_array(ContaoCorePermissions::DC_PREFIX . FieldPaletteModel::TABLE, $attributes, true)) {
             return self::ACCESS_ABSTAIN;
         }
 
@@ -62,8 +61,6 @@ class FieldpaletteVoter implements VoterInterface
 
         $action = new ReadAction($ptable, $model->row());
 
-        return $this->accessDecisionManager->decide($token, [ContaoCorePermissions::DC_PREFIX.$ptable], $action);
+        return $this->accessDecisionManager->decide($token, [ContaoCorePermissions::DC_PREFIX . $ptable], $action);
     }
-
-
 }
