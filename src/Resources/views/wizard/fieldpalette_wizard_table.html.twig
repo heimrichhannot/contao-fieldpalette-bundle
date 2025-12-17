@@ -1,14 +1,21 @@
 <div id="ctrl_{{ id }}" class="fielpalette-wizard">
+    <h3>
+        {% if mandatory|default %}
+            <span class="invisible">{{ mandatoryField }} </span>{{ label }}<span class="mandatory">*</span>
+        {% else %}
+            {{ label }}
+        {% endif %}
+    </h3>
 
-	<div class="tl_buttons">
-		{{ buttons|raw }}
-	</div>
+    <div class="tl_buttons">
+        {{ buttons|raw }}
+    </div>
 
     {% block listView %}
         {{ listview|raw }}
     {% endblock %}
 
     {% for value in values %}
-		<input type="hidden" name="{{ name }}{% if values|length > 1 %}[]{% endif %}" value="{{ value|escape }}">
+        <input type="hidden" name="{{ name }}{% if values|length > 1 %}[]{% endif %}" value="{{ value|escape }}">
     {% endfor %}
 </div>

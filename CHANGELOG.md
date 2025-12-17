@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.12] - 2025-12-17
+- Added: support for dark mode in contao 5
+- Changed: add field title above the table (need adjustments in custom templates)
+
 ## [0.7.11] - 2025-09-25
 - Fixed: issue with contao 5 permission system
 

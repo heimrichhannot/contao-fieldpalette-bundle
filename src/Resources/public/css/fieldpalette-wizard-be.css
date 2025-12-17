@@ -6,6 +6,10 @@
     padding-bottom: 15px;
 }
 
+.fielpalette-wizard > h3 {
+    padding-top: 26px;
+}
+
 .fielpalette-wizard .tl_buttons {
     text-align: right;
     margin-bottom: 6px;
@@ -64,10 +68,67 @@
     text-align: right;
 }
 
-.isContao4 .fielpalette-wizard {
+.fielpalette-wizard {
     margin-top: 14px;
 }
 
-.isContao4 .tl_fieldpalette_wrapper > div {
+.tl_fieldpalette_wrapper > div {
     width: 100%;
+}
+
+.tl_fieldpalette_wrapper .dataTables_wrapper table thead {
+    background-color: var(--table-header, inherit);
+}
+
+.tl_fieldpalette_wrapper .dataTables_wrapper .dataTables_length,
+.tl_fieldpalette_wrapper .dataTables_wrapper .dataTables_filter,
+.tl_fieldpalette_wrapper .dataTables_wrapper .dataTables_info,
+.tl_fieldpalette_wrapper .dataTables_wrapper .dataTables_processing,
+.tl_fieldpalette_wrapper .dataTables_wrapper .dataTables_paginate
+{
+    color: var(--text, #333333);
+}
+
+.tl_fieldpalette_wrapper table.dataTable.stripe tbody tr.odd,
+.tl_fieldpalette_wrapper table.dataTable.display tbody tr.odd
+{
+    background-color: var(--table-odd, #eaeaec);
+}
+
+.tl_fieldpalette_wrapper table.dataTable.stripe tbody tr.even,
+.tl_fieldpalette_wrapper table.dataTable.display tbody tr.even
+{
+    background-color: var(--table-even, #fff);
+}
+
+.tl_fieldpalette_wrapper table.dataTable.display tbody tr.odd>.sorting_1,
+.tl_fieldpalette_wrapper table.dataTable.order-column.stripe tbody tr.odd>.sorting_1
+{
+    background-color: var(--table-nb-odd, #f1f1f1);
+}
+.tl_fieldpalette_wrapper table.dataTable.display tbody tr.even>.sorting_1,
+.tl_fieldpalette_wrapper table.dataTable.order-column.stripe tbody tr.even>.sorting_1
+{
+    background-color: var(--table-nb-even, #eaedf1);
+}
+
+.tl_fieldpalette_wrapper table.dataTable.no-footer,
+.tl_fieldpalette_wrapper table.dataTable thead th,
+.tl_fieldpalette_wrapper table.dataTable.display tbody td,
+.tl_fieldpalette_wrapper table.dataTable thead td
+{
+    border-color: var(--border, #111111);
+}
+
+.tl_fieldpalette_wrapper .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--form-button, #fff);
+    color: var(--text, #222) !important;
+    border-color: var(--form-border, #aaa);
+}
+
+.tl_fieldpalette_wrapper .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--form-button-hover, #f6f6f6);
+}
+.tl_fieldpalette_wrapper .dataTables_wrapper .dataTables_paginate .paginate_button.current:active {
+    background: var(--form-button-active, #f9f9f9);
 }

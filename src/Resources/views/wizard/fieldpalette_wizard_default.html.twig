@@ -1,4 +1,11 @@
 <div id="ctrl_{{ id }}" class="fielpalette-wizard">
+	<h3>
+		{% if mandatory|default %}
+			<span class="invisible">{{ mandatoryField }} </span>{{ label }}<span class="mandatory">*</span>
+		{% else %}
+			{{ label }}
+		{% endif %}
+	</h3>
 
 	<div class="tl_buttons">
 		{{ buttons|raw }}

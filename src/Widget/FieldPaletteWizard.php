@@ -124,6 +124,9 @@ class FieldPaletteWizard extends Widget
             'listview' => $this->generateListView(),
             'values' => $values,
             'name' => $this->strName,
+            'label' => $this->strLabel,
+            'mandatory' => $this->mandatory,
+            'mandatoryField' => $GLOBALS['TL_LANG']['MSC']['mandatory'],
         ]);
     }
 
