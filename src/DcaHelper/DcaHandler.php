@@ -394,6 +394,13 @@ class DcaHandler
             $data[$key] = array_replace_recursive($defaults[$key] ?? [], $custom[$key] ?? []);
         }
 
+        foreach (array_keys($custom['config'] ?? []) as $key) {
+            if (str_ends_with((string) $key, '_callback')) {
+                $data['config'][$key] = array_merge($defaults['config'][$key], $custom['config'][$key]);
+                continue;
+            }
+        }
+
         $data['fields'] = array_merge($defaults['fields'] ?? [], $custom['fields'] ?? []);
 
         // replace tl_fieldpalette with custom config

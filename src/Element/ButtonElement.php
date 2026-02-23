@@ -244,14 +244,12 @@ class ButtonElement
             case 'edit':
                 $allowed = ['do', 'table', 'ptable', 'act', 'id', 'popup', 'popupReferer', 'nb'];
                 break;
+            case 'show':
             case 'copy':
                 $allowed = ['do', 'table', 'act', 'id', 'popup', 'popupReferer'];
                 break;
-            case 'show':
-                $allowed = ['do', 'table', 'act', 'id', 'popup', 'popupReferer'];
-                break;
             case 'delete':
-                $allowed = ['do', 'table', 'act', 'id'];
+                $allowed = ['do', 'table', 'ptable', 'act', 'id'];
                 break;
         }
 

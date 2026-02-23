@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.13] - 2026-02-23
+- Fixed: defined fieldpalette field callbacks not correctly registered
+- Fixed: fieldpalette field custom dca not loaded on delete action
+
 ## [0.7.12] - 2025-12-17
 - Added: support for dark mode in contao 5
 - Changed: add field title above the table (need adjustments in custom templates)
