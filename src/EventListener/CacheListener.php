@@ -33,7 +33,7 @@ class CacheListener implements CacheClearerInterface, CacheWarmerInterface
         return true;
     }
 
-    public function warmUp($cacheDir): array
+    public function warmUp(string $cacheDir, ?string $buildDir = null): array
     {
         $this->framework->initialize();
         $this->registry->refresh();

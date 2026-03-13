@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.DEV] - 2026-03-13
+- Fixed: incompatibility with symfony 7
+
 ## [0.7.13] - 2026-02-23
 - Fixed: defined fieldpalette field callbacks not correctly registered
 - Fixed: fieldpalette field custom dca not loaded on delete action
