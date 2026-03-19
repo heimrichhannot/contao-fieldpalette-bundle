@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.15] - 2026-03-19
+- Fixed: incompatibility with contao 5.7
+- Fixed: possible incorrect table revision
+
 ## [0.7.14] - 2026-03-16
 - Fixed: incompatibility with symfony 7
 

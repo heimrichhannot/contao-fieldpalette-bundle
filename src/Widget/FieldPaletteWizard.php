@@ -21,7 +21,6 @@ use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Element\ButtonElement;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
-use HeimrichHannot\UtilsBundle\Form\FormUtil;
 use HeimrichHannot\UtilsBundle\Util\FormatterUtil\FormatDcaFieldValueOptions;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 
@@ -76,6 +75,7 @@ class FieldPaletteWizard extends Widget
 
         $container = System::getContainer();
         $framework = $container->get('contao.framework');
+        /** @var DcaHandler $dcaHandler */
         $dcaHandler = $container->get('huh.fieldpalette.dca.handler');
         $controller = $framework->getAdapter(Controller::class);
 
@@ -575,7 +575,7 @@ class FieldPaletteWizard extends Widget
             } else {
                 $result = $framework->createInstance(Database::class)->execute(
                     'DELETE FROM ' . $this->paletteTable . ' WHERE NOT EXISTS (SELECT * FROM (SELECT * FROM ' . $ptable . ') AS fpp WHERE '
-                    . $defaultTable . '.pid = fpp.id)'
+                    . $this->paletteTable . '.pid = fpp.id)'
                 );
             }
 
