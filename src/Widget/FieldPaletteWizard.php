@@ -21,6 +21,7 @@ use Contao\Widget;
 use HeimrichHannot\FieldpaletteBundle\DcaHelper\DcaHandler;
 use HeimrichHannot\FieldpaletteBundle\Element\ButtonElement;
 use HeimrichHannot\FieldpaletteBundle\Model\FieldPaletteModel;
+use HeimrichHannot\UtilsBundle\Form\FormUtil;
 use HeimrichHannot\UtilsBundle\Util\FormatterUtil\FormatDcaFieldValueOptions;
 use HeimrichHannot\UtilsBundle\Util\Utils;
 
@@ -276,7 +277,7 @@ class FieldPaletteWizard extends Widget
                 );
             // utils bundle v2 fallback
             /* @phpstan-ignore class.notFound */
-            } elseif (System::getContainer()->has(FormUtil::class)) {
+            } elseif (class_exists(FormUtil::class) && System::getContainer()->has(FormUtil::class)) {
                 /** @phpstan-ignore class.notFound */
                 $formUtil = System::getContainer()->get(FormUtil::class);
                 $args[$key] = $formUtil->prepareSpecialValueForOutput($fieldName, $value, $dc, [
