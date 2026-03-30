@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.7.18] - 2026-03-30
+- Fixed: exception on errors at cache warmup
+
 ## [0.7.17] - 2026-03-23
 - Fixed: incorrect labels in contao 4.13
 
